@@ -36,8 +36,6 @@ void Pa::update_sink(const pa_sink_info *info)
     PA_SINKS[info->index].mute = info->mute;
 
     strncpy(PA_SINKS[info->index].name, info->description, 255);
-    fprintf(stderr, "add/update sink: %s idx: %d\n", PA_SINKS[info->index].name,
-            info->index);
 
     notify_update();
 }
@@ -55,8 +53,6 @@ void Pa::update_input(const pa_sink_input_info *info)
     const char *name;
     name = pa_proplist_gets(info->proplist, PA_PROP_APPLICATION_NAME);
     strncpy(PA_INPUTS[info->index].name, name, 255);
-    fprintf(stderr, "add/update input: %s idx: %d sink:%d\n", info->name,
-            info->index, info->sink);
     notify_update();
 }
 
