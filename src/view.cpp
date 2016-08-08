@@ -41,10 +41,12 @@ void View::init()
     noecho();
     start_color();
 
+    use_default_colors();
+
     // BG
-    init_pair(1, COLOR_GREEN, 0);
-    init_pair(2, COLOR_YELLOW, 0);
-    init_pair(3, COLOR_RED, 0);
+    init_pair(1, COLOR_GREEN, -1);
+    init_pair(2, COLOR_YELLOW, -1);
+    init_pair(3, COLOR_RED, -1);
 
     // FG
     init_pair(4, 0, COLOR_GREEN);
