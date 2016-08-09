@@ -143,7 +143,7 @@ void Pa::stream_state_cb(pa_stream *stream, void *instance)
     pa_stream_state_t state = pa_stream_get_state(stream);
 
     if (state == PA_STREAM_TERMINATED || state == PA_STREAM_FAILED) {
-        PA_INPUT *i = reinterpret_cast<PA_INPUT *>(instance);
+        PaInput *i = reinterpret_cast<PaInput *>(instance);
         i->monitor_stream = nullptr;
     }
 }
@@ -194,7 +194,7 @@ pa_stream *Pa::create_monitor_stream_for_source(uint32_t source_index,
     return s;
 }
 
-void Pa::create_monitor_stream_for_sink_input(PA_INPUT *input)
+void Pa::create_monitor_stream_for_sink_input(PaInput *input)
 {
     if (input->monitor_stream != nullptr) {
         pa_stream_disconnect(input->monitor_stream);

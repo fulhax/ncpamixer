@@ -2,9 +2,12 @@
 #define PA_HPP
 
 #include <pulse/pulseaudio.h>
-
 #include <map>
 #include <mutex>
+
+#include "pa_object.hpp"
+#include "pa_input.hpp"
+#include "pa_sink.hpp"
 
 struct PA_SINK {
     uint32_t index;
@@ -56,14 +59,14 @@ public:
     static void stream_suspended_cb(pa_stream *stream, void *instance);
     static void stream_state_cb(pa_stream *stream, void *info);
 
-    void create_monitor_stream_for_sink_input(PA_INPUT *input);
+    void create_monitor_stream_for_sink_input(PaInput *input);
     pa_stream* create_monitor_stream_for_source(uint32_t source_index, uint32_t stream_index);
 
     void set_notify_update_cb(notify_update_callback cb);
     void notify_update();
 
-    std::map<uint32_t, PA_INPUT> PA_INPUTS;
-    std::map<uint32_t, PA_SINK> PA_SINKS;
+    std::map<uint32_t, PaInput> PA_INPUTS;
+    std::map<uint32_t, PaSink> PA_SINKS;
 
     void (*notify_update_cb)();
     std::mutex inputMtx;

@@ -8,6 +8,9 @@ SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++14")
 
 set(COMMON_SRC
     "pulsemixer.cpp"
+    "pa_object.cpp"
+    "pa_sink.cpp"
+    "pa_input.cpp"
     "pa.cpp"
     "ui.cpp"
     "tab.cpp"
