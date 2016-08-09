@@ -78,11 +78,7 @@ void View::run()
         int baseY = 3;
 
         for (auto &i : pa->PA_INPUTS) {
-            double perc = static_cast<double>(
-                              i.second.volume /
-                              (PA_VOLUME_NORM * 2)
-                          );
-
+            double perc = static_cast<double>(i.second.volume) / (PA_VOLUME_NORM * 2);
             volumeBar(0, baseY, perc, perc);
 
             if (i.first == selectedInputIndex) {
