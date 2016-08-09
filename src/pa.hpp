@@ -59,7 +59,7 @@ public:
     static void stream_suspended_cb(pa_stream *stream, void *instance);
     static void stream_state_cb(pa_stream *stream, void *info);
 
-    void create_monitor_stream_for_sink_input(PaInput *input);
+    void create_monitor_stream_for_paobject(PaObject* po);
     pa_stream* create_monitor_stream_for_source(uint32_t source_index, uint32_t stream_index);
 
     void set_notify_update_cb(notify_update_callback cb);

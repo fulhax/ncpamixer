@@ -7,5 +7,4 @@ PaObject::~PaObject()
         pa_stream_disconnect(monitor_stream);
         pa_stream_unref(monitor_stream);
     }
-    fprintf(stderr, "constructor\n");
 }
