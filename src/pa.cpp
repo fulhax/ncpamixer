@@ -56,8 +56,17 @@ void Pa::update_input(const pa_sink_input_info *info)
     notify_update();
 }
 
+void Pa::toggle_input_mute(uint32_t index)
+{
+    std::lock_guard<std::mutex> lk(inputMtx);
+    auto i = PA_INPUTS.find(index);
+    if(i != PA_INPUTS.end()){
+        pa_operation *o = pa_context_set_sink_input_mute(pa_ctx, index, !i->second.mute, NULL, NULL);
+        pa_operation_unref(o);
+    }
+}
 
-void Pa::set_volume(uint32_t index, int dir)
+void Pa::set_input_volume(uint32_t index, int dir)
 {
     std::lock_guard<std::mutex> lk(inputMtx);
 

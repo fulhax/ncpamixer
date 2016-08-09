@@ -9,7 +9,7 @@ struct PA_SINK {
     char name[255];
     char *desc;
     pa_volume_t volume;
-    int mute;
+    bool mute;
     unsigned int channels;
 };
 
@@ -29,7 +29,8 @@ public:
     void update_sink(const pa_sink_info *info);
     void remove_input(uint32_t index);
     void remove_sink(uint32_t index);
-    void set_volume(uint32_t index, int dir);
+    void set_input_volume(uint32_t index, int dir);
+    void toggle_input_mute(uint32_t index);
     void move_input_sink(uint32_t input_index, uint32_t sink_index);
 
     static void ctx_state_cb(pa_context *ctx, void *userdata);

@@ -84,9 +84,13 @@ void View::run()
             }
 
             char label[255];
-            sprintf(label, "%s (%d%%)", i.second.name, (int)(perc * 100));
-
+            if(i.second.mute){
+                sprintf(label, "%s (muted)", i.second.name);
+            } else {
+                sprintf(label, "%s (%d%%)", i.second.name, (int)(perc * 100));
+            }
             mvaddstr(baseY - 2, 1, label);
+
             unsigned int sink_pos = x - 1 - strlen(pa->PA_SINKS.find(
                     i.second.sink)->second.name);
 
@@ -133,7 +137,10 @@ void View::handleInput()
                 break;
 
             case 'm':
-                // mute
+
+                if (setInputVolume != nullptr && selectedInputIndex != 0) {
+                    toggleInputMute(selectedInputIndex);
+                }
                 break;
 
             case 'g': {

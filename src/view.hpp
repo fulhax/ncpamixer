@@ -20,7 +20,7 @@ public:
 
     void (*setInputVolume)(uint32_t, int);
     void (*moveInputSink)(uint32_t, uint32_t);
-    
+    void (*toggleInputMute)(uint32_t);    
     bool running;
 
     unsigned int  view;
