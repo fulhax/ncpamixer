@@ -34,7 +34,7 @@ private:
         "Configuration"
     };
 
-    unsigned int tab_index;
+    int tab_index;
     Tab *current_tab;
     static void resize(int signum);
 
@@ -42,7 +42,7 @@ private:
     void handleInput();
     void kill();
     void draw();
-    void switchTab(unsigned int index);
+    void switchTab(int index);
 };
 
 #endif // UI_HPP_

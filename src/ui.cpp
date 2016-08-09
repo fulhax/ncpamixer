@@ -64,7 +64,7 @@ int Ui::init()
     return 1;
 }
 
-void Ui::switchTab(unsigned int index)
+void Ui::switchTab(int index)
 {
     if (current_tab != nullptr) {
         delete current_tab;
@@ -91,7 +91,9 @@ void Ui::switchTab(unsigned int index)
             current_tab = new Input();
             break;
 
+        case -1:
         case 4:
+            tab_index = 4;
             current_tab = new Configuration();
             break;
     }
