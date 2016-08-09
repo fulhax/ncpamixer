@@ -103,7 +103,7 @@ void Playback::draw(int w, int h)
         double perc = static_cast<double>(i.second.volume) /
                       (PA_VOLUME_NORM * 1.5);
 
-        volumeBar(w, h, 0, baseY, perc, perc);
+        volumeBar(w, h, 0, baseY, perc, i.second.peak);
 
         if (i.first == selected_input_index) {
             attron(COLOR_PAIR(1));
