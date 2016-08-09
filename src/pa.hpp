@@ -13,6 +13,10 @@ struct PA_SINK {
     pa_volume_t volume;
     bool mute;
     unsigned int channels;
+
+    uint32_t monitor_index;
+    pa_stream *monitor_stream;
+    double peak;
 };
 
 struct PA_INPUT : PA_SINK {
@@ -45,6 +49,12 @@ public:
                                  int eol, void  *userdata);
     static void ctx_sourcelist_cb(pa_context *ctx, const pa_source_info *info,
                                   int eol, void  *userdata);
+    static void read_callback(pa_stream *s, size_t length, void *instance);
+    static void stream_suspended_cb(pa_stream *stream, void *instance);
+    static void stream_state_cb(pa_stream *stream, void *info);
+
+    void create_monitor_stream_for_sink_input(PA_INPUT *input);
+    pa_stream* create_monitor_stream_for_source(uint32_t source_index, uint32_t stream_index);
 
     void set_notify_update_cb(notify_update_callback cb);
     void notify_update();

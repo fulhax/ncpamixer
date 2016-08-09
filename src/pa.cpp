@@ -38,6 +38,7 @@ void Pa::update_sink(const pa_sink_info *info)
 {
     std::lock_guard<std::mutex> lk(inputMtx);
     PA_SINKS[info->index].channels = info->channel_map.channels;
+    PA_SINKS[info->index].monitor_index = info->monitor_source;
     PA_SINKS[info->index].volume = (const pa_volume_t) pa_cvolume_avg(
                                        &info->volume);
     PA_SINKS[info->index].mute = info->mute;
@@ -51,6 +52,11 @@ void Pa::update_input(const pa_sink_input_info *info)
 {
 
     std::lock_guard<std::mutex> lk(inputMtx);
+    PA_INPUTS[info->index].index = info->index;
+    create_monitor_stream_for_sink_input(&PA_INPUTS[info->index]);
+
+
+
     PA_INPUTS[info->index].channels = info->channel_map.channels;
     PA_INPUTS[info->index].volume = (const pa_volume_t) pa_cvolume_avg(
                                         &info->volume);
@@ -61,6 +67,128 @@ void Pa::update_input(const pa_sink_input_info *info)
     name = pa_proplist_gets(info->proplist, PA_PROP_APPLICATION_NAME);
     strncpy(PA_INPUTS[info->index].name, name, 255);
     notify_update();
+}
+
+// https://github.com/pulseaudio/pavucontrol/blob/master/src/mainwindow.cc#L541
+void Pa::read_callback(pa_stream *s, size_t length, void *instance)
+{
+    Pa *pa = (Pa *) instance;
+    std::lock_guard<std::mutex> lk(pa->inputMtx);
+    const void *data;
+    double v;
+
+    if (pa_stream_peek(s, &data, &length) < 0) {
+        fprintf(stderr, "Failed to read data from stream");
+        return;
+    }
+
+    if (!data) {
+        /*  NULL data means either a hole or empty buffer.
+            Only drop the stream when there is a hole (length > 0) */
+        if (length) {
+            pa_stream_drop(s);
+        }
+
+        return;
+    }
+
+    assert(length > 0);
+    assert(length % sizeof(float) == 0);
+
+    v = ((const float *) data)[length / sizeof(float) - 1];
+
+    pa_stream_drop(s);
+
+    if (v < 0) {
+        v = 0;
+    }
+
+    if (v > 1) {
+        v = 1;
+    }
+
+    pa->PA_INPUTS[pa_stream_get_monitor_stream(s)].peak = v;
+    pa->notify_update();
+}
+
+void Pa::stream_suspended_cb(pa_stream *stream, void *instance)
+{
+    Pa *p = (Pa *) instance;
+
+    fprintf(stderr, "stream is suspended\n");
+
+    if (pa_stream_is_suspended(stream)) {
+        fprintf(stderr, "stream is suspended\n");
+        //w->updateVolumeMeter(pa_stream_get_device_index(s), PA_INVALID_INDEX, -1);
+    }
+}
+
+void Pa::stream_state_cb(pa_stream *stream, void *info)
+{
+    
+}
+
+// https://github.com/pulseaudio/pavucontrol/blob/master/src/mainwindow.cc#L574
+pa_stream *Pa::create_monitor_stream_for_source(uint32_t source_index,
+        uint32_t stream_index = -1)
+{
+    pa_stream *s;
+    char t[16];
+    pa_buffer_attr attr;
+    pa_sample_spec ss;
+    pa_stream_flags_t flags;
+
+    ss.channels = 1;
+    ss.format = PA_SAMPLE_FLOAT32;
+    ss.rate = 25;
+
+    memset(&attr, 0, sizeof(attr));
+    attr.fragsize = sizeof(float);
+    attr.maxlength = (uint32_t) - 1;
+
+    snprintf(t, sizeof(t), "%u", source_index);
+
+    if (!(s = pa_stream_new(pa_ctx, "Peak detect", &ss, NULL))) {
+        fprintf(stderr, "Failed to create monitoring stream\n");
+        return NULL;
+    }
+
+    if (stream_index != (uint32_t) - 1) {
+        fprintf(stderr, "Stream_index is not -1, stream_index: %d\n", stream_index);
+        pa_stream_set_monitor_stream(s, stream_index);
+    } else {
+        fprintf(stderr, "Stream index is -1\n");
+    }
+
+    pa_stream_set_read_callback(s, &Pa::read_callback, this);
+    //pa_stream_set_suspended_callback(s, &Pa::stream_suspended_cb, this);
+    
+    if (stream_index != (uint32_t) - 1) {
+    }
+
+    flags = (pa_stream_flags_t)(PA_STREAM_DONT_MOVE | PA_STREAM_PEAK_DETECT | PA_STREAM_ADJUST_LATENCY);
+
+    if (pa_stream_connect_record(s, t, &attr, flags) < 0) {
+        fprintf(stderr, "Failed to connect monitoring stream\n");
+        pa_stream_unref(s);
+        return NULL;
+    }
+
+    return s;
+}
+
+void Pa::create_monitor_stream_for_sink_input(PA_INPUT *input)
+{
+    if (input->monitor_stream) {
+        pa_stream_disconnect(input->monitor_stream);
+        input->monitor_stream = NULL;
+    }
+
+    fprintf(stderr, "Create monitor state\n");
+    input->monitor_stream = create_monitor_stream_for_source(
+        PA_SINKS[input->sink].monitor_index,
+        input->index
+    );
 }
 
 void Pa::toggle_input_mute(uint32_t index)
@@ -130,7 +258,15 @@ void Pa::move_input_sink(uint32_t input_index, uint32_t sink_index)
 void Pa::remove_input(uint32_t index)
 {
     std::lock_guard<std::mutex> lk(inputMtx);
-    PA_INPUTS.erase(index);
+
+    auto i = PA_INPUTS.find(index);
+
+    if (i != PA_INPUTS.end()) {
+        pa_stream_disconnect(i->second.monitor_stream);
+        pa_stream_unref(i->second.monitor_stream);
+        PA_INPUTS.erase(index);
+    }
+
     notify_update();
 }
 
