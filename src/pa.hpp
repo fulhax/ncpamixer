@@ -55,6 +55,7 @@ private:
     pa_threaded_mainloop *pa_ml;
     pa_mainloop_api *pa_api;
 
+    void wait_on_pa_operation(pa_operation* o);
     std::mutex sinkMtx;
 };
 

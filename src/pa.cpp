@@ -59,19 +59,28 @@ void Pa::update_input(const pa_sink_input_info *info)
 
 void Pa::set_volume(uint32_t index, int dir)
 {
+    std::lock_guard<std::mutex> lk(inputMtx);
+
+    if(PA_INPUTS.find(index) == PA_INPUTS.end())
+    {
+        return;
+    }
     if (PA_INPUTS[index].volume <= 1000 && dir == -1) {
         return;
     }
 
     pa_threaded_mainloop_lock(pa_ml);
+
     int volume = PA_INPUTS[index].volume + (1000 * dir);
     pa_cvolume cvol;
+
     pa_cvolume_init(&cvol);
     pa_cvolume_set(&cvol, PA_INPUTS[index].channels, volume);
     pa_operation *o = pa_context_set_sink_input_volume(pa_ctx, index, &cvol, NULL,
                       NULL);
-    pa_threaded_mainloop_unlock(pa_ml);
     pa_operation_unref(o);
+
+    pa_threaded_mainloop_unlock(pa_ml);
 
 }
 
@@ -80,8 +89,8 @@ void Pa::move_input_sink(uint32_t input_index, uint32_t sink_index)
     pa_threaded_mainloop_lock(pa_ml);
     pa_operation *o = pa_context_move_sink_input_by_index(pa_ctx, input_index,
                       sink_index, NULL, NULL);
-    pa_threaded_mainloop_unlock(pa_ml);
     pa_operation_unref(o);
+    pa_threaded_mainloop_unlock(pa_ml);
 }
 
 void Pa::remove_input(uint32_t index)
@@ -141,7 +150,9 @@ void Pa::subscribe_cb(pa_context *ctx, pa_subscription_event_type_t t,
 
     int type = (t & PA_SUBSCRIPTION_EVENT_TYPE_MASK);
 
+
     // https://freedesktop.org/software/pulseaudio/doxygen/def_8h.html#a6bedfa147a9565383f1f44642cfef6a3
+
     switch (t & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) {
         case PA_SUBSCRIPTION_EVENT_SINK: {
             if (type == PA_SUBSCRIPTION_EVENT_REMOVE) {
@@ -181,6 +192,13 @@ void Pa::subscribe_cb(pa_context *ctx, pa_subscription_event_type_t t,
         default:
             return;
 
+    }
+}
+
+void Pa::wait_on_pa_operation(pa_operation* o)
+{
+    while(pa_operation_get_state(o) == PA_OPERATION_DONE){
+        pa_threaded_mainloop_wait( pa_ml );
     }
 }
 
