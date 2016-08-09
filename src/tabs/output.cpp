@@ -54,15 +54,6 @@ void Output::draw(int w, int h)
 
         mvaddstr(baseY - 2, 1, label);
 
-        unsigned int len = strlen(i.second.name);
-        unsigned int sink_pos = w - 1 - len;
-
-        mvaddstr(
-            baseY - 2,
-            sink_pos,
-            i.second.name
-        );
-
         // if (i.first == selected_input_index) {
         //     attroff(COLOR_PAIR(1));
         // }
