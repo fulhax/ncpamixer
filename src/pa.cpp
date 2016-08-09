@@ -93,8 +93,13 @@ void Pa::set_input_volume(uint32_t index, int dir)
 
     pa_cvolume_init(&cvol);
     pa_cvolume_set(&cvol, PA_INPUTS[index].channels, volume);
-    pa_operation *o = pa_context_set_sink_input_volume(pa_ctx, index, &cvol, NULL,
-                      NULL);
+    pa_operation *o = pa_context_set_sink_input_volume(
+                          pa_ctx,
+                          index,
+                          &cvol,
+                          NULL,
+                          NULL
+                      );
     pa_operation_unref(o);
 
     pa_threaded_mainloop_unlock(pa_ml);
@@ -104,8 +109,13 @@ void Pa::set_input_volume(uint32_t index, int dir)
 void Pa::move_input_sink(uint32_t input_index, uint32_t sink_index)
 {
     pa_threaded_mainloop_lock(pa_ml);
-    pa_operation *o = pa_context_move_sink_input_by_index(pa_ctx, input_index,
-                      sink_index, NULL, NULL);
+    pa_operation *o = pa_context_move_sink_input_by_index(
+                          pa_ctx,
+                          input_index,
+                          sink_index,
+                          NULL,
+                          NULL
+                      );
     pa_operation_unref(o);
     pa_threaded_mainloop_unlock(pa_ml);
 }
@@ -254,6 +264,7 @@ void Pa::ctx_state_cb(pa_context *ctx, void *instance)
 
             break;
         }
+
         case PA_CONTEXT_UNCONNECTED:
         case PA_CONTEXT_CONNECTING:
         case PA_CONTEXT_AUTHORIZING:

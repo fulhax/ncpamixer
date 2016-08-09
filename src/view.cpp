@@ -78,7 +78,9 @@ void View::run()
         int baseY = 3;
 
         for (auto &i : pa->PA_INPUTS) {
-            double perc = static_cast<double>(i.second.volume) / (PA_VOLUME_NORM * 2);
+            double perc = static_cast<double>(i.second.volume) /
+                          (PA_VOLUME_NORM * 2);
+
             volumeBar(0, baseY, perc, perc);
 
             if (i.first == selectedInputIndex) {
@@ -105,15 +107,15 @@ void View::run()
             }
 
             mvaddstr(baseY - 2, 1, label);
+            char* name = pa->PA_SINKS.find(i.second.sink)->second.name;
 
-            unsigned int sink_pos = x - 1 - strlen(
-                pa->PA_SINKS.find(i.second.sink)->second.name
-            );
+            unsigned int len = strlen(name);
+            unsigned int sink_pos = x - 1 - len;
 
             mvaddstr(
                 baseY - 2,
                 sink_pos,
-                pa->PA_SINKS.find(i.second.sink)->second.name
+                name
             );
 
             if (i.first == selectedInputIndex) {
@@ -308,8 +310,8 @@ void View::volumeBar(int px, int py, double vol, double peak)
 
     for (int i = 0; i < vw; i++) {
         color = getVolumeColor(
-            (static_cast<float>(i) / x) * 100
-        );
+                    (static_cast<float>(i) / x) * 100
+                );
         attron(COLOR_PAIR(color));
         mvaddstr(py, i, "\u2588");
         attroff(COLOR_PAIR(color));
@@ -317,8 +319,8 @@ void View::volumeBar(int px, int py, double vol, double peak)
 
     for (int i = 0; i < fw; i++) {
         color = getVolumeColor(
-            (static_cast<float>(pw + i) / x) * 100
-        );
+                    (static_cast<float>(pw + i) / x) * 100
+                );
         attron(COLOR_PAIR(color + 3));
         mvaddstr(py, pw + i, "\u2593");
         attroff(COLOR_PAIR(color + 3));
