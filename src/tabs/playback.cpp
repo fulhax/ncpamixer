@@ -101,7 +101,7 @@ void Playback::draw(int w, int h)
 
     for (auto &i : pa.PA_INPUTS) {
         double perc = static_cast<double>(i.second.volume) /
-                      (PA_VOLUME_NORM * 2);
+                      (PA_VOLUME_NORM * 1.5);
 
         volumeBar(w, h, 0, baseY, perc, perc);
 
@@ -124,7 +124,7 @@ void Playback::draw(int w, int h)
                 sizeof(label),
                 "%s (%d%%)",
                 i.second.name,
-                static_cast<int>(perc * 100)
+                static_cast<int>(perc * 1.5 * 100)
             );
         }
 
