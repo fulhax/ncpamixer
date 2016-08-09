@@ -94,7 +94,7 @@ void Ui::run()
     while (running) {
         draw();
 
-        usleep(100);
+        usleep(20000);
 
         handleInput();
     }

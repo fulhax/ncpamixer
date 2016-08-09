@@ -2,7 +2,7 @@
 
 #include <ncursesw/ncurses.h>
 
-void Tab::volumeBar(int w, int h, int px, int py, double vol, double peak)
+void Tab::volumeBar(int w, int h, int px, int py, float vol, float peak)
 {
     // light      ░ \u2593
     // medium     ▒ \u2592
@@ -13,7 +13,7 @@ void Tab::volumeBar(int w, int h, int px, int py, double vol, double peak)
     // triangle   ▲ \u25b2
     // https://en.wikipedia.org/wiki/Block_Elements
 
-    double dw = static_cast<double>(w);
+    float dw = static_cast<float>(w);
 
     int pw = dw * peak;
     int vw = dw * vol;

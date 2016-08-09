@@ -16,7 +16,7 @@ struct PA_SINK {
 
     uint32_t monitor_index;
     pa_stream *monitor_stream;
-    double peak;
+    float peak;
 };
 
 struct PA_INPUT : PA_SINK {

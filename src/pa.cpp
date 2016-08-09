@@ -87,7 +87,7 @@ void Pa::read_callback(pa_stream *s, size_t length, void *instance)
     Pa *pa = (Pa *) instance;
     std::lock_guard<std::mutex> lk(pa->inputMtx);
     const void *data;
-    double v;
+    float v;
 
     if (pa_stream_peek(s, &data, &length) < 0) {
         return;
