@@ -16,7 +16,7 @@ Playback::~Playback()
 
 }
 
-void Playback::handleInput(unsigned int input)
+void Playback::handleInput(int input)
 {
     selected_input_index = pa.sink_input_exists(selected_input_index);
 

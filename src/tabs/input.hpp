@@ -1,14 +1,14 @@
-#ifndef OUTPUT_HPP_
-#define OUTPUT_HPP_
+#ifndef INPUT_HPP_
+#define INPUT_HPP_
 
 #include "../tab.hpp"
 #include <inttypes.h>
 
-class Output : public Tab
+class Input : public Tab
 {
 public:
-    Output();
-    ~Output();
+    Input();
+    ~Input();
 
     void draw(int w, int h);
     void handleInput(int input);
