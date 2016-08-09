@@ -1,14 +1,14 @@
-#ifndef OUTPUT_HPP_
-#define OUTPUT_HPP_
+#ifndef RECORDING_HPP_
+#define RECORDING_HPP_
 
 #include "../tab.hpp"
 #include <inttypes.h>
 
-class Output : public Tab
+class Recording : public Tab
 {
 public:
-    Output();
-    ~Output();
+    Recording();
+    ~Recording();
 
     void draw(int w, int h);
     void handleInput(int input);

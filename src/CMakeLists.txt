@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-project(pulsemixer)
+project(ncpamixer)
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
@@ -12,7 +12,10 @@ set(COMMON_SRC
     "ui.cpp"
     "tab.cpp"
     "tabs/playback.cpp"
+    "tabs/recording.cpp"
     "tabs/output.cpp"
+    "tabs/input.cpp"
+    "tabs/configuration.cpp"
 )
 
 include_directories(

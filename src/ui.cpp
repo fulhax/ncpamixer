@@ -6,7 +6,12 @@
 #include <sys/ioctl.h>
 
 #include "tabs/playback.hpp"
+#include "tabs/recording.hpp"
 #include "tabs/output.hpp"
+#include "tabs/input.hpp"
+#include "tabs/configuration.hpp"
+
+#define KEY_ALT(x) (KEY_F(64 - 26) + (x - 'A'))
 
 Ui::Ui()
 {
@@ -29,8 +34,12 @@ int Ui::init()
     setlocale(LC_ALL, "");
     initscr();
     curs_set(0);
+
     noecho();
-    nodelay(stdscr, TRUE);
+    nonl();
+
+    keypad(stdscr, true);
+    nodelay(stdscr, true);
 
     start_color();
     use_default_colors();
@@ -57,7 +66,12 @@ int Ui::init()
 
 void Ui::handleInput()
 {
-    unsigned int input = getch();
+    set_escdelay(25);
+    int input = getch();
+
+    if (input == ERR) {
+        return;
+    }
 
     switch (input) {
         case 'q':
@@ -71,7 +85,7 @@ void Ui::handleInput()
             getmaxyx(stdscr, height, width);
             break;
 
-        case '1': // extended keys
+        case KEY_F(1):
             if (current_tab != nullptr) {
                 delete current_tab;
             }
@@ -81,13 +95,44 @@ void Ui::handleInput()
 
             break;
 
-        case '3': // extended keys
+        case KEY_F(2):
+            if (current_tab != nullptr) {
+                delete current_tab;
+            }
+
+            current_tab = new Recording();
+            tab_index = 1;
+
+            break;
+
+
+        case KEY_F(3):
             if (current_tab != nullptr) {
                 delete current_tab;
             }
 
             current_tab = new Output();
             tab_index = 2;
+
+            break;
+
+        case KEY_F(4):
+            if (current_tab != nullptr) {
+                delete current_tab;
+            }
+
+            current_tab = new Input();
+            tab_index = 3;
+
+            break;
+
+        case KEY_F(5):
+            if (current_tab != nullptr) {
+                delete current_tab;
+            }
+
+            current_tab = new Configuration();
+            tab_index = 4;
 
             break;
 
@@ -128,15 +173,15 @@ void Ui::statusBar()
 {
     int len = 0;
 
-    for(int i = 0; i < NUM_TABS; ++i) {
-        if(tab_index == i) {
+    for (int i = 0; i < NUM_TABS; ++i) {
+        if (tab_index == i) {
             attron(COLOR_PAIR(1));
         }
 
         mvaddstr(height - 1, len, tabs[i]);
         len += strlen(tabs[i]) + 1;
 
-        if(tab_index == i) {
+        if (tab_index == i) {
             attroff(COLOR_PAIR(1));
         }
     }

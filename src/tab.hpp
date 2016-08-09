@@ -8,7 +8,7 @@ public:
     virtual ~Tab() {};
 
     virtual void draw(int w, int h) = 0;
-    virtual void handleInput(unsigned int input) = 0;
+    virtual void handleInput(int input) = 0;
 
     void volumeBar(int w, int h, int px, int py, float vol, float peak);
 private:

@@ -16,7 +16,7 @@ Output::~Output()
 
 }
 
-void Output::handleInput(unsigned int input)
+void Output::handleInput(int input)
 {
     selected_sink_index = pa.sink_exists(selected_sink_index);
     if (selected_sink_index == -1) {
