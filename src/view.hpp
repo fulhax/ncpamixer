@@ -1,9 +1,12 @@
 #ifndef VIEW_HPP
 #define VIEW_HPP
+
 #include <ncursesw/ncurses.h>
-#include <condition_variable>
 #include <pulse/pulseaudio.h>
+
+#include <condition_variable>
 #include <vector>
+
 #include "pa.hpp"
 
 class View
@@ -20,7 +23,7 @@ public:
 
     void (*setInputVolume)(uint32_t, int);
     void (*moveInputSink)(uint32_t, uint32_t);
-    void (*toggleInputMute)(uint32_t);    
+    void (*toggleInputMute)(uint32_t);
     bool running;
 
     unsigned int  view;
@@ -45,7 +48,5 @@ private:
     void volumeBar(int x, int y, double vol, double peak);
     unsigned int getVolumeColor(int p);
 };
-
-
 
 #endif /* ifndef VIEW_HPP */

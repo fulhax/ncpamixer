@@ -1,8 +1,11 @@
-#include "pa.hpp"
-#include "view.hpp"
-#include <pulse/pulseaudio.h>
 #include <stdio.h>
+#include <pulse/pulseaudio.h>
+
 #include <vector>
+
+#include "view.hpp"
+#include "pa.hpp"
+
 
 Pa pa;
 View ui(&pa);
