@@ -42,6 +42,7 @@ private:
     void handleInput();
     void kill();
     void draw();
+    void switchTab(unsigned int index);
 };
 
 #endif // UI_HPP_

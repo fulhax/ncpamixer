@@ -64,6 +64,39 @@ int Ui::init()
     return 1;
 }
 
+void Ui::switchTab(unsigned int index)
+{
+    if (current_tab != nullptr) {
+        delete current_tab;
+    }
+
+    tab_index = index;
+
+    switch (index) {
+        default:
+        case 0:
+            tab_index = 0;
+            current_tab = new Playback();
+            break;
+
+        case 1:
+            current_tab = new Recording();
+            break;
+
+        case 2:
+            current_tab = new Output();
+            break;
+
+        case 3:
+            current_tab = new Input();
+            break;
+
+        case 4:
+            current_tab = new Configuration();
+            break;
+    }
+}
+
 void Ui::handleInput()
 {
     set_escdelay(25);
@@ -85,55 +118,32 @@ void Ui::handleInput()
             getmaxyx(stdscr, height, width);
             break;
 
+        case 'H':
+            switchTab(--tab_index);
+            break;
+
+        case 'L':
+            switchTab(++tab_index);
+            break;
+
         case KEY_F(1):
-            if (current_tab != nullptr) {
-                delete current_tab;
-            }
-
-            current_tab = new Playback();
-            tab_index = 0;
-
+            switchTab(0);
             break;
 
         case KEY_F(2):
-            if (current_tab != nullptr) {
-                delete current_tab;
-            }
-
-            current_tab = new Recording();
-            tab_index = 1;
-
+            switchTab(1);
             break;
 
-
         case KEY_F(3):
-            if (current_tab != nullptr) {
-                delete current_tab;
-            }
-
-            current_tab = new Output();
-            tab_index = 2;
-
+            switchTab(2);
             break;
 
         case KEY_F(4):
-            if (current_tab != nullptr) {
-                delete current_tab;
-            }
-
-            current_tab = new Input();
-            tab_index = 3;
-
+            switchTab(3);
             break;
 
         case KEY_F(5):
-            if (current_tab != nullptr) {
-                delete current_tab;
-            }
-
-            current_tab = new Configuration();
-            tab_index = 4;
-
+            switchTab(4);
             break;
 
         default:
