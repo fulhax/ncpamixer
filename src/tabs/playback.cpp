@@ -112,21 +112,34 @@ void Playback::draw(int w, int h)
             attron(COLOR_PAIR(1));
         }
 
-        char label[255];
+        char label[255] = {0};
+        char app[255] = {0};
+
+        if(strlen(i.second.app_name) > 0) {
+            snprintf(
+                app,
+                sizeof(app),
+                "%s : %s",
+                i.second.app_name,
+                i.second.name
+            );
+        } else {
+            snprintf(app, sizeof(app), "%s", i.second.name);
+        }
 
         if (i.second.mute) {
             snprintf(
                 label,
                 sizeof(label),
                 "%s (muted)",
-                i.second.name
+                app
             );
         } else {
             snprintf(
                 label,
                 sizeof(label),
                 "%s (%d%%)",
-                i.second.name,
+                app,
                 static_cast<int>(perc * 1.5f * 100.f)
             );
         }
