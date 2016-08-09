@@ -4,12 +4,14 @@ project(pulsemixer)
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
-SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++14 -pthread")
+SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++14")
 
 set(COMMON_SRC
     "pulsemixer.cpp"
     "pa.cpp"
-    "view.cpp"
+    "ui.cpp"
+    "tab.cpp"
+    "tabs/playback.cpp"
 )
 
 include_directories(

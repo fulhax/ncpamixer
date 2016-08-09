@@ -4,6 +4,8 @@
 
 // https://freedesktop.org/software/pulseaudio/doxygen/introspect_8h.html
 
+Pa pa;
+
 Pa::Pa()
 {
     notify_update_cb = nullptr;
@@ -25,6 +27,11 @@ Pa::~Pa()
     pa_context_disconnect(pa_ctx);
     pa_threaded_mainloop_stop(pa_ml);
     pa_threaded_mainloop_free(pa_ml);
+}
+
+bool Pa::sink_input_exists(uint32_t index)
+{
+    return (PA_INPUTS.find(index) != PA_INPUTS.end());
 }
 
 void Pa::update_sink(const pa_sink_info *info)
@@ -271,7 +278,7 @@ void Pa::ctx_state_cb(pa_context *ctx, void *instance)
         case PA_CONTEXT_SETTING_NAME:
         case PA_CONTEXT_FAILED:
         case PA_CONTEXT_TERMINATED:
-            fprintf(stderr, "Todo context state %d\n", state);
+            //fprintf(stderr, "Todo context state %d\n", state);
             break;
     }
 }
