@@ -31,7 +31,7 @@ Pa::~Pa()
 
 uint32_t Pa::sink_input_exists(uint32_t index)
 {
-    if((PA_INPUTS.find(index) == PA_INPUTS.end())) {
+    if ((PA_INPUTS.find(index) == PA_INPUTS.end())) {
         index = PA_INPUTS.begin()->first;
     }
 
@@ -56,10 +56,13 @@ void Pa::update_input(const pa_sink_input_info *info)
 {
 
     std::lock_guard<std::mutex> lk(inputMtx);
+    bool sink_changed = true;
+
+    if (PA_INPUTS.count(info->index)) {
+        sink_changed = info->sink != PA_INPUTS[info->index].sink;
+    }
+
     PA_INPUTS[info->index].index = info->index;
-    create_monitor_stream_for_sink_input(&PA_INPUTS[info->index]);
-
-
 
     PA_INPUTS[info->index].channels = info->channel_map.channels;
     PA_INPUTS[info->index].volume = (const pa_volume_t) pa_cvolume_avg(
@@ -70,6 +73,11 @@ void Pa::update_input(const pa_sink_input_info *info)
     const char *name;
     name = pa_proplist_gets(info->proplist, PA_PROP_APPLICATION_NAME);
     strncpy(PA_INPUTS[info->index].name, name, 255);
+
+    if (sink_changed) {
+        create_monitor_stream_for_sink_input(&PA_INPUTS[info->index]);
+    }
+
     notify_update();
 }
 
@@ -82,7 +90,6 @@ void Pa::read_callback(pa_stream *s, size_t length, void *instance)
     double v;
 
     if (pa_stream_peek(s, &data, &length) < 0) {
-        fprintf(stderr, "Failed to read data from stream");
         return;
     }
 
@@ -115,21 +122,14 @@ void Pa::read_callback(pa_stream *s, size_t length, void *instance)
     pa->notify_update();
 }
 
-void Pa::stream_suspended_cb(pa_stream *stream, void *instance)
+void Pa::stream_state_cb(pa_stream *stream, void *instance)
 {
-    Pa *p = (Pa *) instance;
+    pa_stream_state_t state = pa_stream_get_state(stream);
 
-    fprintf(stderr, "stream is suspended\n");
-
-    if (pa_stream_is_suspended(stream)) {
-        fprintf(stderr, "stream is suspended\n");
-        //w->updateVolumeMeter(pa_stream_get_device_index(s), PA_INVALID_INDEX, -1);
+    if (state == PA_STREAM_TERMINATED || state == PA_STREAM_FAILED) {
+        PA_INPUT *i = reinterpret_cast<PA_INPUT *>(instance);
+        i->monitor_stream = nullptr;
     }
-}
-
-void Pa::stream_state_cb(pa_stream *stream, void *info)
-{
-    
 }
 
 // https://github.com/pulseaudio/pavucontrol/blob/master/src/mainwindow.cc#L574
@@ -153,27 +153,24 @@ pa_stream *Pa::create_monitor_stream_for_source(uint32_t source_index,
     snprintf(t, sizeof(t), "%u", source_index);
 
     if (!(s = pa_stream_new(pa_ctx, "Peak detect", &ss, NULL))) {
-        fprintf(stderr, "Failed to create monitoring stream\n");
         return NULL;
     }
 
     if (stream_index != (uint32_t) - 1) {
-        fprintf(stderr, "Stream_index is not -1, stream_index: %d\n", stream_index);
         pa_stream_set_monitor_stream(s, stream_index);
-    } else {
-        fprintf(stderr, "Stream index is -1\n");
     }
 
     pa_stream_set_read_callback(s, &Pa::read_callback, this);
-    //pa_stream_set_suspended_callback(s, &Pa::stream_suspended_cb, this);
-    
+
     if (stream_index != (uint32_t) - 1) {
+        pa_stream_set_state_callback(s, &Pa::stream_state_cb,
+                                     &PA_INPUTS[stream_index]);
     }
 
-    flags = (pa_stream_flags_t)(PA_STREAM_DONT_MOVE | PA_STREAM_PEAK_DETECT | PA_STREAM_ADJUST_LATENCY);
+    flags = (pa_stream_flags_t)(PA_STREAM_DONT_MOVE | PA_STREAM_PEAK_DETECT |
+                                PA_STREAM_ADJUST_LATENCY);
 
     if (pa_stream_connect_record(s, t, &attr, flags) < 0) {
-        fprintf(stderr, "Failed to connect monitoring stream\n");
         pa_stream_unref(s);
         return NULL;
     }
@@ -185,14 +182,13 @@ void Pa::create_monitor_stream_for_sink_input(PA_INPUT *input)
 {
     if (input->monitor_stream) {
         pa_stream_disconnect(input->monitor_stream);
-        input->monitor_stream = NULL;
+        input->monitor_stream = nullptr;
     }
 
-    fprintf(stderr, "Create monitor state\n");
     input->monitor_stream = create_monitor_stream_for_source(
-        PA_SINKS[input->sink].monitor_index,
-        input->index
-    );
+                                input->sink,
+                                input->index
+                            );
 }
 
 void Pa::toggle_input_mute(uint32_t index)
@@ -418,7 +414,6 @@ void Pa::ctx_state_cb(pa_context *ctx, void *instance)
         case PA_CONTEXT_SETTING_NAME:
         case PA_CONTEXT_FAILED:
         case PA_CONTEXT_TERMINATED:
-            //fprintf(stderr, "Todo context state %d\n", state);
             break;
     }
 }
