@@ -60,8 +60,16 @@ void Pa::toggle_input_mute(uint32_t index)
 {
     std::lock_guard<std::mutex> lk(inputMtx);
     auto i = PA_INPUTS.find(index);
-    if(i != PA_INPUTS.end()){
-        pa_operation *o = pa_context_set_sink_input_mute(pa_ctx, index, !i->second.mute, NULL, NULL);
+
+    if (i != PA_INPUTS.end()) {
+        pa_operation *o = pa_context_set_sink_input_mute(
+                              pa_ctx,
+                              index,
+                              !i->second.mute,
+                              NULL,
+                              NULL
+                          );
+
         pa_operation_unref(o);
     }
 }
@@ -70,10 +78,10 @@ void Pa::set_input_volume(uint32_t index, int dir)
 {
     std::lock_guard<std::mutex> lk(inputMtx);
 
-    if(PA_INPUTS.find(index) == PA_INPUTS.end())
-    {
+    if (PA_INPUTS.find(index) == PA_INPUTS.end()) {
         return;
     }
+
     if (PA_INPUTS[index].volume <= 1000 && dir == -1) {
         return;
     }
@@ -135,21 +143,22 @@ void Pa::ctx_sourcelist_cb(pa_context *ctx, const pa_source_info *info,
 }
 
 void Pa::ctx_inputlist_cb(pa_context *ctx, const pa_sink_input_info *info,
-                          int eol,
-                          void  *instance)
+                          int eol, void  *instance)
 {
-
+    Pa *pa = reinterpret_cast<Pa *>(instance);
 
     if (!eol) {
-        ((Pa *)instance)->update_input(info);
+        pa->update_input(info);
     }
 }
 
 void Pa::ctx_sinklist_cb(pa_context *ctx, const pa_sink_info *info, int eol,
                          void  *instance)
 {
+    Pa *pa = reinterpret_cast<Pa *>(instance);
+
     if (!eol) {
-        ((Pa *)instance)->update_sink(info);
+        pa->update_sink(info);
     }
 }
 
@@ -158,19 +167,23 @@ void Pa::subscribe_cb(pa_context *ctx, pa_subscription_event_type_t t,
 {
 
     int type = (t & PA_SUBSCRIPTION_EVENT_TYPE_MASK);
-
+    Pa *pa = reinterpret_cast<Pa *>(instance);
 
     // https://freedesktop.org/software/pulseaudio/doxygen/def_8h.html#a6bedfa147a9565383f1f44642cfef6a3
 
     switch (t & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) {
         case PA_SUBSCRIPTION_EVENT_SINK: {
             if (type == PA_SUBSCRIPTION_EVENT_REMOVE) {
-                ((Pa *)instance)->remove_sink(index);
+                pa->remove_sink(index);
             } else if (type == PA_SUBSCRIPTION_EVENT_NEW ||
                        type == PA_SUBSCRIPTION_EVENT_CHANGE) {
 
-                pa_operation *o = pa_context_get_sink_info_by_index(ctx, index,
-                                  &Pa::ctx_sinklist_cb, instance);
+                pa_operation *o = pa_context_get_sink_info_by_index(
+                                      ctx,
+                                      index,
+                                      &Pa::ctx_sinklist_cb,
+                                      instance
+                                  );
                 pa_operation_unref(o);
             }
 
@@ -180,12 +193,16 @@ void Pa::subscribe_cb(pa_context *ctx, pa_subscription_event_type_t t,
         case PA_SUBSCRIPTION_EVENT_SINK_INPUT: {
 
             if (type == PA_SUBSCRIPTION_EVENT_REMOVE) {
-                ((Pa *)instance)->remove_input(index);
+                pa->remove_input(index);
             } else if (type == PA_SUBSCRIPTION_EVENT_NEW ||
                        type == PA_SUBSCRIPTION_EVENT_CHANGE) {
 
-                pa_operation *o = pa_context_get_sink_input_info(ctx, index,
-                                  &Pa::ctx_inputlist_cb, instance);
+                pa_operation *o = pa_context_get_sink_input_info(
+                                      ctx,
+                                      index,
+                                      &Pa::ctx_inputlist_cb,
+                                      instance
+                                  );
                 pa_operation_unref(o);
             }
 
@@ -204,17 +221,18 @@ void Pa::subscribe_cb(pa_context *ctx, pa_subscription_event_type_t t,
     }
 }
 
-void Pa::wait_on_pa_operation(pa_operation* o)
+void Pa::wait_on_pa_operation(pa_operation *o)
 {
-    while(pa_operation_get_state(o) == PA_OPERATION_DONE){
-        pa_threaded_mainloop_wait( pa_ml );
+    while (pa_operation_get_state(o) == PA_OPERATION_DONE) {
+        pa_threaded_mainloop_wait(pa_ml);
     }
 }
 
 void Pa::ctx_state_cb(pa_context *ctx, void *instance)
 {
+    int state = pa_context_get_state(ctx);
 
-    switch (pa_context_get_state(ctx)) {
+    switch (state) {
         case PA_CONTEXT_READY: {
             pa_operation *o;
 
@@ -236,6 +254,13 @@ void Pa::ctx_state_cb(pa_context *ctx, void *instance)
 
             break;
         }
-
+        case PA_CONTEXT_UNCONNECTED:
+        case PA_CONTEXT_CONNECTING:
+        case PA_CONTEXT_AUTHORIZING:
+        case PA_CONTEXT_SETTING_NAME:
+        case PA_CONTEXT_FAILED:
+        case PA_CONTEXT_TERMINATED:
+            fprintf(stderr, "Todo context state %d\n", state);
+            break;
     }
 }

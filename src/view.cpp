@@ -1,10 +1,12 @@
 #include "view.hpp"
+
 #include <locale.h>
-#include <thread>
-#include <iterator>
-#include <map>
 #include <unistd.h>
+
+#include <iterator>
 #include <cstring>
+#include <thread>
+#include <map>
 
 View::View(Pa *p)
 {
@@ -76,7 +78,11 @@ void View::run()
         int baseY = 3;
 
         for (auto &i : pa->PA_INPUTS) {
-            double perc = (double) i.second.volume / (PA_VOLUME_NORM * 2);
+            double perc = static_cast<double>(
+                              i.second.volume /
+                              (PA_VOLUME_NORM * 2)
+                          );
+
             volumeBar(0, baseY, perc, perc);
 
             if (i.first == selectedInputIndex) {
@@ -84,18 +90,35 @@ void View::run()
             }
 
             char label[255];
-            if(i.second.mute){
-                sprintf(label, "%s (muted)", i.second.name);
+
+            if (i.second.mute) {
+                snprintf(
+                    label,
+                    sizeof(label),
+                    "%s (muted)",
+                    i.second.name
+                );
             } else {
-                sprintf(label, "%s (%d%%)", i.second.name, (int)(perc * 100));
+                snprintf(
+                    label,
+                    sizeof(label),
+                    "%s (%d%%)",
+                    i.second.name,
+                    static_cast<int>(perc * 100)
+                );
             }
+
             mvaddstr(baseY - 2, 1, label);
 
-            unsigned int sink_pos = x - 1 - strlen(pa->PA_SINKS.find(
-                    i.second.sink)->second.name);
+            unsigned int sink_pos = x - 1 - strlen(
+                pa->PA_SINKS.find(i.second.sink)->second.name
+            );
 
-            mvaddstr(baseY - 2, sink_pos,
-                     pa->PA_SINKS.find(i.second.sink)->second.name);
+            mvaddstr(
+                baseY - 2,
+                sink_pos,
+                pa->PA_SINKS.find(i.second.sink)->second.name
+            );
 
             if (i.first == selectedInputIndex) {
                 attroff(COLOR_PAIR(1));
@@ -120,7 +143,6 @@ void View::notify_draw()
 
 void View::handleInput()
 {
-
     while (running) {
         switch (getch()) {
             case 'q':
@@ -141,6 +163,7 @@ void View::handleInput()
                 if (setInputVolume != nullptr && selectedInputIndex != 0) {
                     toggleInputMute(selectedInputIndex);
                 }
+
                 break;
 
             case 'g': {
@@ -277,8 +300,10 @@ void View::volumeBar(int px, int py, double vol, double peak)
     // https://en.wikipedia.org/wiki/Block_Elements
 
     getmaxyx(stdscr, y, x);
-    int pw = (double) x * peak;
-    int vw = (double) x * vol;
+    double dx = static_cast<double>(x);
+
+    int pw = dx * peak;
+    int vw = dx * vol;
     int fw = x - pw;
 
     unsigned int color;
@@ -286,14 +311,18 @@ void View::volumeBar(int px, int py, double vol, double peak)
     fillW(0, py - 1, "\u2581");
 
     for (int i = 0; i < vw; i++) {
-        color = getVolumeColor(((float)i / x) * 100);
+        color = getVolumeColor(
+            (static_cast<float>(i) / x) * 100
+        );
         attron(COLOR_PAIR(color));
         mvaddstr(py, i, "\u2588");
         attroff(COLOR_PAIR(color));
     }
 
     for (int i = 0; i < fw; i++) {
-        color = getVolumeColor(((float)(pw + i) / x) * 100);
+        color = getVolumeColor(
+            (static_cast<float>(pw + i) / x) * 100
+        );
         attron(COLOR_PAIR(color + 3));
         mvaddstr(py, pw + i, "\u2593");
         attroff(COLOR_PAIR(color + 3));

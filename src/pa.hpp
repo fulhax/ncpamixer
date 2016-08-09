@@ -1,6 +1,8 @@
 #ifndef PA_HPP
 #define PA_HPP
+
 #include <pulse/pulseaudio.h>
+
 #include <map>
 #include <mutex>
 
@@ -48,7 +50,7 @@ public:
 
     std::map<uint32_t, PA_INPUT> PA_INPUTS;
     std::map<uint32_t, PA_SINK> PA_SINKS;
-    
+
     void (*notify_update_cb)();
     std::mutex inputMtx;
 private:
@@ -56,7 +58,7 @@ private:
     pa_threaded_mainloop *pa_ml;
     pa_mainloop_api *pa_api;
 
-    void wait_on_pa_operation(pa_operation* o);
+    void wait_on_pa_operation(pa_operation *o);
     std::mutex sinkMtx;
 };
 
