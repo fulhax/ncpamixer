@@ -2,12 +2,13 @@
 
 #include <string.h>
 #include <ncursesw/ncurses.h>
+#include <inttypes.h>
 
 #include "../pa.hpp"
 
 Playback::Playback()
 {
-    selected_input_index = 0;
+    selected_input_index = pa.sink_input_exists(-1);
 }
 
 Playback::~Playback()
@@ -17,7 +18,9 @@ Playback::~Playback()
 
 void Playback::handleInput(unsigned int input)
 {
-    if (!pa.sink_input_exists(selected_input_index)) {
+    selected_input_index = pa.sink_input_exists(selected_input_index);
+
+    if(selected_input_index == -1) {
         return;
     }
 

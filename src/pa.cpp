@@ -29,9 +29,13 @@ Pa::~Pa()
     pa_threaded_mainloop_free(pa_ml);
 }
 
-bool Pa::sink_input_exists(uint32_t index)
+uint32_t Pa::sink_input_exists(uint32_t index)
 {
-    return (PA_INPUTS.find(index) != PA_INPUTS.end());
+    if((PA_INPUTS.find(index) == PA_INPUTS.end())) {
+        index = PA_INPUTS.begin()->first;
+    }
+
+    return index;
 }
 
 void Pa::update_sink(const pa_sink_info *info)

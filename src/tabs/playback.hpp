@@ -2,6 +2,7 @@
 #define PLAYBACK_HPP_
 
 #include "../tab.hpp"
+#include <inttypes.h>
 
 class Playback : public Tab
 {
@@ -12,7 +13,7 @@ public:
     void draw(int w, int h);
     void handleInput(unsigned int input);
 private:
-    unsigned int selected_input_index;
+    uint32_t selected_input_index;
 };
 
 #endif // PLAYBACK_HPP_
