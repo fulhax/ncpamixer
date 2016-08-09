@@ -12,6 +12,7 @@ set(COMMON_SRC
     "ui.cpp"
     "tab.cpp"
     "tabs/playback.cpp"
+    "tabs/output.cpp"
 )
 
 include_directories(

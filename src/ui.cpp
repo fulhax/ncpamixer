@@ -5,6 +5,7 @@
 #include <sys/ioctl.h>
 
 #include "tabs/playback.hpp"
+#include "tabs/output.hpp"
 
 Ui::Ui()
 {
@@ -16,7 +17,7 @@ Ui::Ui()
 
 Ui::~Ui()
 {
-    if(current_tab != nullptr) {
+    if (current_tab != nullptr) {
         delete current_tab;
     }
 }
@@ -66,6 +67,25 @@ void Ui::handleInput()
             refresh();
 
             getmaxyx(stdscr, height, width);
+            break;
+
+        case KEY_F(1): // extended keys
+            if (current_tab != nullptr) {
+                delete current_tab;
+            }
+
+            current_tab = new Playback();
+            fprintf(stderr, "Extended %d\n", input);
+
+            break;
+
+        case KEY_F(3): // extended keys
+            if (current_tab != nullptr) {
+                delete current_tab;
+            }
+
+            current_tab = new Output();
+
             break;
 
         default:
