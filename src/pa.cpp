@@ -69,10 +69,14 @@ void Pa::update_input(const pa_sink_input_info *info)
                                         &info->volume);
     PA_INPUTS[info->index].mute = info->mute;
     PA_INPUTS[info->index].sink = info->sink;
+    strncpy(PA_INPUTS[info->index].driver, info->driver, 255);
 
     const char *name;
     name = pa_proplist_gets(info->proplist, PA_PROP_APPLICATION_NAME);
-    strncpy(PA_INPUTS[info->index].name, name, 255);
+
+    if (name != nullptr) {
+        strncpy(PA_INPUTS[info->index].name, name, 255);
+    }
 
     if (sink_changed) {
         create_monitor_stream_for_sink_input(&PA_INPUTS[info->index]);
@@ -129,6 +133,7 @@ void Pa::stream_state_cb(pa_stream *stream, void *instance)
     if (state == PA_STREAM_TERMINATED || state == PA_STREAM_FAILED) {
         PA_INPUT *i = reinterpret_cast<PA_INPUT *>(instance);
         i->monitor_stream = nullptr;
+        fprintf(stderr, "terminated %d %d\n", i->sink, i->index);
     }
 }
 
@@ -185,8 +190,11 @@ void Pa::create_monitor_stream_for_sink_input(PA_INPUT *input)
         input->monitor_stream = nullptr;
     }
 
+    fprintf(stderr, "Create stream %d %d\n", PA_SINKS[input->sink].monitor_index,
+            input->index);
+
     input->monitor_stream = create_monitor_stream_for_source(
-                                input->sink,
+                                PA_SINKS[input->sink].monitor_index,
                                 input->index
                             );
 }
@@ -393,12 +401,12 @@ void Pa::ctx_state_cb(pa_context *ctx, void *instance)
             o = pa_context_get_source_info_list(ctx, &Pa::ctx_sourcelist_cb, instance);
             pa_operation_unref(o);
 
-            // Sink input list (application) cb
-            o = pa_context_get_sink_input_info_list(ctx, &Pa::ctx_inputlist_cb, instance);
-            pa_operation_unref(o);
-
             // Sink devices list cb
             o = pa_context_get_sink_info_list(ctx, &Pa::ctx_sinklist_cb, instance);
+            pa_operation_unref(o);
+
+            // Sink input list (application) cb
+            o = pa_context_get_sink_input_info_list(ctx, &Pa::ctx_inputlist_cb, instance);
             pa_operation_unref(o);
 
             // Subscribe to changes

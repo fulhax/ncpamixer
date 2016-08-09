@@ -21,6 +21,7 @@ struct PA_SINK {
 
 struct PA_INPUT : PA_SINK {
     uint32_t sink;
+    char driver[255];
 };
 
 typedef void (*notify_update_callback)();
