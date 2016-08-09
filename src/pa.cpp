@@ -69,13 +69,13 @@ void Pa::update_input(const pa_sink_input_info *info)
                                         &info->volume);
     PA_INPUTS[info->index].mute = info->mute;
     PA_INPUTS[info->index].sink = info->sink;
-    strncpy(PA_INPUTS[info->index].driver, info->driver, 255);
+    strcpy(PA_INPUTS[info->index].name, info->name);
 
-    const char *name;
-    name = pa_proplist_gets(info->proplist, PA_PROP_APPLICATION_NAME);
+    const char *app_name;
+    app_name = pa_proplist_gets(info->proplist, PA_PROP_APPLICATION_NAME);
 
-    if (name != nullptr) {
-        strncpy(PA_INPUTS[info->index].name, name, 255);
+    if (app_name != nullptr) {
+        strncpy(PA_INPUTS[info->index].app_name, app_name, 255);
     }
 
     if (sink_changed) {
