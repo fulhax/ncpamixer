@@ -1,5 +1,6 @@
 #include "ui.hpp"
 
+#include <string.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
@@ -13,6 +14,7 @@ Ui::Ui()
     current_tab = nullptr;
     width = 0;
     height = 0;
+    tab_index = 0;
 }
 
 Ui::~Ui()
@@ -69,22 +71,23 @@ void Ui::handleInput()
             getmaxyx(stdscr, height, width);
             break;
 
-        case KEY_F(1): // extended keys
+        case '1': // extended keys
             if (current_tab != nullptr) {
                 delete current_tab;
             }
 
             current_tab = new Playback();
-            fprintf(stderr, "Extended %d\n", input);
+            tab_index = 0;
 
             break;
 
-        case KEY_F(3): // extended keys
+        case '3': // extended keys
             if (current_tab != nullptr) {
                 delete current_tab;
             }
 
             current_tab = new Output();
+            tab_index = 2;
 
             break;
 
@@ -105,6 +108,7 @@ void Ui::draw()
     erase();
 
     current_tab->draw(width, height);
+    statusBar();
 
     refresh();
 }
@@ -117,5 +121,23 @@ void Ui::run()
         usleep(20000);
 
         handleInput();
+    }
+}
+
+void Ui::statusBar()
+{
+    int len = 0;
+
+    for(int i = 0; i < NUM_TABS; ++i) {
+        if(tab_index == i) {
+            attron(COLOR_PAIR(1));
+        }
+
+        mvaddstr(height - 1, len, tabs[i]);
+        len += strlen(tabs[i]) + 1;
+
+        if(tab_index == i) {
+            attroff(COLOR_PAIR(1));
+        }
     }
 }
