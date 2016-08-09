@@ -69,6 +69,7 @@ void Pa::update_input(const pa_sink_input_info *info)
                                         &info->volume);
     PA_INPUTS[info->index].mute = info->mute;
     PA_INPUTS[info->index].sink = info->sink;
+    PA_INPUTS[info->index].monitor_stream = nullptr;
     strcpy(PA_INPUTS[info->index].name, info->name);
 
     const char *app_name;
@@ -133,7 +134,6 @@ void Pa::stream_state_cb(pa_stream *stream, void *instance)
     if (state == PA_STREAM_TERMINATED || state == PA_STREAM_FAILED) {
         PA_INPUT *i = reinterpret_cast<PA_INPUT *>(instance);
         i->monitor_stream = nullptr;
-        fprintf(stderr, "terminated %d %d\n", i->sink, i->index);
     }
 }
 
@@ -185,13 +185,10 @@ pa_stream *Pa::create_monitor_stream_for_source(uint32_t source_index,
 
 void Pa::create_monitor_stream_for_sink_input(PA_INPUT *input)
 {
-    if (input->monitor_stream) {
+    if (input->monitor_stream != nullptr) {
         pa_stream_disconnect(input->monitor_stream);
         input->monitor_stream = nullptr;
     }
-
-    fprintf(stderr, "Create stream %d %d\n", PA_SINKS[input->sink].monitor_index,
-            input->index);
 
     input->monitor_stream = create_monitor_stream_for_source(
                                 PA_SINKS[input->sink].monitor_index,
@@ -270,8 +267,10 @@ void Pa::remove_input(uint32_t index)
     auto i = PA_INPUTS.find(index);
 
     if (i != PA_INPUTS.end()) {
-        pa_stream_disconnect(i->second.monitor_stream);
-        pa_stream_unref(i->second.monitor_stream);
+        if(i->second.monitor_stream != nullptr){
+            pa_stream_disconnect(i->second.monitor_stream);
+            pa_stream_unref(i->second.monitor_stream);
+        }
         PA_INPUTS.erase(index);
     }
 
