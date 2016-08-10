@@ -7,13 +7,14 @@
 #include <vector>
 #include <map>
 
-void Tab::dropDown(std::map<uint32_t, PaObject *> objects, uint32_t current)
+uint32_t Tab::dropDown(std::map<uint32_t, PaObject *> objects,
+                       uint32_t current)
 {
-    if(objects.empty()) {
-        return;
+    if (objects.empty()) {
+        return -1;
     }
 
-    static int selected = 0;
+    uint32_t selected = 0;
     int width = 0;
     int height = 0;
 
@@ -23,15 +24,10 @@ void Tab::dropDown(std::map<uint32_t, PaObject *> objects, uint32_t current)
 
     for (auto i : objects) {
         items.push_back(new_item(i.second->name, ""));
-
-        set_item_userptr(
-            items.back(),
-            reinterpret_cast<void *>(const_cast<uint32_t *>(&i.first))
-        );
+        set_item_userptr(items.back(), reinterpret_cast<void *>(i.second));
 
         if (i.first == current) {
             selected = items.size() - 1;
-
         }
 
         width = (width < strlen(i.second->name) + 3) ?
@@ -40,7 +36,7 @@ void Tab::dropDown(std::map<uint32_t, PaObject *> objects, uint32_t current)
 
         height = (height < 3) ? height + 1 : 3;
     }
-        
+
     items.push_back(new_item(nullptr, nullptr));
     menu = new_menu(&items[0]);
 
@@ -70,24 +66,26 @@ void Tab::dropDown(std::map<uint32_t, PaObject *> objects, uint32_t current)
         switch (c) {
             case 10:
             case '\r':
-            case KEY_ENTER:
+            case KEY_ENTER: {
                 clrtoeol();
-                fprintf(
-                    stderr,
-                    "Item selected is : %d\n",
-                    *reinterpret_cast<uint32_t *>(
-                        item_userptr(current_item(menu))
-                    )
-                );
+
+                PaObject *object = reinterpret_cast<PaObject *>(
+                                       item_userptr(current_item(menu))
+                                   );
+
+                selected = object->index;
+            }
 
             case 27:
                 selecting = false;
                 break;
 
+            case KEY_DOWN:
             case 'j':
                 menu_driver(menu, REQ_DOWN_ITEM);
                 break;
 
+            case KEY_UP:
             case 'k':
                 menu_driver(menu, REQ_UP_ITEM);
                 break;
@@ -113,6 +111,8 @@ void Tab::dropDown(std::map<uint32_t, PaObject *> objects, uint32_t current)
 
     items.clear();
     refresh();
+
+    return selected;
 }
 
 void Tab::volumeBar(int w, int h, int px, int py, float vol, float peak)

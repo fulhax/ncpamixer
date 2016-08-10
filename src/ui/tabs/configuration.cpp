@@ -4,7 +4,7 @@
 #include <ncurses.h>
 #include <inttypes.h>
 
-#include "../pa.hpp"
+#include "pa.hpp"
 
 Configuration::Configuration()
 {

@@ -7,7 +7,7 @@
 #include <vector>
 #include <algorithm>
 
-#include "../pa.hpp"
+#include "pa.hpp"
 
 Playback::Playback()
 {
@@ -66,7 +66,8 @@ void Playback::handleInput(int input)
             auto i = pa.PA_INPUTS.find(selected_index);
 
             if (i != pa.PA_INPUTS.end()) {
-                dropDown(pa.PA_SINKS, 0);
+                uint32_t sink = dropDown(pa.PA_SINKS, i->second->getSink());
+                pa.move_input_sink(selected_index, sink);
             }
 
             break;
