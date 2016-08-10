@@ -106,7 +106,6 @@ void Recording::draw(int w, int h)
     for (auto &i : pa.PA_SOURCE_OUTPUTS) {
         float perc = static_cast<float>(i.second->volume) /
                       (PA_VOLUME_NORM * 1.5f);
-
         volumeBar(w, h, 0, baseY, perc, i.second->peak);
 
         if (i.first == selected_index) {
