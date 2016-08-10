@@ -146,7 +146,7 @@ void Recording::draw(int w, int h)
         }
 
         mvaddstr(baseY - 2, 1, label);
-        char *name = pa.PA_SOURCE_OUTPUTS.find(i.second.sink)->second.name;
+        char *name = pa.PA_SOURCES.find(i.second.source)->second.name;
 
         unsigned int len = strlen(name);
         unsigned int sink_pos = w - 1 - len;

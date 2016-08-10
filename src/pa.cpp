@@ -78,6 +78,7 @@ void Pa::update_source_output(const pa_source_output_info *info)
                           PA_SOURCE_OUTPUTS[info->index].monitor_index;
     }
 
+    PA_SOURCE_OUTPUTS[info->index].source = info->source;
     PA_SOURCE_OUTPUTS[info->index].channels = info->channel_map.channels;
     PA_SOURCE_OUTPUTS[info->index].monitor_index = info->index;
     PA_SOURCE_OUTPUTS[info->index].volume = (const pa_volume_t) pa_cvolume_avg(
