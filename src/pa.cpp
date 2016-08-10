@@ -99,16 +99,10 @@ void Pa::update_source_output(const pa_source_output_info *info)
         p = reinterpret_cast<PaSourceOutput *>(PA_SOURCE_OUTPUTS[info->index]);
     }
 
-    bool monitor_changed = true;
-
-    if (PA_SOURCE_OUTPUTS.count(info->index)) {
-        monitor_changed = info->source != p->source;
-    }
-
     p->index = info->index;
     p->source = info->source;
     p->channels = info->channel_map.channels;
-    p->monitor_index = PA_SOURCES[info->source]->index;
+    p->monitor_index = info->source;
     p->volume = (const pa_volume_t) pa_cvolume_avg(&info->volume);
     p->mute = info->mute;
 
@@ -119,10 +113,6 @@ void Pa::update_source_output(const pa_source_output_info *info)
 
     if (app_name != nullptr) {
         strncpy(p->app_name, app_name, 255);
-    }
-
-    if (monitor_changed) {
-        create_monitor_stream_for_paobject(p);
     }
 
     notify_update();
@@ -174,24 +164,12 @@ void Pa::update_sink(const pa_sink_info *info)
         p = reinterpret_cast<PaSink *>(PA_SINKS[info->index]);
     }
 
-
-    bool monitor_changed = true;
-
-    if (PA_INPUTS.count(info->index)) {
-        monitor_changed = info->monitor_source !=
-                          PA_INPUTS[info->index]->monitor_index;
-    }
-
     p->channels = info->channel_map.channels;
     p->monitor_index = info->monitor_source;
     p->volume = (const pa_volume_t) pa_cvolume_avg(&info->volume);
     p->mute = info->mute;
 
     strncpy(p->name, info->description, 255);
-
-    if (monitor_changed) {
-        create_monitor_stream_for_paobject(p);
-    }
 
     notify_update();
 }
@@ -525,13 +503,7 @@ void Pa::remove_source_output(uint32_t index)
     std::lock_guard<std::mutex> lk(inputMtx);
 
     auto i = PA_SOURCE_OUTPUTS.find(index);
-
     if (i != PA_SOURCE_OUTPUTS.end()) {
-        if (i->second->monitor_stream != nullptr) {
-            pa_stream_disconnect(i->second->monitor_stream);
-            pa_stream_unref(i->second->monitor_stream);
-        }
-
         delete i->second;
         PA_SOURCE_OUTPUTS.erase(index);
     }
@@ -562,15 +534,9 @@ void Pa::remove_source(uint32_t index)
 void Pa::remove_sink(uint32_t index)
 {
     std::lock_guard<std::mutex> lk(inputMtx);
-
     auto i = PA_SINKS.find(index);
 
     if (i != PA_SINKS.end()) {
-        if (i->second->monitor_stream != nullptr) {
-            pa_stream_disconnect(i->second->monitor_stream);
-            pa_stream_unref(i->second->monitor_stream);
-        }
-
         delete i->second;
         PA_SINKS.erase(index);
     }
