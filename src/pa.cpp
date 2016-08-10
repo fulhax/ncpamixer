@@ -35,7 +35,7 @@ Pa::~Pa()
     pa_threaded_mainloop_free(pa_ml);
 }
 
-uint32_t Pa::exists(std::map<uint32_t, PaObject*> objects, uint32_t index)
+uint32_t Pa::exists(std::map<uint32_t, PaObject *> objects, uint32_t index)
 {
     if (objects.empty()) {
         return -1;
@@ -340,120 +340,6 @@ void Pa::create_monitor_stream_for_paobject(PaObject *po)
     }
 }
 
-void Pa::toggle_input_mute(uint32_t index)
-{
-    std::lock_guard<std::mutex> lk(inputMtx);
-    auto i = PA_INPUTS.find(index);
-
-    if (i != PA_INPUTS.end()) {
-        pa_operation *o = pa_context_set_sink_input_mute(
-                              pa_ctx,
-                              index,
-                              !i->second->mute,
-                              NULL,
-                              NULL
-                          );
-
-        pa_operation_unref(o);
-    }
-}
-
-void Pa::toggle_sink_mute(uint32_t index)
-{
-    std::lock_guard<std::mutex> lk(inputMtx);
-    auto i = PA_SINKS.find(index);
-
-    if (i != PA_SINKS.end()) {
-        pa_operation *o = pa_context_set_sink_mute_by_index(
-                              pa_ctx,
-                              index,
-                              !i->second->mute,
-                              NULL,
-                              NULL
-                          );
-
-        pa_operation_unref(o);
-    }
-}
-
-
-void Pa::set_sink_volume(uint32_t index, int dir)
-{
-    std::lock_guard<std::mutex> lk(inputMtx);
-
-    if (PA_SINKS.find(index) == PA_SINKS.end()) {
-        return;
-    }
-
-    if (PA_SINKS[index]->volume <= 1000 && dir == -1) {
-        return;
-    }
-
-    pa_threaded_mainloop_lock(pa_ml);
-
-    int volume = PA_SINKS[index]->volume + (1000 * dir);
-    pa_cvolume cvol;
-
-    pa_cvolume_init(&cvol);
-    pa_cvolume_set(&cvol, PA_SINKS[index]->channels, volume);
-    pa_operation *o = pa_context_set_sink_volume_by_index(
-                          pa_ctx,
-                          index,
-                          &cvol,
-                          NULL,
-                          NULL
-                      );
-    pa_operation_unref(o);
-
-    pa_threaded_mainloop_unlock(pa_ml);
-}
-
-void Pa::set_input_volume(uint32_t index, int dir)
-{
-    std::lock_guard<std::mutex> lk(inputMtx);
-
-    if (PA_INPUTS.find(index) == PA_INPUTS.end()) {
-        return;
-    }
-
-    if (PA_INPUTS[index]->volume <= 1000 && dir == -1) {
-        return;
-    }
-
-    pa_threaded_mainloop_lock(pa_ml);
-
-    int volume = PA_INPUTS[index]->volume + (1000 * dir);
-    pa_cvolume cvol;
-
-    pa_cvolume_init(&cvol);
-    pa_cvolume_set(&cvol, PA_INPUTS[index]->channels, volume);
-    pa_operation *o = pa_context_set_sink_input_volume(
-                          pa_ctx,
-                          index,
-                          &cvol,
-                          NULL,
-                          NULL
-                      );
-    pa_operation_unref(o);
-
-    pa_threaded_mainloop_unlock(pa_ml);
-
-}
-
-void Pa::move_input_sink(uint32_t input_index, uint32_t sink_index)
-{
-    pa_threaded_mainloop_lock(pa_ml);
-    pa_operation *o = pa_context_move_sink_input_by_index(
-                          pa_ctx,
-                          input_index,
-                          sink_index,
-                          NULL,
-                          NULL
-                      );
-    pa_operation_unref(o);
-    pa_threaded_mainloop_unlock(pa_ml);
-}
-
 void Pa::remove_input(uint32_t index)
 {
     std::lock_guard<std::mutex> lk(inputMtx);
@@ -480,6 +366,7 @@ void Pa::remove_source_output(uint32_t index)
     std::lock_guard<std::mutex> lk(inputMtx);
 
     auto i = PA_SOURCE_OUTPUTS.find(index);
+
     if (i != PA_SOURCE_OUTPUTS.end()) {
         delete i->second;
         PA_SOURCE_OUTPUTS.erase(index);

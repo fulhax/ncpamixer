@@ -45,6 +45,7 @@ public:
     void remove_sink(uint32_t index);
     void remove_source_output(uint32_t index);
     void remove_source(uint32_t index);
+    void set_volume(PaObject* pobj, int dir);
     void set_input_volume(uint32_t index, int dir);
     void set_sink_volume(uint32_t index, int dir);
     void toggle_input_mute(uint32_t index);
@@ -81,11 +82,12 @@ public:
 
     void (*notify_update_cb)();
     std::mutex inputMtx;
-private:
+
     pa_context *pa_ctx;
     pa_threaded_mainloop *pa_ml;
     pa_mainloop_api *pa_api;
 
+private:
     void wait_on_pa_operation(pa_operation *o);
     std::mutex sinkMtx;
 };

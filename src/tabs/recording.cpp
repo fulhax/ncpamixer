@@ -20,13 +20,24 @@ void Recording::handleInput(int input)
 {
     selected_index = pa.exists(pa.PA_SOURCE_OUTPUTS, selected_index);
 
-    if(selected_index == -1) {
+    if (selected_index == -1) {
         return;
+    }
+
+    auto pai = pa.PA_SOURCE_OUTPUTS.find(selected_index);
+
+    PaObject *selected_pobj = nullptr;
+
+    if (pai != pa.PA_INPUTS.end()) {
+        selected_pobj = pai->second;
     }
 
     switch (input) {
         case 'm':
-            pa.toggle_input_mute(selected_index);
+            if (selected_pobj != nullptr) {
+                selected_pobj->toggle_mute();
+            }
+
             break;
 
         case 'g': {
@@ -69,32 +80,32 @@ void Recording::handleInput(int input)
             break;
         }
 
-        // case 'h':
-        //     pa.set_input_volume(selected_index, -1);
+        case 'h':
+            if (selected_pobj != nullptr) {
+                selected_pobj->step_volume(-1);
+            }
 
-        //     break;
+            break;
 
-        // case 'l':
-        //     pa.set_input_volume(selected_index, 1);
+        case 'l':
+            if (selected_pobj != nullptr) {
+                selected_pobj->step_volume(1);
+            }
 
-        //     break;
+            break;
 
-        // case '\t': {
-        //     auto i = pa.PA_SOURCE_OUTPUTS.find(selected_index);
+        case '\t': {
+            if (selected_pobj != nullptr) {
+                auto current_source = pa.PA_SOURCES.find(selected_pobj->getSource());
+                current_source = std::next(current_source, 1);
 
-        //     if (i != pa.PA_SOURCE_OUTPUTS.end()) {
-        //         auto current_sink = pa.PA_SOURCE_OUTPUTS.find(i->second.sink);
+                if (current_source == pa.PA_SOURCES.end()) {
+                    current_source = pa.PA_SOURCES.begin();
+                }
 
-        //         current_sink = std::next(current_sink, 1);
-
-        //         if (current_sink == pa.PA_SOURCE_OUTPUTS.end()) {
-        //             current_sink = pa.PA_SOURCE_OUTPUTS.begin();
-        //         }
-
-        //         pa.move_input_sink(selected_index, current_sink->first);
-        //     }
-        //     break;
-        // }
+                selected_pobj->move(current_source->first);
+            }
+        }
     }
 
 }
@@ -105,7 +116,7 @@ void Recording::draw(int w, int h)
 
     for (auto &i : pa.PA_SOURCE_OUTPUTS) {
         float perc = static_cast<float>(i.second->volume) /
-                      (PA_VOLUME_NORM * 1.5f);
+                     (PA_VOLUME_NORM * 1.5f);
         volumeBar(w, h, 0, baseY, perc, i.second->peak);
 
         if (i.first == selected_index) {
@@ -115,7 +126,7 @@ void Recording::draw(int w, int h)
         char label[255] = {0};
         char app[255] = {0};
 
-        if(strlen(i.second->getAppName()) > 0) {
+        if (strlen(i.second->getAppName()) > 0) {
             snprintf(
                 app,
                 sizeof(app),

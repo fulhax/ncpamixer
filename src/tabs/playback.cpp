@@ -27,9 +27,19 @@ void Playback::handleInput(int input)
         return;
     }
 
+    auto pai = pa.PA_INPUTS.find(selected_index);
+
+    PaObject *selected_pobj = nullptr;
+    if (pai != pa.PA_INPUTS.end()) {
+        selected_pobj = pai->second;
+    }
+
     switch (input) {
         case 'm':
-            pa.toggle_input_mute(selected_index);
+            if(selected_pobj != nullptr){
+                selected_pobj->toggle_mute();    
+            }
+
             break;
 
         case 'g': {
@@ -82,29 +92,29 @@ void Playback::handleInput(int input)
             break;
         }
 
-        case 'h':
-            pa.set_input_volume(selected_index, -1);
-
+        case 'h':{
+            if(selected_pobj != nullptr){
+                selected_pobj->step_volume(-1);    
+            }
+         }
             break;
 
         case 'l':
-            pa.set_input_volume(selected_index, 1);
-
+            if(selected_pobj != nullptr){
+                selected_pobj->step_volume(1);
+            }
             break;
 
         case '\t': {
-            auto i = pa.PA_INPUTS.find(selected_index);
-
-            if (i != pa.PA_INPUTS.end()) {
-                auto current_sink = pa.PA_SINKS.find(i->second->getSink());
-
+            if (selected_pobj != nullptr) {
+                auto current_sink = pa.PA_SINKS.find(selected_pobj->getSink());
                 current_sink = std::next(current_sink, 1);
 
                 if (current_sink == pa.PA_SINKS.end()) {
                     current_sink = pa.PA_SINKS.begin();
                 }
 
-                pa.move_input_sink(selected_index, current_sink->first);
+                selected_pobj->move(current_sink->first);
             }
 
             break;

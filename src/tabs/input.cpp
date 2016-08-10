@@ -24,10 +24,21 @@ void Input::handleInput(int input)
         return;
     }
 
+    auto pai = pa.PA_SOURCES.find(selected_index);
+
+    PaObject *selected_pobj = nullptr;
+    if (pai != pa.PA_SOURCES.end()) {
+        selected_pobj = pai->second;
+    }
+
     switch (input) {
-        case 'm':
-            pa.toggle_sink_mute(selected_index);
+        case 'm': {
+            if(selected_pobj != nullptr){
+                selected_pobj->toggle_mute();    
+            }
+
             break;
+        }
 
         case 'g': {
             auto i = pa.PA_SOURCES.begin();
@@ -69,15 +80,19 @@ void Input::handleInput(int input)
             break;
         }
 
-        case 'h':
-            pa.set_sink_volume(selected_index, -1);
-
+        case 'h':{
+            if(selected_pobj != nullptr){
+                selected_pobj->step_volume(-1);    
+            }
+         }
             break;
 
         case 'l':
-            pa.set_sink_volume(selected_index, 1);
-
+            if(selected_pobj != nullptr){
+                selected_pobj->step_volume(1);
+            }
             break;
+
     }
 
 

@@ -24,9 +24,20 @@ void Output::handleInput(int input)
         return;
     }
 
+    auto pai = pa.PA_SINKS.find(selected_index);
+
+    PaObject *selected_pobj = nullptr;
+
+    if (pai != pa.PA_SINKS.end()) {
+        selected_pobj = pai->second;
+    }
+
     switch (input) {
         case 'm':
-            pa.toggle_sink_mute(selected_index);
+            if (selected_pobj != nullptr) {
+                selected_pobj->toggle_mute();
+            }
+
             break;
 
         case 'g': {
@@ -69,15 +80,20 @@ void Output::handleInput(int input)
             break;
         }
 
-        case 'h':
-            pa.set_sink_volume(selected_index, -1);
-
-            break;
+        case 'h': {
+            if (selected_pobj != nullptr) {
+                selected_pobj->step_volume(-1);
+            }
+        }
+        break;
 
         case 'l':
-            pa.set_sink_volume(selected_index, 1);
+            if (selected_pobj != nullptr) {
+                selected_pobj->step_volume(1);
+            }
 
             break;
+
     }
 
 }

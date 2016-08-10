@@ -18,19 +18,34 @@ public:
     bool mute;
 
     uint32_t monitor_index;
-    pa_stream* monitor_stream;
+    pa_stream *monitor_stream;
     float peak;
 
-    virtual uint32_t getSink(){
-        throw -1;
+    pa_operation *(*pa_set_volume)(pa_context *, uint32_t, const pa_cvolume *,
+                                   pa_context_success_cb_t, void *);
+    pa_operation *(*pa_set_mute)(pa_context *, uint32_t, int,
+                                 pa_context_success_cb_t, void *);
+    pa_operation *(*pa_move)(pa_context *, uint32_t, uint32_t,
+                             pa_context_success_cb_t, void *);
+
+    void set_volume(float perc);
+    void step_volume(int dir);
+    void move(uint32_t dest);
+    void toggle_mute();
+
+    virtual uint32_t getSink()
+    {
+        throw - 1;
     };
 
-    virtual char * getAppName(){
-        throw -1;
+    virtual char *getAppName()
+    {
+        throw - 1;
     };
 
-    virtual uint32_t getSource(){
-        throw -1;
+    virtual uint32_t getSource()
+    {
+        throw - 1;
     };
 };
 
