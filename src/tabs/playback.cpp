@@ -11,7 +11,7 @@
 
 Playback::Playback()
 {
-    selected_index = pa.exists(pa.PA_SOURCE_OUTPUTS, -1);
+    selected_index = pa.exists(pa.PA_INPUTS, -1);
 }
 
 Playback::~Playback()
