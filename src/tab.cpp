@@ -23,10 +23,15 @@ void Tab::volumeBar(int w, int h, int px, int py, float vol, float peak)
 
     fillW(w, h, 0, py - 1, "\u2581");
 
-    for (int i = 0; i < vw; i++) {
-        color = getVolumeColor(
+    for (int i = 0; i < pw; i++) {
+        if (i >= vw) {
+            color = 3;
+        } else {
+            color = getVolumeColor(
                     (static_cast<float>(i) / w) * 100
                 );
+        }
+        
         attron(COLOR_PAIR(color));
         mvaddstr(py, i, "\u2588");
         attroff(COLOR_PAIR(color));
