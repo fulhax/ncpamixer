@@ -30,14 +30,15 @@ void Playback::handleInput(int input)
     auto pai = pa.PA_INPUTS.find(selected_index);
 
     PaObject *selected_pobj = nullptr;
+
     if (pai != pa.PA_INPUTS.end()) {
         selected_pobj = pai->second;
     }
 
     switch (input) {
         case 'm':
-            if(selected_pobj != nullptr){
-                selected_pobj->toggle_mute();    
+            if (selected_pobj != nullptr) {
+                selected_pobj->toggle_mute();
             }
 
             break;
@@ -64,10 +65,16 @@ void Playback::handleInput(int input)
 
         case 'c': {
 
-            if(selected_pobj != nullptr){
+            if (selected_pobj != nullptr) {
                 auto i = pa.PA_INPUTS.find(selected_index);
+
                 if (i != pa.PA_INPUTS.end()) {
-                    uint32_t sink = dropDown(pa.PA_SINKS, i->second->getSink());
+                    uint32_t sink = dropDown(
+                                        1,
+                                        1,
+                                        pa.PA_SINKS,
+                                        i->second->getSink()
+                                    );
                     selected_pobj->move(sink);
                 }
             }
@@ -95,17 +102,18 @@ void Playback::handleInput(int input)
             break;
         }
 
-        case 'h':{
-            if(selected_pobj != nullptr){
-                selected_pobj->step_volume(-1);    
+        case 'h': {
+            if (selected_pobj != nullptr) {
+                selected_pobj->step_volume(-1);
             }
-         }
-            break;
+        }
+        break;
 
         case 'l':
-            if(selected_pobj != nullptr){
+            if (selected_pobj != nullptr) {
                 selected_pobj->step_volume(1);
             }
+
             break;
 
         case '\t': {

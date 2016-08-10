@@ -7,7 +7,7 @@
 #include <vector>
 #include <map>
 
-uint32_t Tab::dropDown(std::map<uint32_t, PaObject *> objects,
+uint32_t Tab::dropDown(int x, int y, std::map<uint32_t, PaObject *> objects,
                        uint32_t current)
 {
     if (objects.empty()) {
@@ -40,7 +40,7 @@ uint32_t Tab::dropDown(std::map<uint32_t, PaObject *> objects,
     items.push_back(new_item(nullptr, nullptr));
     menu = new_menu(&items[0]);
 
-    menu_win = newwin(height + 2, width + 2, 1, 1);
+    menu_win = newwin(height + 2, width + 2, y, x);
     keypad(menu_win, true);
 
     set_menu_win(menu, menu_win);
