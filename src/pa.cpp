@@ -479,7 +479,7 @@ void Pa::remove_source_output(uint32_t index)
             pa_stream_unref(i->second.monitor_stream);
         }
 
-        PA_INPUTS.erase(index);
+        PA_SOURCE_OUTPUTS.erase(index);
     }
 
     notify_update();
