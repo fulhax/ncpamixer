@@ -17,7 +17,7 @@ Pa::Pa()
     pa_proplist_sets(proplist, PA_PROP_APPLICATION_NAME, "ncpamixer");
     pa_proplist_sets(proplist, PA_PROP_APPLICATION_ID, "ncpamixer");
     pa_proplist_sets(proplist, PA_PROP_APPLICATION_ICON_NAME, "audio-card");
-    pa_ctx = pa_context_new_with_proplist(pa_api, NULL, proplist); 
+    pa_ctx = pa_context_new_with_proplist(pa_api, NULL, proplist);
 
     pa_threaded_mainloop_lock(pa_ml);
     pa_threaded_mainloop_start(pa_ml);
@@ -78,23 +78,26 @@ void Pa::update_source_output(const pa_source_output_info *info)
 
     // https://github.com/pulseaudio/pavucontrol/blob/master/src/mainwindow.cc#L802
     const char *app;
+
     if ((app = pa_proplist_gets(info->proplist, PA_PROP_APPLICATION_ID)))
         if (strcmp(app, "org.PulseAudio.pavucontrol") == 0
             || strcmp(app, "org.gnome.VolumeControl") == 0
             || strcmp(app, "org.kde.kmixd") == 0
-            || strcmp(app, "ncpamixer") == 0)
+            || strcmp(app, "ncpamixer") == 0) {
             return;
+        }
 
     bool monitor_changed = true;
 
     if (PA_SOURCE_OUTPUTS.count(info->index)) {
-        monitor_changed = info->index !=
-                          PA_SOURCE_OUTPUTS[info->index].monitor_index;
+        monitor_changed = info->source !=
+                          PA_SOURCE_OUTPUTS[info->index].source;
     }
 
+    PA_SOURCE_OUTPUTS[info->index].index = info->index;
     PA_SOURCE_OUTPUTS[info->index].source = info->source;
     PA_SOURCE_OUTPUTS[info->index].channels = info->channel_map.channels;
-    PA_SOURCE_OUTPUTS[info->index].monitor_index = info->index;
+    PA_SOURCE_OUTPUTS[info->index].monitor_index = PA_SOURCES[info->source].index;
     PA_SOURCE_OUTPUTS[info->index].volume = (const pa_volume_t) pa_cvolume_avg(
             &info->volume);
     PA_SOURCE_OUTPUTS[info->index].mute = info->mute;
@@ -335,17 +338,18 @@ void Pa::create_monitor_stream_for_paobject(PaObject *po)
         po->monitor_stream = nullptr;
     }
 
-    if (po->type == pa_object_t::SINK) {
-        po->monitor_stream = create_monitor_stream_for_source(
-                                 po->monitor_index,
-                                 -1
-                             );
-    } else if (po->type == pa_object_t::INPUT) {
+    if (po->type == pa_object_t::INPUT) {
         PaInput *input = reinterpret_cast<PaInput *>(po);
         input->monitor_stream = create_monitor_stream_for_source(
                                     PA_SINKS[input->sink].monitor_index,
                                     input->index
                                 );
+    } else {
+        po->monitor_stream = create_monitor_stream_for_source(
+                                 po->monitor_index,
+                                 -1
+                             );
+
     }
 }
 
@@ -550,7 +554,8 @@ void Pa::ctx_sourcelist_cb(pa_context *ctx, const pa_source_info *info,
     return;
 }
 
-void Pa::ctx_sourceoutputlist_cb(pa_context *ctx, const pa_source_output_info *info, int eol, void *instance)
+void Pa::ctx_sourceoutputlist_cb(pa_context *ctx,
+                                 const pa_source_output_info *info, int eol, void *instance)
 {
     Pa *pa = reinterpret_cast<Pa *>(instance);
 
@@ -650,7 +655,8 @@ void Pa::subscribe_cb(pa_context *ctx, pa_subscription_event_type_t t,
                 pa->remove_source_output(index);
             } else if (type == PA_SUBSCRIPTION_EVENT_NEW ||
                        type == PA_SUBSCRIPTION_EVENT_CHANGE) {
-                pa_operation *o = pa_context_get_source_output_info(ctx, index, &Pa::ctx_sourceoutputlist_cb, instance);
+                pa_operation *o = pa_context_get_source_output_info(ctx, index,
+                                  &Pa::ctx_sourceoutputlist_cb, instance);
                 pa_operation_unref(o);
             }
 
