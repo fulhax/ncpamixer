@@ -12,7 +12,12 @@ Pa::Pa()
 
     pa_ml = pa_threaded_mainloop_new();
     pa_api  = pa_threaded_mainloop_get_api(pa_ml);
-    pa_ctx = pa_context_new(pa_api, "pulsemixer - fulhax");
+
+    pa_proplist *proplist = pa_proplist_new();
+    pa_proplist_sets(proplist, PA_PROP_APPLICATION_NAME, "ncpamixer");
+    pa_proplist_sets(proplist, PA_PROP_APPLICATION_ID, "ncpamixer");
+    pa_proplist_sets(proplist, PA_PROP_APPLICATION_ICON_NAME, "audio-card");
+    pa_ctx = pa_context_new_with_proplist(pa_api, NULL, proplist); 
 
     pa_threaded_mainloop_lock(pa_ml);
     pa_threaded_mainloop_start(pa_ml);
@@ -70,6 +75,15 @@ uint32_t Pa::sink_input_exists(uint32_t index)
 void Pa::update_source_output(const pa_source_output_info *info)
 {
     std::lock_guard<std::mutex> lk(inputMtx);
+
+    // https://github.com/pulseaudio/pavucontrol/blob/master/src/mainwindow.cc#L802
+    const char *app;
+    if ((app = pa_proplist_gets(info->proplist, PA_PROP_APPLICATION_ID)))
+        if (strcmp(app, "org.PulseAudio.pavucontrol") == 0
+            || strcmp(app, "org.gnome.VolumeControl") == 0
+            || strcmp(app, "org.kde.kmixd") == 0
+            || strcmp(app, "ncpamixer") == 0)
+            return;
 
     bool monitor_changed = true;
 
