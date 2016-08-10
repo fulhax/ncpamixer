@@ -7,6 +7,10 @@ class PaSourceOutput : public PaInput
 public:
     PaSourceOutput();
     uint32_t source;
+
+    virtual uint32_t getSource(){
+        return source;
+    };
 };
 
 #endif // PA_SOURCE_

@@ -83,7 +83,7 @@ void Playback::handleInput(int input)
             auto i = pa.PA_INPUTS.find(selected_input_index);
 
             if (i != pa.PA_INPUTS.end()) {
-                auto current_sink = pa.PA_SINKS.find(i->second.sink);
+                auto current_sink = pa.PA_SINKS.find(i->second->getSink());
 
                 current_sink = std::next(current_sink, 1);
 
@@ -103,10 +103,10 @@ void Playback::draw(int w, int h)
     int baseY = 3;
 
     for (auto &i : pa.PA_INPUTS) {
-        float perc = static_cast<float>(i.second.volume) /
+        float perc = static_cast<float>(i.second->volume) /
                       (PA_VOLUME_NORM * 1.5f);
 
-        volumeBar(w, h, 0, baseY, perc, i.second.peak);
+        volumeBar(w, h, 0, baseY, perc, i.second->peak);
 
         if (i.first == selected_input_index) {
             attron(COLOR_PAIR(1));
@@ -115,19 +115,19 @@ void Playback::draw(int w, int h)
         char label[255] = {0};
         char app[255] = {0};
 
-        if(strlen(i.second.app_name) > 0) {
+        if(strlen(i.second->getAppName()) > 0) {
             snprintf(
                 app,
                 sizeof(app),
                 "%s : %s",
-                i.second.app_name,
-                i.second.name
+                i.second->getAppName(),
+                i.second->name
             );
         } else {
-            snprintf(app, sizeof(app), "%s", i.second.name);
+            snprintf(app, sizeof(app), "%s", i.second->name);
         }
 
-        if (i.second.mute) {
+        if (i.second->mute) {
             snprintf(
                 label,
                 sizeof(label),
@@ -145,7 +145,7 @@ void Playback::draw(int w, int h)
         }
 
         mvaddstr(baseY - 2, 1, label);
-        char *name = pa.PA_SINKS.find(i.second.sink)->second.name;
+        char *name = pa.PA_SINKS.find(i.second->getSink())->second->name;
 
         unsigned int len = strlen(name);
         unsigned int sink_pos = w - 1 - len;

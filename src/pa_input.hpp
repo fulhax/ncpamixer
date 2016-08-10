@@ -6,8 +6,16 @@ class PaInput : public PaObject
 {
 public:
     PaInput();
-    char app_name[255];
     uint32_t sink;
+    char app_name[255];
+
+    virtual uint32_t getSink() {
+        return sink;
+    };
+
+    virtual char* getAppName() {
+        return app_name;
+    };
 };
 
 #endif // PA_INPUT_

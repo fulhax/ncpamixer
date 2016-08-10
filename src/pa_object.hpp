@@ -20,6 +20,18 @@ public:
     uint32_t monitor_index;
     pa_stream* monitor_stream;
     float peak;
+
+    virtual uint32_t getSink(){
+        throw -1;
+    };
+
+    virtual char * getAppName(){
+        throw -1;
+    };
+
+    virtual uint32_t getSource(){
+        throw -1;
+    };
 };
 
 #endif // PA_OBJECT_

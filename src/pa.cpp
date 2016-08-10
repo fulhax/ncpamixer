@@ -72,6 +72,9 @@ uint32_t Pa::sink_input_exists(uint32_t index)
     return index;
 }
 
+
+
+
 void Pa::update_source_output(const pa_source_output_info *info)
 {
     std::lock_guard<std::mutex> lk(inputMtx);
@@ -87,32 +90,39 @@ void Pa::update_source_output(const pa_source_output_info *info)
             return;
         }
 
+    PaSourceOutput *p;
+
+    if (PA_SOURCE_OUTPUTS.count(info->index) == 0) {
+        p = new PaSourceOutput;
+        PA_SOURCE_OUTPUTS[info->index] = p;
+    } else {
+        p = reinterpret_cast<PaSourceOutput *>(PA_SOURCE_OUTPUTS[info->index]);
+    }
+
     bool monitor_changed = true;
 
     if (PA_SOURCE_OUTPUTS.count(info->index)) {
-        monitor_changed = info->source !=
-                          PA_SOURCE_OUTPUTS[info->index].source;
+        monitor_changed = info->source != p->source;
     }
 
-    PA_SOURCE_OUTPUTS[info->index].index = info->index;
-    PA_SOURCE_OUTPUTS[info->index].source = info->source;
-    PA_SOURCE_OUTPUTS[info->index].channels = info->channel_map.channels;
-    PA_SOURCE_OUTPUTS[info->index].monitor_index = PA_SOURCES[info->source].index;
-    PA_SOURCE_OUTPUTS[info->index].volume = (const pa_volume_t) pa_cvolume_avg(
-            &info->volume);
-    PA_SOURCE_OUTPUTS[info->index].mute = info->mute;
+    p->index = info->index;
+    p->source = info->source;
+    p->channels = info->channel_map.channels;
+    p->monitor_index = PA_SOURCES[info->source]->index;
+    p->volume = (const pa_volume_t) pa_cvolume_avg(&info->volume);
+    p->mute = info->mute;
 
-    strncpy(PA_SOURCE_OUTPUTS[info->index].name, info->name, 255);
+    strncpy(p->name, info->name, 255);
 
     const char *app_name;
     app_name = pa_proplist_gets(info->proplist, PA_PROP_APPLICATION_NAME);
 
     if (app_name != nullptr) {
-        strncpy(PA_SOURCE_OUTPUTS[info->index].app_name, app_name, 255);
+        strncpy(p->app_name, app_name, 255);
     }
 
     if (monitor_changed) {
-        create_monitor_stream_for_paobject(&PA_SOURCE_OUTPUTS[info->index]);
+        create_monitor_stream_for_paobject(p);
     }
 
     notify_update();
@@ -122,23 +132,29 @@ void Pa::update_source(const pa_source_info *info)
 {
     std::lock_guard<std::mutex> lk(inputMtx);
 
+    PaSource *p;
+    if (PA_SOURCES.count(info->index) == 0) {
+        p = new PaSource;
+        PA_SOURCES[info->index] = p;
+    } else {
+        p = reinterpret_cast<PaSource *>(PA_SOURCES[info->index]);
+    }
+
     bool monitor_changed = true;
 
     if (PA_SOURCES.count(info->index)) {
-        monitor_changed = info->index !=
-                          PA_SOURCES[info->index].monitor_index;
+        monitor_changed = info->index != p->monitor_index;
     }
 
-    PA_SOURCES[info->index].channels = info->channel_map.channels;
-    PA_SOURCES[info->index].monitor_index = info->index;
-    PA_SOURCES[info->index].volume = (const pa_volume_t) pa_cvolume_avg(
-                                         &info->volume);
-    PA_SOURCES[info->index].mute = info->mute;
+    p->channels = info->channel_map.channels;
+    p->monitor_index = info->index;
+    p->volume = (const pa_volume_t) pa_cvolume_avg(&info->volume);
+    PA_SOURCES[info->index]->mute = info->mute;
 
-    strncpy(PA_SOURCES[info->index].name, info->description, 255);
+    strncpy(p->name, info->description, 255);
 
     if (monitor_changed) {
-        create_monitor_stream_for_paobject(&PA_SOURCES[info->index]);
+        create_monitor_stream_for_paobject(p);
     }
 
     notify_update();
@@ -150,23 +166,31 @@ void Pa::update_sink(const pa_sink_info *info)
 {
     std::lock_guard<std::mutex> lk(inputMtx);
 
+    PaSink *p;
+    if (PA_SINKS.count(info->index) == 0) {
+        p = new PaSink;
+        PA_SINKS[info->index] = p;
+    } else {
+        p = reinterpret_cast<PaSink *>(PA_SINKS[info->index]);
+    }
+
+
     bool monitor_changed = true;
 
     if (PA_INPUTS.count(info->index)) {
         monitor_changed = info->monitor_source !=
-                          PA_INPUTS[info->index].monitor_index;
+                          PA_INPUTS[info->index]->monitor_index;
     }
 
-    PA_SINKS[info->index].channels = info->channel_map.channels;
-    PA_SINKS[info->index].monitor_index = info->monitor_source;
-    PA_SINKS[info->index].volume = (const pa_volume_t) pa_cvolume_avg(
-                                       &info->volume);
-    PA_SINKS[info->index].mute = info->mute;
+    p->channels = info->channel_map.channels;
+    p->monitor_index = info->monitor_source;
+    p->volume = (const pa_volume_t) pa_cvolume_avg(&info->volume);
+    p->mute = info->mute;
 
-    strncpy(PA_SINKS[info->index].name, info->description, 255);
+    strncpy(p->name, info->description, 255);
 
     if (monitor_changed) {
-        create_monitor_stream_for_paobject(&PA_SINKS[info->index]);
+        create_monitor_stream_for_paobject(p);
     }
 
     notify_update();
@@ -176,31 +200,39 @@ void Pa::update_input(const pa_sink_input_info *info)
 {
 
     std::lock_guard<std::mutex> lk(inputMtx);
+
+    PaInput *p;
+    if (PA_INPUTS.count(info->index) == 0) {
+        p = new PaInput;
+        PA_INPUTS[info->index] = p;
+    } else {
+        p = reinterpret_cast<PaInput *>(PA_INPUTS[info->index]);
+    }
+
     bool sink_changed = true;
 
     if (PA_INPUTS.count(info->index)) {
-        sink_changed = info->sink != PA_INPUTS[info->index].sink;
+        sink_changed = info->sink != p->sink;
     }
 
-    PA_INPUTS[info->index].index = info->index;
+    p->index = info->index;
 
-    PA_INPUTS[info->index].channels = info->channel_map.channels;
-    PA_INPUTS[info->index].volume = (const pa_volume_t) pa_cvolume_avg(
-                                        &info->volume);
-    PA_INPUTS[info->index].mute = info->mute;
-    PA_INPUTS[info->index].sink = info->sink;
-    PA_INPUTS[info->index].monitor_stream = nullptr;
-    strcpy(PA_INPUTS[info->index].name, info->name);
+    p->channels = info->channel_map.channels;
+    p->volume = (const pa_volume_t) pa_cvolume_avg(&info->volume);
+    p->mute = info->mute;
+    p->sink = info->sink;
+    p->monitor_stream = nullptr;
+    strcpy(p->name, info->name);
 
     const char *app_name;
     app_name = pa_proplist_gets(info->proplist, PA_PROP_APPLICATION_NAME);
 
     if (app_name != nullptr) {
-        strncpy(PA_INPUTS[info->index].app_name, app_name, 255);
+        strncpy(p->app_name, app_name, 255);
     }
 
     if (sink_changed) {
-        create_monitor_stream_for_paobject(&PA_INPUTS[info->index]);
+        create_monitor_stream_for_paobject(p);
     }
 
     notify_update();
@@ -246,7 +278,7 @@ void Pa::read_callback(pa_stream *s, size_t length, void *instance)
     uint32_t input_idx = pa_stream_get_monitor_stream(s);
 
     if (input_idx != PA_INVALID_INDEX) {
-        pa->PA_INPUTS[input_idx].peak = v;
+        pa->PA_INPUTS[input_idx]->peak = v;
     } else {
         pa->updatePeakByDeviceId(pa_stream_get_device_index(s), v);
     }
@@ -257,20 +289,20 @@ void Pa::read_callback(pa_stream *s, size_t length, void *instance)
 void Pa::updatePeakByDeviceId(uint32_t index, float peak)
 {
     for (auto &s : PA_SINKS) {
-        if (s.second.monitor_index == index) {
-            s.second.peak = peak;
+        if (s.second->monitor_index == index) {
+            s.second->peak = peak;
         }
     }
 
     for (auto &s : PA_SOURCES) {
-        if (s.second.monitor_index == index) {
-            s.second.peak = peak;
+        if (s.second->monitor_index == index) {
+            s.second->peak = peak;
         }
     }
 
     for (auto &s : PA_SOURCE_OUTPUTS) {
-        if (s.second.monitor_index == index) {
-            s.second.peak = peak;
+        if (s.second->monitor_index == index) {
+            s.second->peak = peak;
         }
     }
 }
@@ -341,7 +373,7 @@ void Pa::create_monitor_stream_for_paobject(PaObject *po)
     if (po->type == pa_object_t::INPUT) {
         PaInput *input = reinterpret_cast<PaInput *>(po);
         input->monitor_stream = create_monitor_stream_for_source(
-                                    PA_SINKS[input->sink].monitor_index,
+                                    PA_SINKS[input->sink]->monitor_index,
                                     input->index
                                 );
     } else {
@@ -362,7 +394,7 @@ void Pa::toggle_input_mute(uint32_t index)
         pa_operation *o = pa_context_set_sink_input_mute(
                               pa_ctx,
                               index,
-                              !i->second.mute,
+                              !i->second->mute,
                               NULL,
                               NULL
                           );
@@ -380,7 +412,7 @@ void Pa::toggle_sink_mute(uint32_t index)
         pa_operation *o = pa_context_set_sink_mute_by_index(
                               pa_ctx,
                               index,
-                              !i->second.mute,
+                              !i->second->mute,
                               NULL,
                               NULL
                           );
@@ -398,17 +430,17 @@ void Pa::set_sink_volume(uint32_t index, int dir)
         return;
     }
 
-    if (PA_SINKS[index].volume <= 1000 && dir == -1) {
+    if (PA_SINKS[index]->volume <= 1000 && dir == -1) {
         return;
     }
 
     pa_threaded_mainloop_lock(pa_ml);
 
-    int volume = PA_SINKS[index].volume + (1000 * dir);
+    int volume = PA_SINKS[index]->volume + (1000 * dir);
     pa_cvolume cvol;
 
     pa_cvolume_init(&cvol);
-    pa_cvolume_set(&cvol, PA_SINKS[index].channels, volume);
+    pa_cvolume_set(&cvol, PA_SINKS[index]->channels, volume);
     pa_operation *o = pa_context_set_sink_volume_by_index(
                           pa_ctx,
                           index,
@@ -429,17 +461,17 @@ void Pa::set_input_volume(uint32_t index, int dir)
         return;
     }
 
-    if (PA_INPUTS[index].volume <= 1000 && dir == -1) {
+    if (PA_INPUTS[index]->volume <= 1000 && dir == -1) {
         return;
     }
 
     pa_threaded_mainloop_lock(pa_ml);
 
-    int volume = PA_INPUTS[index].volume + (1000 * dir);
+    int volume = PA_INPUTS[index]->volume + (1000 * dir);
     pa_cvolume cvol;
 
     pa_cvolume_init(&cvol);
-    pa_cvolume_set(&cvol, PA_INPUTS[index].channels, volume);
+    pa_cvolume_set(&cvol, PA_INPUTS[index]->channels, volume);
     pa_operation *o = pa_context_set_sink_input_volume(
                           pa_ctx,
                           index,
@@ -474,9 +506,9 @@ void Pa::remove_input(uint32_t index)
     auto i = PA_INPUTS.find(index);
 
     if (i != PA_INPUTS.end()) {
-        if (i->second.monitor_stream != nullptr) {
-            pa_stream_disconnect(i->second.monitor_stream);
-            pa_stream_unref(i->second.monitor_stream);
+        if (i->second->monitor_stream != nullptr) {
+            pa_stream_disconnect(i->second->monitor_stream);
+            pa_stream_unref(i->second->monitor_stream);
         }
 
         PA_INPUTS.erase(index);
@@ -493,11 +525,12 @@ void Pa::remove_source_output(uint32_t index)
     auto i = PA_SOURCE_OUTPUTS.find(index);
 
     if (i != PA_SOURCE_OUTPUTS.end()) {
-        if (i->second.monitor_stream != nullptr) {
-            pa_stream_disconnect(i->second.monitor_stream);
-            pa_stream_unref(i->second.monitor_stream);
+        if (i->second->monitor_stream != nullptr) {
+            pa_stream_disconnect(i->second->monitor_stream);
+            pa_stream_unref(i->second->monitor_stream);
         }
 
+        delete i->second;
         PA_SOURCE_OUTPUTS.erase(index);
     }
 
@@ -511,11 +544,12 @@ void Pa::remove_source(uint32_t index)
     auto i = PA_SOURCES.find(index);
 
     if (i != PA_SOURCES.end()) {
-        if (i->second.monitor_stream != nullptr) {
-            pa_stream_disconnect(i->second.monitor_stream);
-            pa_stream_unref(i->second.monitor_stream);
+        if (i->second->monitor_stream != nullptr) {
+            pa_stream_disconnect(i->second->monitor_stream);
+            pa_stream_unref(i->second->monitor_stream);
         }
 
+        delete i->second;
         PA_SOURCES.erase(index);
     }
 

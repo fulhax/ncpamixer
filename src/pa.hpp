@@ -77,10 +77,10 @@ public:
     void set_notify_update_cb(notify_update_callback cb);
     void notify_update();
 
-    std::map<uint32_t, PaInput> PA_INPUTS;
-    std::map<uint32_t, PaSink> PA_SINKS;
-    std::map<uint32_t, PaSource> PA_SOURCES;
-    std::map<uint32_t, PaSourceOutput> PA_SOURCE_OUTPUTS;
+    std::map<uint32_t, PaObject*> PA_INPUTS;
+    std::map<uint32_t, PaObject*> PA_SINKS;
+    std::map<uint32_t, PaObject*> PA_SOURCES;
+    std::map<uint32_t, PaObject*> PA_SOURCE_OUTPUTS;
 
     void (*notify_update_cb)();
     std::mutex inputMtx;

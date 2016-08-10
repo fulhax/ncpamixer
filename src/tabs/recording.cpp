@@ -104,10 +104,10 @@ void Recording::draw(int w, int h)
     int baseY = 3;
 
     for (auto &i : pa.PA_SOURCE_OUTPUTS) {
-        float perc = static_cast<float>(i.second.volume) /
+        float perc = static_cast<float>(i.second->volume) /
                       (PA_VOLUME_NORM * 1.5f);
 
-        volumeBar(w, h, 0, baseY, perc, i.second.peak);
+        volumeBar(w, h, 0, baseY, perc, i.second->peak);
 
         if (i.first == selected_output_index) {
             attron(COLOR_PAIR(1));
@@ -116,19 +116,19 @@ void Recording::draw(int w, int h)
         char label[255] = {0};
         char app[255] = {0};
 
-        if(strlen(i.second.app_name) > 0) {
+        if(strlen(i.second->getAppName()) > 0) {
             snprintf(
                 app,
                 sizeof(app),
                 "%s : %s",
-                i.second.app_name,
-                i.second.name
+                i.second->getAppName(),
+                i.second->name
             );
         } else {
-            snprintf(app, sizeof(app), "%s", i.second.name);
+            snprintf(app, sizeof(app), "%s", i.second->name);
         }
 
-        if (i.second.mute) {
+        if (i.second->mute) {
             snprintf(
                 label,
                 sizeof(label),
@@ -146,7 +146,7 @@ void Recording::draw(int w, int h)
         }
 
         mvaddstr(baseY - 2, 1, label);
-        char *name = pa.PA_SOURCES.find(i.second.source)->second.name;
+        char *name = pa.PA_SOURCES.find(i.second->getSource())->second->name;
 
         unsigned int len = strlen(name);
         unsigned int sink_pos = w - 1 - len;

@@ -86,10 +86,10 @@ void Input::draw(int w, int h)
     int baseY = 3;
 
     for (auto &i : pa.PA_SOURCES) {
-        float perc = static_cast<float>(i.second.volume) /
+        float perc = static_cast<float>(i.second->volume) /
                      (PA_VOLUME_NORM * 1.5f);
 
-        volumeBar(w, h, 0, baseY, perc, i.second.peak);
+        volumeBar(w, h, 0, baseY, perc, i.second->peak);
 
         if (i.first == selected_source_index) {
             attron(COLOR_PAIR(1));
@@ -97,19 +97,19 @@ void Input::draw(int w, int h)
 
         char label[255];
 
-        if (i.second.mute) {
+        if (i.second->mute) {
             snprintf(
                 label,
                 sizeof(label),
                 "%s (muted)",
-                i.second.name
+                i.second->name
             );
         } else {
             snprintf(
                 label,
                 sizeof(label),
                 "%s (%d%%)",
-                i.second.name,
+                i.second->name,
                 static_cast<int>(perc * 1.5f * 100.f)
             );
         }
