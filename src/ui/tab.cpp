@@ -121,6 +121,37 @@ uint32_t Tab::dropDown(int x, int y, std::map<uint32_t, PaObject *> objects,
     return selected;
 }
 
+void Tab::borderBox(int w, int h, int px, int py)
+{
+    mvvline(py, px, ACS_VLINE, h);
+    mvvline(py, px+w, ACS_VLINE, h);
+
+    mvhline(py, px, ACS_HLINE, w);
+    mvhline(py+h, px, ACS_HLINE, w);
+
+    mvhline(py, px, ACS_ULCORNER, 1);
+    mvhline(py, px+w, ACS_URCORNER, 1);
+
+    mvhline(py+h, px, ACS_LLCORNER, 1);
+    mvhline(py+h, px+w, ACS_LRCORNER, 1);
+
+}
+
+void Tab::selectBox(int w, int px, int py, bool selected)
+{
+    if(selected){
+        attron(COLOR_PAIR(1));
+    }
+
+    mvaddstr(py+1, px+2, "Digital Stereo (HDMI) Output");
+
+    if(selected){
+        attroff(COLOR_PAIR(1));
+    }
+
+    borderBox(w, 2, px, py);
+}
+
 void Tab::volumeBar(int w, int h, int px, int py, float vol, float peak)
 {
     // light      ░ \u2593
