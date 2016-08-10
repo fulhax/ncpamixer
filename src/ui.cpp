@@ -37,9 +37,12 @@ int Ui::init()
 
     noecho();
     nonl();
+    raw();
 
     keypad(stdscr, true);
     nodelay(stdscr, true);
+    
+    scrollok(stdscr, true);
 
     start_color();
     use_default_colors();
