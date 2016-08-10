@@ -6,6 +6,15 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++14")
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
+set(CURSES_NEED_NCURSES TRUE)
+set(CURSES_NEED_WIDE TRUE)
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+
+find_package(CursesW REQUIRED)
+find_package(PulseAudio REQUIRED)
+
 set(COMMON_SRC
     "pulsemixer.cpp"
     "pa_object.cpp"
@@ -23,17 +32,13 @@ set(COMMON_SRC
 
 include_directories(
     "src/"
+    ${CURSES_INCLUDE_DIR}
+    ${PULSEAUDIO_INCLUDE_DIR}
 )
 
 add_executable(${CMAKE_PROJECT_NAME} ${COMMON_SRC} ${UI_RESOURCES})
 
-
 target_link_libraries(${CMAKE_PROJECT_NAME}
-    ncursesw
-    pulse
+    ${CURSES_LIBRARIES}
+    ${PULSEAUDIO_LIBRARY}
 )
-
-# set(THREADS_PREFER_PTHREAD_FLAG ON)
-# find_package(Threads REQUIRED)
-# target_link_libraries(pulsemixer Threads::Threads)
-# SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++11 -pthread")

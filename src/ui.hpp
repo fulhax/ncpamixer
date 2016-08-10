@@ -1,8 +1,7 @@
 #ifndef UI_HPP_
 #define UI_HPP_
 
-#include <ncursesw/ncurses.h>
-#include <pulse/pulseaudio.h>
+#include <ncurses.h>
 
 #include <condition_variable>
 #include <vector>

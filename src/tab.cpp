@@ -1,6 +1,6 @@
 #include "tab.hpp"
 
-#include <ncursesw/ncurses.h>
+#include <ncurses.h>
 
 void Tab::volumeBar(int w, int h, int px, int py, float vol, float peak)
 {

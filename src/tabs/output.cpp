@@ -1,7 +1,7 @@
 #include "output.hpp"
 
 #include <string.h>
-#include <ncursesw/ncurses.h>
+#include <ncurses.h>
 #include <inttypes.h>
 
 #include "../pa.hpp"
