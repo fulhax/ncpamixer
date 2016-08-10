@@ -63,11 +63,13 @@ void Playback::handleInput(int input)
         }
 
         case 'c': {
-            auto i = pa.PA_INPUTS.find(selected_index);
 
-            if (i != pa.PA_INPUTS.end()) {
-                uint32_t sink = dropDown(pa.PA_SINKS, i->second->getSink());
-                pa.move_input_sink(selected_index, sink);
+            if(selected_pobj != nullptr){
+                auto i = pa.PA_INPUTS.find(selected_index);
+                if (i != pa.PA_INPUTS.end()) {
+                    uint32_t sink = dropDown(pa.PA_SINKS, i->second->getSink());
+                    selected_pobj->move(sink);
+                }
             }
 
             break;
