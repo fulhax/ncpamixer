@@ -563,7 +563,17 @@ void Pa::remove_sink(uint32_t index)
 {
     std::lock_guard<std::mutex> lk(inputMtx);
 
-    delete PA_SINKS[index];
+    auto i = PA_SINKS.find(index);
+
+    if (i != PA_SINKS.end()) {
+        if (i->second->monitor_stream != nullptr) {
+            pa_stream_disconnect(i->second->monitor_stream);
+            pa_stream_unref(i->second->monitor_stream);
+        }
+
+        delete i->second;
+        PA_SINKS.erase(index);
+    }
     PA_SINKS.erase(index);
 }
 
