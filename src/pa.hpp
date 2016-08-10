@@ -43,6 +43,8 @@ public:
     void update_source_output(const pa_source_output_info *info);
     void remove_input(uint32_t index);
     void remove_sink(uint32_t index);
+    void remove_source_output(uint32_t index);
+    void remove_source(uint32_t index);
     void set_input_volume(uint32_t index, int dir);
     void set_sink_volume(uint32_t index, int dir);
     void toggle_input_mute(uint32_t index);
@@ -62,7 +64,7 @@ public:
     static void ctx_sourcelist_cb(pa_context *ctx, const pa_source_info *info,
                                   int eol, void  *userdata);
     static void ctx_sourceoutputlist_cb(pa_context *ctx,
-                                        const pa_source_output_info *info, int eol, void *userdata);
+                                        const pa_source_output_info *info, int eol, void *instance);
     static void read_callback(pa_stream *s, size_t length, void *instance);
     static void stream_suspended_cb(pa_stream *stream, void *instance);
     static void stream_state_cb(pa_stream *stream, void *info);

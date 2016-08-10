@@ -458,6 +458,44 @@ void Pa::remove_input(uint32_t index)
     notify_update();
 }
 
+
+void Pa::remove_source_output(uint32_t index)
+{
+    std::lock_guard<std::mutex> lk(inputMtx);
+
+    auto i = PA_SOURCE_OUTPUTS.find(index);
+
+    if (i != PA_SOURCE_OUTPUTS.end()) {
+        if (i->second.monitor_stream != nullptr) {
+            pa_stream_disconnect(i->second.monitor_stream);
+            pa_stream_unref(i->second.monitor_stream);
+        }
+
+        PA_INPUTS.erase(index);
+    }
+
+    notify_update();
+}
+
+void Pa::remove_source(uint32_t index)
+{
+    std::lock_guard<std::mutex> lk(inputMtx);
+
+    auto i = PA_SOURCES.find(index);
+
+    if (i != PA_SOURCES.end()) {
+        if (i->second.monitor_stream != nullptr) {
+            pa_stream_disconnect(i->second.monitor_stream);
+            pa_stream_unref(i->second.monitor_stream);
+        }
+
+        PA_SOURCES.erase(index);
+    }
+
+    notify_update();
+}
+
+
 void Pa::remove_sink(uint32_t index)
 {
     std::lock_guard<std::mutex> lk(inputMtx);
@@ -489,9 +527,7 @@ void Pa::ctx_sourcelist_cb(pa_context *ctx, const pa_source_info *info,
     return;
 }
 
-void Pa::ctx_sourceoutputlist_cb(pa_context *ctx,
-                                 const pa_source_output_info *info,
-                                 int eol, void *instance)
+void Pa::ctx_sourceoutputlist_cb(pa_context *ctx, const pa_source_output_info *info, int eol, void *instance)
 {
     Pa *pa = reinterpret_cast<Pa *>(instance);
 
@@ -569,7 +605,32 @@ void Pa::subscribe_cb(pa_context *ctx, pa_subscription_event_type_t t,
             break;
         }
 
+        case PA_SUBSCRIPTION_EVENT_SOURCE:
+            if (type == PA_SUBSCRIPTION_EVENT_REMOVE) {
+                pa->remove_source(index);
+            } else if (type == PA_SUBSCRIPTION_EVENT_NEW ||
+                       type == PA_SUBSCRIPTION_EVENT_CHANGE) {
+
+                pa_operation *o = pa_context_get_source_info_by_index(
+                                      ctx,
+                                      index,
+                                      &Pa::ctx_sourcelist_cb,
+                                      instance
+                                  );
+                pa_operation_unref(o);
+            }
+
+            break;
+
         case PA_SUBSCRIPTION_EVENT_SOURCE_OUTPUT:
+            if (type == PA_SUBSCRIPTION_EVENT_REMOVE) {
+                pa->remove_source_output(index);
+            } else if (type == PA_SUBSCRIPTION_EVENT_NEW ||
+                       type == PA_SUBSCRIPTION_EVENT_CHANGE) {
+                pa_operation *o = pa_context_get_source_output_info(ctx, index, &Pa::ctx_sourceoutputlist_cb, instance);
+                pa_operation_unref(o);
+            }
+
         case PA_SUBSCRIPTION_EVENT_MODULE:
         case PA_SUBSCRIPTION_EVENT_CLIENT:
         case PA_SUBSCRIPTION_EVENT_SAMPLE_CACHE:
