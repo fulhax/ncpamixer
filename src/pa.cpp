@@ -39,6 +39,14 @@ uint32_t Pa::sink_exists(uint32_t index)
     return index;
 }
 
+uint32_t Pa::source_exists(uint32_t index)
+{
+    if ((PA_SOURCES.find(index) == PA_SOURCES.end())) {
+        index = PA_SOURCES.begin()->first;
+    }
+
+    return index;
+}
 
 uint32_t Pa::sink_source_output_exists(uint32_t index)
 {
@@ -82,7 +90,7 @@ void Pa::update_source_output(const pa_source_output_info *info)
     app_name = pa_proplist_gets(info->proplist, PA_PROP_APPLICATION_NAME);
 
     if (app_name != nullptr) {
-        strncpy(PA_INPUTS[info->index].app_name, app_name, 255);
+        strncpy(PA_SOURCE_OUTPUTS[info->index].app_name, app_name, 255);
     }
 
     if (monitor_changed) {

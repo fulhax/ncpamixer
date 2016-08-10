@@ -17,7 +17,7 @@ Input::~Input()
 
 void Input::handleInput(int input)
 {
-    selected_source_index = pa.sink_exists(selected_source_index);
+    selected_source_index = pa.source_exists(selected_source_index);
     if (selected_source_index == -1) {
         return;
     }

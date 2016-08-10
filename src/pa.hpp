@@ -53,6 +53,7 @@ public:
     uint32_t sink_source_output_exists(uint32_t index);
     uint32_t sink_input_exists(uint32_t index);
     uint32_t sink_exists(uint32_t index);
+    uint32_t source_exists(uint32_t index);
 
     static void ctx_state_cb(pa_context *ctx, void *userdata);
     static void subscribe_cb(pa_context *ctx, pa_subscription_event_type_t t,
