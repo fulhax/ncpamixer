@@ -1,5 +1,4 @@
 #include "pa_object.hpp"
-#include <stdio.h>
 
 PaObject::~PaObject()
 {

@@ -8,6 +8,8 @@
 #include "pa_object.hpp"
 #include "pa_input.hpp"
 #include "pa_sink.hpp"
+#include "pa_source.hpp"
+#include "pa_source_output.hpp"
 
 struct PA_SINK {
     uint32_t index;
@@ -34,8 +36,10 @@ public:
     explicit Pa();
     ~Pa();
 
+    void updatePeakByDeviceId(uint32_t index, float peak);
     void update_input(const pa_sink_input_info *info);
     void update_sink(const pa_sink_info *info);
+    void update_source(const pa_source_info *info);
     void remove_input(uint32_t index);
     void remove_sink(uint32_t index);
     void set_input_volume(uint32_t index, int dir);
@@ -67,6 +71,8 @@ public:
 
     std::map<uint32_t, PaInput> PA_INPUTS;
     std::map<uint32_t, PaSink> PA_SINKS;
+    std::map<uint32_t, PaSource> PA_SOURCES;
+    std::map<uint32_t, PaSourceOutput> PA_SOURCE_OUTPUTS;
 
     void (*notify_update_cb)();
     std::mutex inputMtx;

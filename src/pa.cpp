@@ -22,14 +22,13 @@ Pa::Pa()
 
 
 }
+
 Pa::~Pa()
 {
     pa_context_disconnect(pa_ctx);
     pa_threaded_mainloop_stop(pa_ml);
     pa_threaded_mainloop_free(pa_ml);
 }
-
-
 
 uint32_t Pa::sink_exists(uint32_t index)
 {
@@ -47,6 +46,35 @@ uint32_t Pa::sink_input_exists(uint32_t index)
     }
 
     return index;
+}
+
+void Pa::update_source(const pa_source_info *info)
+{
+    std::lock_guard<std::mutex> lk(inputMtx);
+    fprintf(stderr, "Hit\n");
+
+    bool monitor_changed = true;
+
+    if (PA_SOURCES.count(info->index)) {
+        monitor_changed = info->index !=
+                          PA_SOURCES[info->index].monitor_index;
+    }
+
+    PA_SOURCES[info->index].channels = info->channel_map.channels;
+    PA_SOURCES[info->index].monitor_index = info->index;
+    PA_SOURCES[info->index].volume = (const pa_volume_t) pa_cvolume_avg(
+                                         &info->volume);
+    PA_SOURCES[info->index].mute = info->mute;
+
+    strncpy(PA_SOURCES[info->index].name, info->description, 255);
+
+    if (monitor_changed) {
+        create_monitor_stream_for_paobject(&PA_SOURCES[info->index]);
+    }
+
+    notify_update();
+
+
 }
 
 void Pa::update_sink(const pa_sink_info *info)
@@ -147,13 +175,36 @@ void Pa::read_callback(pa_stream *s, size_t length, void *instance)
     }
 
     uint32_t input_idx = pa_stream_get_monitor_stream(s);
+
     if (input_idx != PA_INVALID_INDEX) {
         pa->PA_INPUTS[input_idx].peak = v;
     } else {
-        pa->PA_SINKS[pa_stream_get_device_index(s)].peak = v;
+        pa->updatePeakByDeviceId(pa_stream_get_device_index(s), v);
     }
 
     pa->notify_update();
+}
+
+void Pa::updatePeakByDeviceId(uint32_t index, float peak)
+{
+    for (auto &s : PA_SINKS) {
+        if (s.second.monitor_index == index) {
+            s.second.peak = peak;
+        }
+    }
+
+    for (auto &s : PA_SOURCES) {
+        if (s.second.monitor_index == index) {
+            s.second.peak = peak;
+        }
+    }
+
+    //for (auto &s : PA_SOURCE_OUTPUTS) {
+    //    if (s.monitor_index == index) {
+    //        s.second.peak = peak;
+    //    }
+    //}
+
 }
 
 void Pa::stream_state_cb(pa_stream *stream, void *instance)
@@ -227,9 +278,9 @@ void Pa::create_monitor_stream_for_paobject(PaObject *po)
     } else if (po->type == pa_object_t::INPUT) {
         PaInput *input = reinterpret_cast<PaInput *>(po);
         input->monitor_stream = create_monitor_stream_for_source(
-                                 PA_SINKS[input->sink].monitor_index,
-                                 input->index
-                             );
+                                    PA_SINKS[input->sink].monitor_index,
+                                    input->index
+                                );
     }
 }
 
@@ -385,8 +436,14 @@ void Pa::notify_update()
 
 void Pa::ctx_sourcelist_cb(pa_context *ctx, const pa_source_info *info,
                            int eol,
-                           void *userdata)
+                           void *instance)
 {
+    Pa *pa = reinterpret_cast<Pa *>(instance);
+
+    if (!eol) {
+        pa->update_source(info);
+    }
+
     return;
 }
 

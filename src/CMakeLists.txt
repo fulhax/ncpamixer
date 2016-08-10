@@ -20,6 +20,7 @@ set(COMMON_SRC
     "pa_object.cpp"
     "pa_sink.cpp"
     "pa_input.cpp"
+    "pa_source.cpp"
     "pa.cpp"
     "ui.cpp"
     "tab.cpp"

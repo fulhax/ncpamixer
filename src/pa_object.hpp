@@ -1,7 +1,7 @@
 #ifndef PA_OBJECT_
 #define PA_OBJECT_
 #include <pulse/pulseaudio.h>
-enum pa_object_t {SINK, INPUT};
+enum pa_object_t {SINK, INPUT, SOURCE, SOURCE_OUTPUT};
 
 class PaObject
 {
