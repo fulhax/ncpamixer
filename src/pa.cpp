@@ -574,7 +574,6 @@ void Pa::remove_sink(uint32_t index)
         delete i->second;
         PA_SINKS.erase(index);
     }
-    PA_SINKS.erase(index);
 }
 
 void Pa::set_notify_update_cb(notify_update_callback cb)
