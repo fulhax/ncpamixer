@@ -510,6 +510,8 @@ void Pa::remove_input(uint32_t index)
             pa_stream_disconnect(i->second->monitor_stream);
             pa_stream_unref(i->second->monitor_stream);
         }
+        
+        delete i->second;
 
         PA_INPUTS.erase(index);
     }
@@ -560,6 +562,8 @@ void Pa::remove_source(uint32_t index)
 void Pa::remove_sink(uint32_t index)
 {
     std::lock_guard<std::mutex> lk(inputMtx);
+
+    delete PA_SINKS[index];
     PA_SINKS.erase(index);
 }
 
