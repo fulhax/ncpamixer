@@ -110,6 +110,7 @@ void Pa::update_source(const pa_source_info *info)
         monitor_changed = info->index != p->monitor_index;
     }
 
+    p->index = info->index;
     p->channels = info->channel_map.channels;
     p->monitor_index = info->index;
     p->volume = (const pa_volume_t) pa_cvolume_avg(&info->volume);
@@ -139,6 +140,7 @@ void Pa::update_sink(const pa_sink_info *info)
         p = reinterpret_cast<PaSink *>(PA_SINKS[info->index]);
     }
 
+    p->index = info->index;
     p->channels = info->channel_map.channels;
     p->monitor_index = info->monitor_source;
     p->volume = (const pa_volume_t) pa_cvolume_avg(&info->volume);
@@ -170,7 +172,6 @@ void Pa::update_input(const pa_sink_input_info *info)
     }
 
     p->index = info->index;
-
     p->channels = info->channel_map.channels;
     p->volume = (const pa_volume_t) pa_cvolume_avg(&info->volume);
     p->mute = info->mute;
