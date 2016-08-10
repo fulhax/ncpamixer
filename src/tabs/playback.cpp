@@ -56,7 +56,7 @@ void Playback::handleInput(int input)
             auto i = pa.PA_INPUTS.find(selected_index);
 
             if (i != pa.PA_INPUTS.end()) {
-                dropDown(pa.PA_SINKS, i->second->getSink());
+                dropDown(pa.PA_SINKS, 0);
             }
 
             break;

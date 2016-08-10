@@ -9,6 +9,10 @@
 
 void Tab::dropDown(std::map<uint32_t, PaObject *> objects, uint32_t current)
 {
+    if(objects.empty()) {
+        return;
+    }
+
     static int selected = 0;
     int width = 0;
     int height = 0;
@@ -18,7 +22,9 @@ void Tab::dropDown(std::map<uint32_t, PaObject *> objects, uint32_t current)
     WINDOW *menu_win = 0;
 
     for (auto i : objects) {
-        items.push_back(new_item(i.second->name, i.second->name));
+        char *tmp = new char[strlen(i.second->name) + 1];
+        snprintf(tmp, strlen(i.second->name) + 1, "%s", i.second->name);
+        items.push_back(new_item(tmp, ""));
 
         set_item_userptr(
             items.back(),
@@ -99,7 +105,6 @@ void Tab::dropDown(std::map<uint32_t, PaObject *> objects, uint32_t current)
         wrefresh(menu_win);
     }
 
-    unpost_menu(menu);
     free_menu(menu);
 
     for (auto i : items) {
