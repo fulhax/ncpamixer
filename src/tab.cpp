@@ -7,7 +7,7 @@
 #include <vector>
 #include <map>
 
-void Tab::dropDown(std::map<uint32_t, PaObject *> *objects, uint32_t current)
+void Tab::dropDown(std::map<uint32_t, PaObject *> objects, uint32_t current)
 {
     static int selected = 0;
     int width = 0;
@@ -17,7 +17,7 @@ void Tab::dropDown(std::map<uint32_t, PaObject *> *objects, uint32_t current)
     MENU *menu = 0;
     WINDOW *menu_win = 0;
 
-    for (auto i : *objects) {
+    for (auto i : objects) {
         items.push_back(new_item(i.second->name, i.second->name));
 
         set_item_userptr(
@@ -31,7 +31,7 @@ void Tab::dropDown(std::map<uint32_t, PaObject *> *objects, uint32_t current)
         }
 
         width = (width < strlen(i.second->name) + 3) ?
-                strlen(i.second->name) + 3 :
+                strlen(i.second->name) :
                 width;
 
         height = (height < 3) ? height + 1 : 3;
@@ -46,7 +46,8 @@ void Tab::dropDown(std::map<uint32_t, PaObject *> *objects, uint32_t current)
     set_menu_sub(menu, derwin(menu_win, height + 1, width, 1, 1));
     set_menu_format(menu, height + 1, 1);
 
-    set_menu_mark(menu, "* ");
+    //set_menu_mark(menu, "* ");
+    set_menu_mark(menu, "");
     menu_opts_on(menu, O_ONEVALUE);
     menu_opts_off(menu, O_SHOWDESC);
 
@@ -73,10 +74,6 @@ void Tab::dropDown(std::map<uint32_t, PaObject *> *objects, uint32_t current)
                         item_userptr(current_item(menu))
                     )
                 );
-
-                current = *reinterpret_cast<uint32_t *>(
-                              item_userptr(current_item(menu))
-                          );
 
             case 27:
                 selecting = false;

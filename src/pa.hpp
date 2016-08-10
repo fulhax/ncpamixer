@@ -50,10 +50,7 @@ public:
     void toggle_input_mute(uint32_t index);
     void toggle_sink_mute(uint32_t index);
     void move_input_sink(uint32_t input_index, uint32_t sink_index);
-    uint32_t sink_source_output_exists(uint32_t index);
-    uint32_t sink_input_exists(uint32_t index);
-    uint32_t sink_exists(uint32_t index);
-    uint32_t source_exists(uint32_t index);
+    uint32_t exists(std::map<uint32_t, PaObject*> objects, uint32_t index);
 
     static void ctx_state_cb(pa_context *ctx, void *userdata);
     static void subscribe_cb(pa_context *ctx, pa_subscription_event_type_t t,

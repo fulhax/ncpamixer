@@ -35,45 +35,18 @@ Pa::~Pa()
     pa_threaded_mainloop_free(pa_ml);
 }
 
-uint32_t Pa::sink_exists(uint32_t index)
+uint32_t Pa::exists(std::map<uint32_t, PaObject*> objects, uint32_t index)
 {
-    if ((PA_SINKS.find(index) == PA_SINKS.end())) {
-        index = PA_SINKS.begin()->first;
+    if (objects.empty()) {
+        return -1;
+    }
+
+    if ((objects.find(index) == objects.end())) {
+        index = objects.begin()->first;
     }
 
     return index;
 }
-
-uint32_t Pa::source_exists(uint32_t index)
-{
-    if ((PA_SOURCES.find(index) == PA_SOURCES.end())) {
-        index = PA_SOURCES.begin()->first;
-    }
-
-    return index;
-}
-
-uint32_t Pa::sink_source_output_exists(uint32_t index)
-{
-    if ((PA_SOURCE_OUTPUTS.find(index) == PA_SOURCE_OUTPUTS.end())) {
-        index = PA_SOURCE_OUTPUTS.begin()->first;
-    }
-
-    return index;
-
-}
-
-uint32_t Pa::sink_input_exists(uint32_t index)
-{
-    if ((PA_INPUTS.find(index) == PA_INPUTS.end())) {
-        index = PA_INPUTS.begin()->first;
-    }
-
-    return index;
-}
-
-
-
 
 void Pa::update_source_output(const pa_source_output_info *info)
 {
@@ -133,6 +106,7 @@ void Pa::update_source(const pa_source_info *info)
     std::lock_guard<std::mutex> lk(inputMtx);
 
     PaSource *p;
+
     if (PA_SOURCES.count(info->index) == 0) {
         p = new PaSource;
         PA_SOURCES[info->index] = p;
@@ -167,6 +141,7 @@ void Pa::update_sink(const pa_sink_info *info)
     std::lock_guard<std::mutex> lk(inputMtx);
 
     PaSink *p;
+
     if (PA_SINKS.count(info->index) == 0) {
         p = new PaSink;
         PA_SINKS[info->index] = p;
@@ -202,6 +177,7 @@ void Pa::update_input(const pa_sink_input_info *info)
     std::lock_guard<std::mutex> lk(inputMtx);
 
     PaInput *p;
+
     if (PA_INPUTS.count(info->index) == 0) {
         p = new PaInput;
         PA_INPUTS[info->index] = p;
@@ -510,7 +486,7 @@ void Pa::remove_input(uint32_t index)
             pa_stream_disconnect(i->second->monitor_stream);
             pa_stream_unref(i->second->monitor_stream);
         }
-        
+
         delete i->second;
 
         PA_INPUTS.erase(index);

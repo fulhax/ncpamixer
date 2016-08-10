@@ -11,7 +11,7 @@
 
 Playback::Playback()
 {
-    selected_input_index = pa.sink_input_exists(-1);
+    selected_index = pa.exists(pa.PA_SOURCE_OUTPUTS, -1);
 }
 
 Playback::~Playback()
@@ -21,22 +21,22 @@ Playback::~Playback()
 
 void Playback::handleInput(int input)
 {
-    selected_input_index = pa.sink_input_exists(selected_input_index);
+    selected_index = pa.exists(pa.PA_INPUTS, selected_index);
 
-    if (selected_input_index == -1) {
+    if (selected_index == -1) {
         return;
     }
 
     switch (input) {
         case 'm':
-            pa.toggle_input_mute(selected_input_index);
+            pa.toggle_input_mute(selected_index);
             break;
 
         case 'g': {
             auto i = pa.PA_INPUTS.begin();
 
             if (i != pa.PA_INPUTS.end()) {
-                selected_input_index = i->first;
+                selected_index = i->first;
             }
 
             break;
@@ -46,54 +46,54 @@ void Playback::handleInput(int input)
             auto i = pa.PA_INPUTS.rbegin();
 
             if (i != pa.PA_INPUTS.rend()) {
-                selected_input_index = i->first;
+                selected_index = i->first;
             }
 
             break;
         }
 
         case 'c': {
-            auto i = pa.PA_INPUTS.find(selected_input_index);
+            auto i = pa.PA_INPUTS.find(selected_index);
 
             if (i != pa.PA_INPUTS.end()) {
-                dropDown(&pa.PA_SINKS, i->second->getSink());
+                dropDown(pa.PA_SINKS, i->second->getSink());
             }
 
             break;
         }
 
         case 'k': {
-            auto i = std::prev(pa.PA_INPUTS.find(selected_input_index), 1);
+            auto i = std::prev(pa.PA_INPUTS.find(selected_index), 1);
 
             if (i != pa.PA_INPUTS.end()) {
-                selected_input_index = i->first;
+                selected_index = i->first;
             }
 
             break;
         }
 
         case 'j': {
-            auto i = std::next(pa.PA_INPUTS.find(selected_input_index), 1);
+            auto i = std::next(pa.PA_INPUTS.find(selected_index), 1);
 
             if (i != pa.PA_INPUTS.end()) {
-                selected_input_index = i->first;
+                selected_index = i->first;
             }
 
             break;
         }
 
         case 'h':
-            pa.set_input_volume(selected_input_index, -1);
+            pa.set_input_volume(selected_index, -1);
 
             break;
 
         case 'l':
-            pa.set_input_volume(selected_input_index, 1);
+            pa.set_input_volume(selected_index, 1);
 
             break;
 
         case '\t': {
-            auto i = pa.PA_INPUTS.find(selected_input_index);
+            auto i = pa.PA_INPUTS.find(selected_index);
 
             if (i != pa.PA_INPUTS.end()) {
                 auto current_sink = pa.PA_SINKS.find(i->second->getSink());
@@ -104,7 +104,7 @@ void Playback::handleInput(int input)
                     current_sink = pa.PA_SINKS.begin();
                 }
 
-                pa.move_input_sink(selected_input_index, current_sink->first);
+                pa.move_input_sink(selected_index, current_sink->first);
             }
 
             break;
@@ -122,7 +122,7 @@ void Playback::draw(int w, int h)
 
         volumeBar(w, h, 0, baseY, perc, i.second->peak);
 
-        if (i.first == selected_input_index) {
+        if (i.first == selected_index) {
             attron(COLOR_PAIR(1));
         }
 
@@ -170,7 +170,7 @@ void Playback::draw(int w, int h)
             name
         );
 
-        if (i.first == selected_input_index) {
+        if (i.first == selected_index) {
             attroff(COLOR_PAIR(1));
         }
 

@@ -8,7 +8,7 @@
 
 Recording::Recording()
 {
-    selected_output_index = pa.sink_source_output_exists(-1);
+    selected_index = pa.exists(pa.PA_SOURCE_OUTPUTS, -1);
 }
 
 Recording::~Recording()
@@ -18,22 +18,22 @@ Recording::~Recording()
 
 void Recording::handleInput(int input)
 {
-    selected_output_index = pa.sink_source_output_exists(selected_output_index);
+    selected_index = pa.exists(pa.PA_SOURCE_OUTPUTS, selected_index);
 
-    if(selected_output_index == -1) {
+    if(selected_index == -1) {
         return;
     }
 
     switch (input) {
         case 'm':
-            pa.toggle_input_mute(selected_output_index);
+            pa.toggle_input_mute(selected_index);
             break;
 
         case 'g': {
             auto i = pa.PA_SOURCE_OUTPUTS.begin();
 
             if (i != pa.PA_SOURCE_OUTPUTS.end()) {
-                selected_output_index = i->first;
+                selected_index = i->first;
             }
 
             break;
@@ -43,44 +43,44 @@ void Recording::handleInput(int input)
             auto i = pa.PA_SOURCE_OUTPUTS.rbegin();
 
             if (i != pa.PA_SOURCE_OUTPUTS.rend()) {
-                selected_output_index = i->first;
+                selected_index = i->first;
             }
 
             break;
         }
 
         case 'k': {
-            auto i = std::prev(pa.PA_SOURCE_OUTPUTS.find(selected_output_index), 1);
+            auto i = std::prev(pa.PA_SOURCE_OUTPUTS.find(selected_index), 1);
 
             if (i != pa.PA_SOURCE_OUTPUTS.end()) {
-                selected_output_index = i->first;
+                selected_index = i->first;
             }
 
             break;
         }
 
         case 'j': {
-            auto i = std::next(pa.PA_SOURCE_OUTPUTS.find(selected_output_index), 1);
+            auto i = std::next(pa.PA_SOURCE_OUTPUTS.find(selected_index), 1);
 
             if (i != pa.PA_SOURCE_OUTPUTS.end()) {
-                selected_output_index = i->first;
+                selected_index = i->first;
             }
 
             break;
         }
 
         // case 'h':
-        //     pa.set_input_volume(selected_output_index, -1);
+        //     pa.set_input_volume(selected_index, -1);
 
         //     break;
 
         // case 'l':
-        //     pa.set_input_volume(selected_output_index, 1);
+        //     pa.set_input_volume(selected_index, 1);
 
         //     break;
 
         // case '\t': {
-        //     auto i = pa.PA_SOURCE_OUTPUTS.find(selected_output_index);
+        //     auto i = pa.PA_SOURCE_OUTPUTS.find(selected_index);
 
         //     if (i != pa.PA_SOURCE_OUTPUTS.end()) {
         //         auto current_sink = pa.PA_SOURCE_OUTPUTS.find(i->second.sink);
@@ -91,7 +91,7 @@ void Recording::handleInput(int input)
         //             current_sink = pa.PA_SOURCE_OUTPUTS.begin();
         //         }
 
-        //         pa.move_input_sink(selected_output_index, current_sink->first);
+        //         pa.move_input_sink(selected_index, current_sink->first);
         //     }
         //     break;
         // }
@@ -109,7 +109,7 @@ void Recording::draw(int w, int h)
 
         volumeBar(w, h, 0, baseY, perc, i.second->peak);
 
-        if (i.first == selected_output_index) {
+        if (i.first == selected_index) {
             attron(COLOR_PAIR(1));
         }
 
@@ -157,7 +157,7 @@ void Recording::draw(int w, int h)
             name
         );
 
-        if (i.first == selected_output_index) {
+        if (i.first == selected_index) {
             attroff(COLOR_PAIR(1));
         }
 

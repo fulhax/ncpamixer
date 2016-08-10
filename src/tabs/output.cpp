@@ -8,7 +8,7 @@
 
 Output::Output()
 {
-    uint32_t selected_sink_index = pa.sink_exists(-1);
+    selected_index = pa.exists(pa.PA_SINKS, -1);
 }
 
 Output::~Output()
@@ -18,21 +18,22 @@ Output::~Output()
 
 void Output::handleInput(int input)
 {
-    selected_sink_index = pa.sink_exists(selected_sink_index);
-    if (selected_sink_index == -1) {
+    selected_index = pa.exists(pa.PA_SINKS, selected_index);
+
+    if (selected_index == -1) {
         return;
     }
 
     switch (input) {
         case 'm':
-            pa.toggle_sink_mute(selected_sink_index);
+            pa.toggle_sink_mute(selected_index);
             break;
 
         case 'g': {
             auto i = pa.PA_SINKS.begin();
 
             if (i != pa.PA_SINKS.end()) {
-                selected_sink_index = i->first;
+                selected_index = i->first;
             }
 
             break;
@@ -42,39 +43,39 @@ void Output::handleInput(int input)
             auto i = pa.PA_SINKS.rbegin();
 
             if (i != pa.PA_SINKS.rend()) {
-                selected_sink_index = i->first;
+                selected_index = i->first;
             }
 
             break;
         }
 
         case 'k': {
-            auto i = std::prev(pa.PA_SINKS.find(selected_sink_index), 1);
+            auto i = std::prev(pa.PA_SINKS.find(selected_index), 1);
 
             if (i != pa.PA_SINKS.end()) {
-                selected_sink_index = i->first;
+                selected_index = i->first;
             }
 
             break;
         }
 
         case 'j': {
-            auto i = std::next(pa.PA_SINKS.find(selected_sink_index), 1);
+            auto i = std::next(pa.PA_SINKS.find(selected_index), 1);
 
             if (i != pa.PA_SINKS.end()) {
-                selected_sink_index = i->first;
+                selected_index = i->first;
             }
 
             break;
         }
 
         case 'h':
-            pa.set_sink_volume(selected_sink_index, -1);
+            pa.set_sink_volume(selected_index, -1);
 
             break;
 
         case 'l':
-            pa.set_sink_volume(selected_sink_index, 1);
+            pa.set_sink_volume(selected_index, 1);
 
             break;
     }
@@ -91,7 +92,7 @@ void Output::draw(int w, int h)
 
         volumeBar(w, h, 0, baseY, perc, i.second->peak);
 
-        if (i.first == selected_sink_index) {
+        if (i.first == selected_index) {
             attron(COLOR_PAIR(1));
         }
 
@@ -116,7 +117,7 @@ void Output::draw(int w, int h)
 
         mvaddstr(baseY - 2, 1, label);
 
-        if (i.first == selected_sink_index) {
+        if (i.first == selected_index) {
             attroff(COLOR_PAIR(1));
         }
 
