@@ -51,6 +51,7 @@ uint32_t Tab::dropDown(std::map<uint32_t, PaObject *> objects,
     set_menu_mark(menu, "");
     menu_opts_on(menu, O_ONEVALUE);
     menu_opts_off(menu, O_SHOWDESC);
+    menu_opts_off(menu, O_NONCYCLIC);
 
     box(menu_win, 0, 0);
     post_menu(menu);
