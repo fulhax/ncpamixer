@@ -14,6 +14,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 find_package(CursesW REQUIRED)
 find_package(PulseAudio REQUIRED)
+find_package(LibConfig REQUIRED)
 
 set(COMMON_SRC
     "pulsemixer.cpp"
@@ -23,6 +24,7 @@ set(COMMON_SRC
     "pa_source.cpp"
     "pa_source_output.cpp"
     "pa.cpp"
+    "config.cpp"
     "ui/ui.cpp"
     "ui/tab.cpp"
     "ui/tabs/playback.cpp"
@@ -36,6 +38,7 @@ include_directories(
     "src/"
     ${CURSES_INCLUDE_DIR}
     ${PULSEAUDIO_INCLUDE_DIR}
+    ${LIBCONFIGPP_INCLUDE_DIR}
 )
 
 add_executable(${CMAKE_PROJECT_NAME} ${COMMON_SRC} ${UI_RESOURCES})
@@ -43,4 +46,5 @@ add_executable(${CMAKE_PROJECT_NAME} ${COMMON_SRC} ${UI_RESOURCES})
 target_link_libraries(${CMAKE_PROJECT_NAME}
     ${CURSES_LIBRARIES}
     ${PULSEAUDIO_LIBRARY}
+    ${LIBCONFIGPP_LIBRARIES}
 )
