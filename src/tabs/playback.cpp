@@ -4,6 +4,9 @@
 #include <ncurses.h>
 #include <inttypes.h>
 
+#include <vector>
+#include <algorithm>
+
 #include "../pa.hpp"
 
 Playback::Playback()
@@ -20,7 +23,7 @@ void Playback::handleInput(int input)
 {
     selected_input_index = pa.sink_input_exists(selected_input_index);
 
-    if(selected_input_index == -1) {
+    if (selected_input_index == -1) {
         return;
     }
 
@@ -44,6 +47,16 @@ void Playback::handleInput(int input)
 
             if (i != pa.PA_INPUTS.rend()) {
                 selected_input_index = i->first;
+            }
+
+            break;
+        }
+
+        case 'c': {
+            auto i = pa.PA_INPUTS.find(selected_input_index);
+
+            if (i != pa.PA_INPUTS.end()) {
+                dropDown(&pa.PA_SINKS, i->second->getSink());
             }
 
             break;
@@ -93,6 +106,7 @@ void Playback::handleInput(int input)
 
                 pa.move_input_sink(selected_input_index, current_sink->first);
             }
+
             break;
         }
     }
@@ -104,7 +118,7 @@ void Playback::draw(int w, int h)
 
     for (auto &i : pa.PA_INPUTS) {
         float perc = static_cast<float>(i.second->volume) /
-                      (PA_VOLUME_NORM * 1.5f);
+                     (PA_VOLUME_NORM * 1.5f);
 
         volumeBar(w, h, 0, baseY, perc, i.second->peak);
 
@@ -115,7 +129,7 @@ void Playback::draw(int w, int h)
         char label[255] = {0};
         char app[255] = {0};
 
-        if(strlen(i.second->getAppName()) > 0) {
+        if (strlen(i.second->getAppName()) > 0) {
             snprintf(
                 app,
                 sizeof(app),
