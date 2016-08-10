@@ -39,6 +39,14 @@ uint32_t Pa::sink_exists(uint32_t index)
     return index;
 }
 
+uint32_t Pa::source_exists(uint32_t index)
+{
+    if ((PA_SOURCES.find(index) == PA_SOURCES.end())) {
+        index = PA_SOURCES.begin()->first;
+    }
+
+    return index;
+}
 
 uint32_t Pa::sink_source_output_exists(uint32_t index)
 {
