@@ -1,8 +1,8 @@
 #ifndef PA_SOURCE_OUTPUT_
 #define PA_SOURCE_OUTPUT_
-#include "pa_object.hpp"
+#include "pa_input.hpp"
 
-class PaSourceOutput : public PaObject
+class PaSourceOutput : public PaInput
 {
 public:
     PaSourceOutput();

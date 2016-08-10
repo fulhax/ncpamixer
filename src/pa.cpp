@@ -39,6 +39,17 @@ uint32_t Pa::sink_exists(uint32_t index)
     return index;
 }
 
+
+uint32_t Pa::sink_source_output_exists(uint32_t index)
+{
+    if ((PA_SOURCE_OUTPUTS.find(index) == PA_SOURCE_OUTPUTS.end())) {
+        index = PA_SOURCE_OUTPUTS.begin()->first;
+    }
+
+    return index;
+
+}
+
 uint32_t Pa::sink_input_exists(uint32_t index)
 {
     if ((PA_INPUTS.find(index) == PA_INPUTS.end())) {
@@ -48,10 +59,42 @@ uint32_t Pa::sink_input_exists(uint32_t index)
     return index;
 }
 
+void Pa::update_source_output(const pa_source_output_info *info)
+{
+    std::lock_guard<std::mutex> lk(inputMtx);
+
+    bool monitor_changed = true;
+
+    if (PA_SOURCE_OUTPUTS.count(info->index)) {
+        monitor_changed = info->index !=
+                          PA_SOURCE_OUTPUTS[info->index].monitor_index;
+    }
+
+    PA_SOURCE_OUTPUTS[info->index].channels = info->channel_map.channels;
+    PA_SOURCE_OUTPUTS[info->index].monitor_index = info->index;
+    PA_SOURCE_OUTPUTS[info->index].volume = (const pa_volume_t) pa_cvolume_avg(
+            &info->volume);
+    PA_SOURCE_OUTPUTS[info->index].mute = info->mute;
+
+    strncpy(PA_SOURCE_OUTPUTS[info->index].name, info->name, 255);
+
+    const char *app_name;
+    app_name = pa_proplist_gets(info->proplist, PA_PROP_APPLICATION_NAME);
+
+    if (app_name != nullptr) {
+        strncpy(PA_INPUTS[info->index].app_name, app_name, 255);
+    }
+
+    if (monitor_changed) {
+        create_monitor_stream_for_paobject(&PA_SOURCE_OUTPUTS[info->index]);
+    }
+
+    notify_update();
+}
+
 void Pa::update_source(const pa_source_info *info)
 {
     std::lock_guard<std::mutex> lk(inputMtx);
-    fprintf(stderr, "Hit\n");
 
     bool monitor_changed = true;
 
@@ -199,12 +242,11 @@ void Pa::updatePeakByDeviceId(uint32_t index, float peak)
         }
     }
 
-    //for (auto &s : PA_SOURCE_OUTPUTS) {
-    //    if (s.monitor_index == index) {
-    //        s.second.peak = peak;
-    //    }
-    //}
-
+    for (auto &s : PA_SOURCE_OUTPUTS) {
+        if (s.second.monitor_index == index) {
+            s.second.peak = peak;
+        }
+    }
 }
 
 void Pa::stream_state_cb(pa_stream *stream, void *instance)
@@ -447,6 +489,19 @@ void Pa::ctx_sourcelist_cb(pa_context *ctx, const pa_source_info *info,
     return;
 }
 
+void Pa::ctx_sourceoutputlist_cb(pa_context *ctx,
+                                 const pa_source_output_info *info,
+                                 int eol, void *instance)
+{
+    Pa *pa = reinterpret_cast<Pa *>(instance);
+
+    if (!eol) {
+        pa->update_source_output(info);
+    }
+
+    return;
+}
+
 void Pa::ctx_inputlist_cb(pa_context *ctx, const pa_sink_input_info *info,
                           int eol, void  *instance)
 {
@@ -551,6 +606,11 @@ void Pa::ctx_state_cb(pa_context *ctx, void *instance)
 
             // Sink input list (application) cb
             o = pa_context_get_sink_input_info_list(ctx, &Pa::ctx_inputlist_cb, instance);
+            pa_operation_unref(o);
+
+            // source outputs list cb
+            o = pa_context_get_source_output_info_list(ctx, &Pa::ctx_sourceoutputlist_cb,
+                    instance);
             pa_operation_unref(o);
 
             // Subscribe to changes

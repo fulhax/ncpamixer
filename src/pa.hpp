@@ -40,6 +40,7 @@ public:
     void update_input(const pa_sink_input_info *info);
     void update_sink(const pa_sink_info *info);
     void update_source(const pa_source_info *info);
+    void update_source_output(const pa_source_output_info *info);
     void remove_input(uint32_t index);
     void remove_sink(uint32_t index);
     void set_input_volume(uint32_t index, int dir);
@@ -47,6 +48,7 @@ public:
     void toggle_input_mute(uint32_t index);
     void toggle_sink_mute(uint32_t index);
     void move_input_sink(uint32_t input_index, uint32_t sink_index);
+    uint32_t sink_source_output_exists(uint32_t index);
     uint32_t sink_input_exists(uint32_t index);
     uint32_t sink_exists(uint32_t index);
 
@@ -59,12 +61,15 @@ public:
                                  int eol, void  *userdata);
     static void ctx_sourcelist_cb(pa_context *ctx, const pa_source_info *info,
                                   int eol, void  *userdata);
+    static void ctx_sourceoutputlist_cb(pa_context *ctx,
+                                        const pa_source_output_info *info, int eol, void *userdata);
     static void read_callback(pa_stream *s, size_t length, void *instance);
     static void stream_suspended_cb(pa_stream *stream, void *instance);
     static void stream_state_cb(pa_stream *stream, void *info);
 
-    void create_monitor_stream_for_paobject(PaObject* po);
-    pa_stream* create_monitor_stream_for_source(uint32_t source_index, uint32_t stream_index);
+    void create_monitor_stream_for_paobject(PaObject *po);
+    pa_stream *create_monitor_stream_for_source(uint32_t source_index,
+            uint32_t stream_index);
 
     void set_notify_update_cb(notify_update_callback cb);
     void notify_update();

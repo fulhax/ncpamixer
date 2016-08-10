@@ -21,6 +21,7 @@ set(COMMON_SRC
     "pa_sink.cpp"
     "pa_input.cpp"
     "pa_source.cpp"
+    "pa_source_output.cpp"
     "pa.cpp"
     "ui.cpp"
     "tab.cpp"
