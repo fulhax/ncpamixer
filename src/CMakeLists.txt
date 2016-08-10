@@ -23,13 +23,13 @@ set(COMMON_SRC
     "pa_source.cpp"
     "pa_source_output.cpp"
     "pa.cpp"
-    "ui.cpp"
-    "tab.cpp"
-    "tabs/playback.cpp"
-    "tabs/recording.cpp"
-    "tabs/output.cpp"
-    "tabs/input.cpp"
-    "tabs/configuration.cpp"
+    "ui/ui.cpp"
+    "ui/tab.cpp"
+    "ui/tabs/playback.cpp"
+    "ui/tabs/recording.cpp"
+    "ui/tabs/output.cpp"
+    "ui/tabs/input.cpp"
+    "ui/tabs/configuration.cpp"
 )
 
 include_directories(

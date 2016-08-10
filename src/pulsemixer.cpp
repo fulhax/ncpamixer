@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "ui.hpp"
+#include "ui/ui.hpp"
 #include "pa.hpp"
 
 int main(void)

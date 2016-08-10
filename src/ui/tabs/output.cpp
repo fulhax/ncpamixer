@@ -1,24 +1,24 @@
-#include "input.hpp"
+#include "output.hpp"
 
 #include <string.h>
 #include <ncurses.h>
 #include <inttypes.h>
 
-#include "../pa.hpp"
+#include "pa.hpp"
 
-Input::Input()
+Output::Output()
 {
-    selected_index = pa.exists(pa.PA_SOURCES, -1);
+    selected_index = pa.exists(pa.PA_SINKS, -1);
 }
 
-Input::~Input()
+Output::~Output()
 {
 
 }
 
-void Input::handleInput(int input)
+void Output::handleInput(int input)
 {
-    selected_index = pa.exists(pa.PA_SOURCES, selected_index);
+    selected_index = pa.exists(pa.PA_SINKS, selected_index);
 
     if (selected_index == -1) {
         return;
@@ -30,9 +30,9 @@ void Input::handleInput(int input)
             break;
 
         case 'g': {
-            auto i = pa.PA_SOURCES.begin();
+            auto i = pa.PA_SINKS.begin();
 
-            if (i != pa.PA_SOURCES.end()) {
+            if (i != pa.PA_SINKS.end()) {
                 selected_index = i->first;
             }
 
@@ -40,9 +40,9 @@ void Input::handleInput(int input)
         }
 
         case 'G': {
-            auto i = pa.PA_SOURCES.rbegin();
+            auto i = pa.PA_SINKS.rbegin();
 
-            if (i != pa.PA_SOURCES.rend()) {
+            if (i != pa.PA_SINKS.rend()) {
                 selected_index = i->first;
             }
 
@@ -50,9 +50,9 @@ void Input::handleInput(int input)
         }
 
         case 'k': {
-            auto i = std::prev(pa.PA_SOURCES.find(selected_index), 1);
+            auto i = std::prev(pa.PA_SINKS.find(selected_index), 1);
 
-            if (i != pa.PA_SOURCES.end()) {
+            if (i != pa.PA_SINKS.end()) {
                 selected_index = i->first;
             }
 
@@ -60,9 +60,9 @@ void Input::handleInput(int input)
         }
 
         case 'j': {
-            auto i = std::next(pa.PA_SOURCES.find(selected_index), 1);
+            auto i = std::next(pa.PA_SINKS.find(selected_index), 1);
 
-            if (i != pa.PA_SOURCES.end()) {
+            if (i != pa.PA_SINKS.end()) {
                 selected_index = i->first;
             }
 
@@ -80,14 +80,13 @@ void Input::handleInput(int input)
             break;
     }
 
-
 }
 
-void Input::draw(int w, int h)
+void Output::draw(int w, int h)
 {
     int baseY = 3;
 
-    for (auto &i : pa.PA_SOURCES) {
+    for (auto &i : pa.PA_SINKS) {
         float perc = static_cast<float>(i.second->volume) /
                      (PA_VOLUME_NORM * 1.5f);
 
@@ -124,5 +123,4 @@ void Input::draw(int w, int h)
 
         baseY += 5;
     }
-
 }
