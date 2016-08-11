@@ -8,11 +8,19 @@
 class Tab
 {
 public:
-    Tab() {};
+    uint32_t selected_index;
+
+    std::map<uint32_t, PaObject*>* object;
+    std::map<uint32_t, PaObject*>* toggle;
+
+    Tab() {
+        object = nullptr;
+        toggle = nullptr;
+    };
     virtual ~Tab() {};
 
     virtual void draw(int w, int h) = 0;
-    virtual void handleInput(int input) = 0;
+    void handleEvents(const char *event);
 
     void volumeBar(int w, int h, int px, int py, float vol, float peak);
     void borderBox(int w, int h, int px, int py);

@@ -5,6 +5,10 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 
+#include <string>
+
+#include "config.hpp"
+
 #include "tabs/playback.hpp"
 #include "tabs/recording.hpp"
 #include "tabs/output.hpp"
@@ -41,7 +45,7 @@ int Ui::init()
 
     keypad(stdscr, true);
     nodelay(stdscr, true);
-    
+
     scrollok(stdscr, true);
 
     start_color();
@@ -105,55 +109,56 @@ void Ui::switchTab(int index)
 void Ui::handleInput()
 {
     set_escdelay(25);
+
     int input = getch();
+    const char *event = 0;
 
     if (input == ERR) {
         return;
     }
 
     switch (input) {
-        case 'q':
-            kill();
-            return;
-
         case KEY_RESIZE:
             clear();
             refresh();
 
             getmaxyx(stdscr, height, width);
-            break;
-
-        case 'H':
-            switchTab(--tab_index);
-            break;
-
-        case 'L':
-            switchTab(++tab_index);
-            break;
-
-        case KEY_F(1):
-            switchTab(0);
-            break;
-
-        case KEY_F(2):
-            switchTab(1);
-            break;
-
-        case KEY_F(3):
-            switchTab(2);
-            break;
-
-        case KEY_F(4):
-            switchTab(3);
-            break;
-
-        case KEY_F(5):
-            switchTab(4);
-            break;
-
+            return;
         default:
-            current_tab->handleInput(input);
+            std::string key = std::to_string(input);
+            event = config.getString(
+                        ("keycode." +  key).c_str(),
+                        "unbound"
+                    ).c_str();
+
+            if (!strcmp("unbound", event)) {
+                fprintf(stderr, "Key %s is unbound!\n", key.c_str());
+                return;
+            }
+
+            fprintf(stderr, "%s is %s!\n", key.c_str(), event);
+
             break;
+    }
+
+    if (!strcmp("quit", event)) {
+        kill();
+    } else if (!strcmp("tab_next", event)) {
+        switchTab(++tab_index);
+    } else if (!strcmp("tab_prev", event)) {
+        switchTab(--tab_index);
+    } else if (!strcmp("tab_playback", event)) {
+        switchTab(TAB_PLAYBACK);
+    } else if (!strcmp("tab_recording", event)) {
+        switchTab(TAB_RECORDING);
+    } else if (!strcmp("tab_output", event)) {
+        switchTab(TAB_OUTPUT);
+    } else if (!strcmp("tab_input", event)) {
+        switchTab(TAB_INPUT);
+    } else if (!strcmp("tab_config", event)) {
+        switchTab(TAB_CONFIGURATION);
+    } else {
+        current_tab->handleEvents(event);
     }
 }
 

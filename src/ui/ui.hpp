@@ -11,6 +11,14 @@
 
 #define NUM_TABS 5
 
+enum TABS {
+    TAB_PLAYBACK = 0,
+    TAB_RECORDING,
+    TAB_OUTPUT,
+    TAB_INPUT,
+    TAB_CONFIGURATION
+};
+
 class Ui
 {
 public:

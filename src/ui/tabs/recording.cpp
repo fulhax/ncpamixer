@@ -8,105 +8,14 @@
 
 Recording::Recording()
 {
-    selected_index = pa.exists(pa.PA_SOURCE_OUTPUTS, -1);
+    object = &pa.PA_SOURCE_OUTPUTS;
+    toggle = &pa.PA_SOURCES;
+
+    selected_index = pa.exists(*object, -1);
 }
 
 Recording::~Recording()
 {
-
-}
-
-void Recording::handleInput(int input)
-{
-    selected_index = pa.exists(pa.PA_SOURCE_OUTPUTS, selected_index);
-
-    if (selected_index == -1) {
-        return;
-    }
-
-    auto pai = pa.PA_SOURCE_OUTPUTS.find(selected_index);
-
-    PaObject *selected_pobj = nullptr;
-
-    if (pai != pa.PA_INPUTS.end()) {
-        selected_pobj = pai->second;
-    }
-
-    switch (input) {
-        case 'm':
-            if (selected_pobj != nullptr) {
-                selected_pobj->toggle_mute();
-            }
-
-            break;
-
-        case 'g': {
-            auto i = pa.PA_SOURCE_OUTPUTS.begin();
-
-            if (i != pa.PA_SOURCE_OUTPUTS.end()) {
-                selected_index = i->first;
-            }
-
-            break;
-        }
-
-        case 'G': {
-            auto i = pa.PA_SOURCE_OUTPUTS.rbegin();
-
-            if (i != pa.PA_SOURCE_OUTPUTS.rend()) {
-                selected_index = i->first;
-            }
-
-            break;
-        }
-
-        case 'k': {
-            auto i = std::prev(pa.PA_SOURCE_OUTPUTS.find(selected_index), 1);
-
-            if (i != pa.PA_SOURCE_OUTPUTS.end()) {
-                selected_index = i->first;
-            }
-
-            break;
-        }
-
-        case 'j': {
-            auto i = std::next(pa.PA_SOURCE_OUTPUTS.find(selected_index), 1);
-
-            if (i != pa.PA_SOURCE_OUTPUTS.end()) {
-                selected_index = i->first;
-            }
-
-            break;
-        }
-
-        case 'h':
-            if (selected_pobj != nullptr) {
-                selected_pobj->step_volume(-1);
-            }
-
-            break;
-
-        case 'l':
-            if (selected_pobj != nullptr) {
-                selected_pobj->step_volume(1);
-            }
-
-            break;
-
-        case '\t': {
-            if (selected_pobj != nullptr) {
-                auto current_source = pa.PA_SOURCES.find(selected_pobj->getSource());
-                current_source = std::next(current_source, 1);
-
-                if (current_source == pa.PA_SOURCES.end()) {
-                    current_source = pa.PA_SOURCES.begin();
-                }
-
-                selected_pobj->move(current_source->first);
-            }
-        }
-    }
 
 }
 

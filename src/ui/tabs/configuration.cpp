@@ -8,15 +8,15 @@
 
 Configuration::Configuration()
 {
+    object = nullptr;
+    toggle = nullptr;
+
+    //selected_index = pa.exists(*object, -1);
 }
 
 Configuration::~Configuration()
 {
 
-}
-
-void Configuration::handleInput(int input)
-{
 }
 
 void Configuration::draw(int w, int h)

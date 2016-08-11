@@ -11,9 +11,6 @@ public:
     ~Output();
 
     void draw(int w, int h);
-    void handleInput(int input);
-private:
-    uint32_t selected_index;
 };
 
 #endif // PLAYBACK_HPP_

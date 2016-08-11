@@ -7,6 +7,90 @@
 #include <vector>
 #include <map>
 
+void Tab::handleEvents(const char *event)
+{
+    if (object == nullptr) {
+        return;
+    }
+
+    selected_index = pa.exists(*object, selected_index);
+
+    if (selected_index == -1) {
+        return;
+    }
+
+    auto pai = object->find(selected_index);
+
+    PaObject *selected_pobj = nullptr;
+
+    if (pai != object->end()) {
+        selected_pobj = pai->second;
+    }
+
+    if (!strcmp("mute", event)) {
+        if (selected_pobj != nullptr) {
+            selected_pobj->toggle_mute();
+        }
+    } else if (!strcmp("move_first", event)) {
+        auto i = object->begin();
+
+        if (i != object->end()) {
+            selected_index = i->first;
+        }
+    } else if (!strcmp("move_last", event)) {
+        auto i = object->rbegin();
+
+        if (i != object->rend()) {
+            selected_index = i->first;
+        }
+    } else if (!strcmp("move_up", event)) {
+        auto i = std::prev(object->find(selected_index), 1);
+
+        if (i != object->end()) {
+            selected_index = i->first;
+        }
+    } else if (!strcmp("move_down", event)) {
+        auto i = std::next(object->find(selected_index), 1);
+
+        if (i != object->end()) {
+            selected_index = i->first;
+        }
+    } else if (!strcmp("volume_up", event)) {
+        if (selected_pobj != nullptr) {
+            selected_pobj->step_volume(1);
+        }
+    } else if (!strcmp("volume_down", event)) {
+        if (selected_pobj != nullptr) {
+            selected_pobj->step_volume(-1);
+        }
+    } else if (!strcmp("switch", event)) {
+        if (selected_pobj != nullptr && toggle != nullptr) {
+            auto current_toggle = toggle->find(selected_pobj->getSink());
+            current_toggle = std::next(current_toggle, 1);
+
+            if (current_toggle == toggle->end()) {
+                current_toggle = toggle->begin();
+            }
+
+            selected_pobj->move(current_toggle->first);
+        }
+    } else if (!strcmp("dropdown", event)) {
+        if (selected_pobj != nullptr && toggle != nullptr) {
+            auto i = object->find(selected_index);
+
+            if (i != object->end()) {
+                uint32_t new_toggle = dropDown(
+                                          1,
+                                          1,
+                                          *toggle,
+                                          i->second->getSink()
+                                      );
+                selected_pobj->move(new_toggle);
+            }
+        }
+    }
+}
+
 uint32_t Tab::dropDown(int x, int y, std::map<uint32_t, PaObject *> objects,
                        uint32_t current)
 {
@@ -124,28 +208,28 @@ uint32_t Tab::dropDown(int x, int y, std::map<uint32_t, PaObject *> objects,
 void Tab::borderBox(int w, int h, int px, int py)
 {
     mvvline(py, px, ACS_VLINE, h);
-    mvvline(py, px+w, ACS_VLINE, h);
+    mvvline(py, px + w, ACS_VLINE, h);
 
     mvhline(py, px, ACS_HLINE, w);
-    mvhline(py+h, px, ACS_HLINE, w);
+    mvhline(py + h, px, ACS_HLINE, w);
 
     mvhline(py, px, ACS_ULCORNER, 1);
-    mvhline(py, px+w, ACS_URCORNER, 1);
+    mvhline(py, px + w, ACS_URCORNER, 1);
 
-    mvhline(py+h, px, ACS_LLCORNER, 1);
-    mvhline(py+h, px+w, ACS_LRCORNER, 1);
+    mvhline(py + h, px, ACS_LLCORNER, 1);
+    mvhline(py + h, px + w, ACS_LRCORNER, 1);
 
 }
 
 void Tab::selectBox(int w, int px, int py, bool selected)
 {
-    if(selected){
+    if (selected) {
         attron(COLOR_PAIR(1));
     }
 
-    mvaddstr(py+1, px+2, "Digital Stereo (HDMI) Output");
+    mvaddstr(py + 1, px + 2, "Digital Stereo (HDMI) Output");
 
-    if(selected){
+    if (selected) {
         attroff(COLOR_PAIR(1));
     }
 
