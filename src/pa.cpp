@@ -38,6 +38,7 @@ void Pa::init()
     pa_proplist_sets(proplist, PA_PROP_APPLICATION_ID, "ncpamixer");
     pa_proplist_sets(proplist, PA_PROP_APPLICATION_ICON_NAME, "audio-card");
     pa_ctx = pa_context_new_with_proplist(pa_api, NULL, proplist);
+    pa_proplist_free(proplist);
 
     pa_threaded_mainloop_lock(pa_ml);
     pa_threaded_mainloop_start(pa_ml);
