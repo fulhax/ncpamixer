@@ -132,11 +132,11 @@ void Ui::handleInput()
                     ).c_str();
 
             if (!strcmp("unbound", event)) {
-                fprintf(stderr, "Key %s is unbound!\n", key.c_str());
+                //fprintf(stderr, "Key %s is unbound!\n", key.c_str());
                 return;
             }
 
-            fprintf(stderr, "%s is %s!\n", key.c_str(), event);
+            //fprintf(stderr, "%s is %s!\n", key.c_str(), event);
 
             break;
     }
