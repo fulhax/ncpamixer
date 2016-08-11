@@ -48,8 +48,10 @@ void Pa::init()
 
 void Pa::deletePaobjects(std::map<uint32_t, PaObject*> *objects)
 {
+    std::lock_guard<std::mutex> lk(inputMtx);
     for (auto i = objects->begin(); i != objects->end(); i++) {
         delete i->second;
+        objects->erase(i);
     }
 }
 
