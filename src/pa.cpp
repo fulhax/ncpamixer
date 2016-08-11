@@ -376,7 +376,6 @@ void Pa::remove_input(uint32_t index)
     if (i != PA_INPUTS.end()) {
         if (i->second->monitor_stream != nullptr) {
             pa_stream_disconnect(i->second->monitor_stream);
-            pa_stream_unref(i->second->monitor_stream);
         }
 
         delete i->second;
@@ -411,7 +410,6 @@ void Pa::remove_source(uint32_t index)
     if (i != PA_SOURCES.end()) {
         if (i->second->monitor_stream != nullptr) {
             pa_stream_disconnect(i->second->monitor_stream);
-            pa_stream_unref(i->second->monitor_stream);
         }
 
         delete i->second;
