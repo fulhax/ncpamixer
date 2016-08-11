@@ -47,12 +47,24 @@ void Pa::init()
     pa_threaded_mainloop_unlock(pa_ml);
 }
 
-void Pa::deletePaobjects(std::map<uint32_t, PaObject*> *objects)
+void Pa::deletePaobjects(std::map<uint32_t, PaObject *> *objects)
 {
     std::lock_guard<std::mutex> lk(inputMtx);
+
     for (auto i = objects->begin(); i != objects->end(); i++) {
         delete i->second;
         objects->erase(i);
+    }
+}
+
+void Pa::remove_paobject(std::map<uint32_t, PaObject *> *objects,
+                        uint32_t index)
+{
+    for (auto i = objects->begin(); i != objects->end(); i++) {
+        if(i->first == index){
+            delete i->second;
+            objects->erase(i);
+        }
     }
 }
 
@@ -126,6 +138,7 @@ void Pa::update_source(const pa_source_info *info)
     PaSource *p;
 
     bool newObj = true;
+
     if (PA_SOURCES.count(info->index) == 0) {
         p = new PaSource;
         PA_SOURCES[info->index] = p;
@@ -362,70 +375,6 @@ void Pa::create_monitor_stream_for_paobject(PaObject *po)
     }
 }
 
-void Pa::remove_input(uint32_t index)
-{
-    std::lock_guard<std::mutex> lk(inputMtx);
-
-    auto i = PA_INPUTS.find(index);
-
-    if (i != PA_INPUTS.end()) {
-        if (i->second->monitor_stream != nullptr) {
-            pa_stream_disconnect(i->second->monitor_stream);
-        }
-
-        delete i->second;
-
-        PA_INPUTS.erase(index);
-    }
-
-    notify_update();
-}
-
-
-void Pa::remove_source_output(uint32_t index)
-{
-    std::lock_guard<std::mutex> lk(inputMtx);
-
-    auto i = PA_SOURCE_OUTPUTS.find(index);
-
-    if (i != PA_SOURCE_OUTPUTS.end()) {
-        delete i->second;
-        PA_SOURCE_OUTPUTS.erase(index);
-    }
-
-    notify_update();
-}
-
-void Pa::remove_source(uint32_t index)
-{
-    std::lock_guard<std::mutex> lk(inputMtx);
-
-    auto i = PA_SOURCES.find(index);
-
-    if (i != PA_SOURCES.end()) {
-        if (i->second->monitor_stream != nullptr) {
-            pa_stream_disconnect(i->second->monitor_stream);
-        }
-
-        delete i->second;
-        PA_SOURCES.erase(index);
-    }
-
-    notify_update();
-}
-
-
-void Pa::remove_sink(uint32_t index)
-{
-    std::lock_guard<std::mutex> lk(inputMtx);
-    auto i = PA_SINKS.find(index);
-
-    if (i != PA_SINKS.end()) {
-        delete i->second;
-        PA_SINKS.erase(index);
-    }
-}
-
 void Pa::set_notify_update_cb(notify_update_callback cb)
 {
     notify_update_cb = cb;
@@ -495,7 +444,7 @@ void Pa::subscribe_cb(pa_context *ctx, pa_subscription_event_type_t t,
     switch (t & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) {
         case PA_SUBSCRIPTION_EVENT_SINK: {
             if (type == PA_SUBSCRIPTION_EVENT_REMOVE) {
-                pa->remove_sink(index);
+                pa->remove_paobject(&pa->PA_SINKS, index);
             } else if (type == PA_SUBSCRIPTION_EVENT_NEW ||
                        type == PA_SUBSCRIPTION_EVENT_CHANGE) {
 
@@ -514,7 +463,7 @@ void Pa::subscribe_cb(pa_context *ctx, pa_subscription_event_type_t t,
         case PA_SUBSCRIPTION_EVENT_SINK_INPUT: {
 
             if (type == PA_SUBSCRIPTION_EVENT_REMOVE) {
-                pa->remove_input(index);
+                pa->remove_paobject(&pa->PA_INPUTS, index);
             } else if (type == PA_SUBSCRIPTION_EVENT_NEW ||
                        type == PA_SUBSCRIPTION_EVENT_CHANGE) {
 
@@ -532,7 +481,7 @@ void Pa::subscribe_cb(pa_context *ctx, pa_subscription_event_type_t t,
 
         case PA_SUBSCRIPTION_EVENT_SOURCE:
             if (type == PA_SUBSCRIPTION_EVENT_REMOVE) {
-                pa->remove_source(index);
+                pa->remove_paobject(&pa->PA_SOURCES, index);
             } else if (type == PA_SUBSCRIPTION_EVENT_NEW ||
                        type == PA_SUBSCRIPTION_EVENT_CHANGE) {
 
@@ -549,7 +498,7 @@ void Pa::subscribe_cb(pa_context *ctx, pa_subscription_event_type_t t,
 
         case PA_SUBSCRIPTION_EVENT_SOURCE_OUTPUT:
             if (type == PA_SUBSCRIPTION_EVENT_REMOVE) {
-                pa->remove_source_output(index);
+                pa->remove_paobject(&pa->PA_SOURCE_OUTPUTS, index);
             } else if (type == PA_SUBSCRIPTION_EVENT_NEW ||
                        type == PA_SUBSCRIPTION_EVENT_CHANGE) {
                 pa_operation *o = pa_context_get_source_output_info(ctx, index,

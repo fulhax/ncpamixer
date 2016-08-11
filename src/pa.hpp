@@ -43,21 +43,18 @@ public:
     void update_sink(const pa_sink_info *info);
     void update_source(const pa_source_info *info);
     void update_source_output(const pa_source_output_info *info);
-    void remove_input(uint32_t index);
-    void remove_sink(uint32_t index);
-    void remove_source_output(uint32_t index);
-    void remove_source(uint32_t index);
-    void set_volume(PaObject* pobj, int dir);
+    void remove_paobject(std::map<uint32_t, PaObject *> *objects, uint32_t index);
+    void set_volume(PaObject *pobj, int dir);
     void set_input_volume(uint32_t index, int dir);
     void set_sink_volume(uint32_t index, int dir);
     void toggle_input_mute(uint32_t index);
     void toggle_sink_mute(uint32_t index);
     void move_input_sink(uint32_t input_index, uint32_t sink_index);
-    uint32_t exists(std::map<uint32_t, PaObject*> objects, uint32_t index);
+    uint32_t exists(std::map<uint32_t, PaObject *> objects, uint32_t index);
 
-    static void ctx_state_cb(pa_context *ctx, void *userdata);
     static void subscribe_cb(pa_context *ctx, pa_subscription_event_type_t t,
                              uint32_t index, void *userdata);
+    static void ctx_state_cb(pa_context *ctx, void *userdata);
     static void ctx_sinklist_cb(pa_context *ctx, const pa_sink_info *info,
                                 int eol, void  *userdata);
     static void ctx_inputlist_cb(pa_context *ctx, const pa_sink_input_info *info,
@@ -92,7 +89,7 @@ public:
 private:
     bool pa_init;
     void wait_on_pa_operation(pa_operation *o);
-    void deletePaobjects(std::map<uint32_t, PaObject*> *objects);
+    void deletePaobjects(std::map<uint32_t, PaObject *> *objects);
     std::mutex sinkMtx;
 };
 
