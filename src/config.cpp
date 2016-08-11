@@ -187,8 +187,8 @@ void Config::createDefault()
             "   \"keycode.267\" = \"tab_output\"    # f3\n"
             "   \"keycode.268\" = \"tab_input\"     # f4\n"
             "   \"keycode.269\" = \"tab_config\"    # f5\n"
-            "   \"keycode.103\" = \"move_last\"     # G\n"
-            "   \"keycode.71\"  = \"move_first\"    # g\n"
+            "   \"keycode.71\"  = \"move_last\"     # G\n"
+            "   \"keycode.103\" = \"move_first\"    # g\n"
             "# }"
         );
         fclose(f);
