@@ -124,34 +124,28 @@ void Pa::update_source(const pa_source_info *info)
 
     PaSource *p;
 
+    bool newObj = true;
     if (PA_SOURCES.count(info->index) == 0) {
         p = new PaSource;
         PA_SOURCES[info->index] = p;
+        p->monitor_index = info->index;
+        newObj = true;
     } else {
         p = reinterpret_cast<PaSource *>(PA_SOURCES[info->index]);
     }
 
-    bool monitor_changed = true;
-
-    if (PA_SOURCES.count(info->index)) {
-        monitor_changed = info->index != p->monitor_index;
-    }
-
     p->index = info->index;
     p->channels = info->channel_map.channels;
-    p->monitor_index = info->index;
     p->volume = (const pa_volume_t) pa_cvolume_avg(&info->volume);
     PA_SOURCES[info->index]->mute = info->mute;
 
     strncpy(p->name, info->description, 255);
 
-    if (monitor_changed) {
+    if (newObj) {
         create_monitor_stream_for_paobject(p);
     }
 
     notify_update();
-
-
 }
 
 void Pa::update_sink(const pa_sink_info *info)
