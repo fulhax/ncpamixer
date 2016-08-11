@@ -505,12 +505,13 @@ void Pa::subscribe_cb(pa_context *ctx, pa_subscription_event_type_t t,
                                   &Pa::ctx_sourceoutputlist_cb, instance);
                 pa_operation_unref(o);
             }
+            break;
 
+        case PA_SUBSCRIPTION_EVENT_CARD:
         case PA_SUBSCRIPTION_EVENT_MODULE:
         case PA_SUBSCRIPTION_EVENT_CLIENT:
         case PA_SUBSCRIPTION_EVENT_SAMPLE_CACHE:
         case PA_SUBSCRIPTION_EVENT_SERVER:
-        case PA_SUBSCRIPTION_EVENT_CARD:
         default:
             return;
 
