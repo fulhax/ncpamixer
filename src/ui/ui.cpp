@@ -81,26 +81,26 @@ void Ui::switchTab(int index)
 
     switch (index) {
         default:
-        case 0:
-            tab_index = 0;
+        case TAB_PLAYBACK:
+            tab_index = TAB_PLAYBACK;
             current_tab = new Playback();
             break;
 
-        case 1:
+        case TAB_RECORDING:
             current_tab = new Recording();
             break;
 
-        case 2:
+        case TAB_OUTPUT:
             current_tab = new Output();
             break;
 
-        case 3:
+        case TAB_INPUT:
             current_tab = new Input();
             break;
 
         case -1:
-        case 4:
-            tab_index = 4;
+        case TAB_CONFIGURATION:
+            tab_index = TAB_CONFIGURATION;
             current_tab = new Configuration();
             break;
     }
@@ -132,11 +132,8 @@ void Ui::handleInput()
                     ).c_str();
 
             if (!strcmp("unbound", event)) {
-                //fprintf(stderr, "Key %s is unbound!\n", key.c_str());
                 return;
             }
-
-            //fprintf(stderr, "%s is %s!\n", key.c_str(), event);
 
             break;
     }
