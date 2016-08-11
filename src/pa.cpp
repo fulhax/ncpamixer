@@ -9,7 +9,27 @@ Pa pa;
 Pa::Pa()
 {
     notify_update_cb = nullptr;
+    pa_ml = nullptr;
+    pa_api  = nullptr;
+    pa_init = false;
+}
 
+Pa::~Pa()
+{
+
+    deletePaobjects(&PA_SOURCE_OUTPUTS);
+    deletePaobjects(&PA_INPUTS);
+    deletePaobjects(&PA_SOURCES);
+    deletePaobjects(&PA_SINKS);
+
+    if (pa_init) {
+        exitPa();
+    }
+}
+
+void Pa::init()
+{
+    pa_init = true;
     pa_ml = pa_threaded_mainloop_new();
     pa_api  = pa_threaded_mainloop_get_api(pa_ml);
 
@@ -24,11 +44,16 @@ Pa::Pa()
     pa_context_connect(pa_ctx, NULL, PA_CONTEXT_NOAUTOSPAWN, NULL);
     pa_context_set_state_callback(pa_ctx, &Pa::ctx_state_cb, this);
     pa_threaded_mainloop_unlock(pa_ml);
-
-
 }
 
-Pa::~Pa()
+void Pa::deletePaobjects(std::map<uint32_t, PaObject*> *objects)
+{
+    for (auto i = objects->begin(); i != objects->end(); i++) {
+        delete i->second;
+    }
+}
+
+void Pa::exitPa()
 {
     pa_context_disconnect(pa_ctx);
     pa_threaded_mainloop_stop(pa_ml);

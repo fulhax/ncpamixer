@@ -13,6 +13,8 @@ int main(void)
 
     Ui ui;
 
+    pa.init();
+
     if(ui.init() > 0) {
         ui.run();
     }

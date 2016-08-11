@@ -36,6 +36,8 @@ public:
     explicit Pa();
     ~Pa();
 
+    void init();
+    void exitPa();
     void updatePeakByDeviceId(uint32_t index, float peak);
     void update_input(const pa_sink_input_info *info);
     void update_sink(const pa_sink_info *info);
@@ -88,7 +90,9 @@ public:
     pa_mainloop_api *pa_api;
 
 private:
+    bool pa_init;
     void wait_on_pa_operation(pa_operation *o);
+    void deletePaobjects(std::map<uint32_t, PaObject*> *objects);
     std::mutex sinkMtx;
 };
 
