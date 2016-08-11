@@ -92,7 +92,7 @@ public:
 private:
     bool pa_init;
     void wait_on_pa_operation(pa_operation *o);
-    void deletePaobjects(std::map<uint32_t, PaObject> *objects);
+    void deletePaobjects(std::map<uint32_t, PaObject*> *objects);
     std::mutex sinkMtx;
 };
 

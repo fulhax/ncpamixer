@@ -17,6 +17,11 @@ Pa::Pa()
 Pa::~Pa()
 {
 
+    deletePaobjects(&PA_SOURCE_OUTPUTS);
+    deletePaobjects(&PA_INPUTS);
+    deletePaobjects(&PA_SOURCES);
+    deletePaobjects(&PA_SINKS);
+
     if (pa_init) {
         exitPa();
     }
@@ -41,9 +46,9 @@ void Pa::init()
     pa_threaded_mainloop_unlock(pa_ml);
 }
 
-void Pa::deletePaobjects(std::map<uint32_t, PaObject> *objects)
+void Pa::deletePaobjects(std::map<uint32_t, PaObject*> *objects)
 {
-    for (auto i = PA_INPUTS.begin(); i != PA_INPUTS.end(); i++) {
+    for (auto i = objects->begin(); i != objects->end(); i++) {
         delete i->second;
     }
 }
