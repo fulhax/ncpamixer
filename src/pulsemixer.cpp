@@ -22,6 +22,8 @@ int main(void)
     printf("Get %s from config\n", ev);
     // End Config test
 
+    pa.init();
+
     if(ui.init() > 0) {
         ui.run();
     }
