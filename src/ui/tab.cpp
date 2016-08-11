@@ -4,8 +4,11 @@
 #include <ncurses.h>
 #include <menu.h>
 
+#include <string>
 #include <vector>
 #include <map>
+
+#include "config.hpp"
 
 void Tab::handleEvents(const char *event)
 {
@@ -151,42 +154,51 @@ uint32_t Tab::dropDown(int x, int y, std::map<uint32_t, PaObject *> objects,
     bool selecting = true;
 
     while (selecting) {
-        int c = wgetch(menu_win);
+        int input = wgetch(menu_win);
+        const char *event = 0;
 
-        switch (c) {
-            case 10:
-            case '\r':
-            case KEY_ENTER: {
-                clrtoeol();
+        if (input == ERR) {
+            continue;
+        }
 
-                PaObject *object = reinterpret_cast<PaObject *>(
-                                       item_userptr(current_item(menu))
-                                   );
-
-                selected = object->index;
-            }
-
-            case 27:
+        switch (input) {
+            case KEY_RESIZE:
                 selecting = false;
-                break;
+                continue;
+            default:
+                std::string key = std::to_string(input);
+                event = config.getString(
+                        ("keycode." +  key).c_str(),
+                        "unbound"
+                        ).c_str();
 
-            case KEY_DOWN:
-            case 'j':
-                menu_driver(menu, REQ_DOWN_ITEM);
-                break;
+                if (!strcmp("unbound", event)) {
+                    continue;
+                }
 
-            case KEY_UP:
-            case 'k':
-                menu_driver(menu, REQ_UP_ITEM);
                 break;
+        }
 
-            case KEY_NPAGE:
-                menu_driver(menu, REQ_SCR_DPAGE);
-                break;
+        if(!strcmp("select", event)) {
+            clrtoeol();
 
-            case KEY_PPAGE:
-                menu_driver(menu, REQ_SCR_UPAGE);
-                break;
+            PaObject *object = reinterpret_cast<PaObject *>(
+                    item_userptr(current_item(menu))
+                    );
+
+            selected = object->index;
+
+            selecting = false;
+        } else if(!strcmp("move_down", event)) {
+            menu_driver(menu, REQ_DOWN_ITEM);
+        } else if(!strcmp("move_up", event)) {
+            menu_driver(menu, REQ_UP_ITEM);
+        } else if(!strcmp("page_up", event)) {
+            menu_driver(menu, REQ_SCR_UPAGE);
+        } else if(!strcmp("page_down", event)) {
+            menu_driver(menu, REQ_SCR_DPAGE);
+        } else if(!strcmp("quit", event)) {
+            selecting = false;
         }
 
         wrefresh(menu_win);
