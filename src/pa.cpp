@@ -140,7 +140,7 @@ void Pa::update_source(const pa_source_info *info)
 
     PaSource *p;
 
-    bool newObj = true;
+    bool newObj = false;
 
     if (PA_SOURCES.count(info->index) == 0) {
         p = new PaSource;
@@ -540,22 +540,24 @@ void Pa::subscribe_cb(pa_context *ctx, pa_subscription_event_type_t t,
             break;
         }
 
-        case PA_SUBSCRIPTION_EVENT_SOURCE:
+        case PA_SUBSCRIPTION_EVENT_SOURCE: {
             if (type == PA_SUBSCRIPTION_EVENT_REMOVE) {
                 pa->remove_paobject(&pa->PA_SOURCES, index);
             } else if (type == PA_SUBSCRIPTION_EVENT_NEW ||
                        type == PA_SUBSCRIPTION_EVENT_CHANGE) {
 
-                pa_operation *o = pa_context_get_source_info_by_index(
-                                      ctx,
-                                      index,
-                                      &Pa::ctx_sourcelist_cb,
-                                      instance
-                                  );
+                pa_operation *o;
+
+                if (!(o = pa_context_get_source_info_by_index(ctx, index,
+                          &Pa::ctx_sourcelist_cb, instance))) {
+                    return;
+                }
+
                 pa_operation_unref(o);
             }
 
             break;
+        }
 
         case PA_SUBSCRIPTION_EVENT_SOURCE_OUTPUT:
             if (type == PA_SUBSCRIPTION_EVENT_REMOVE) {
