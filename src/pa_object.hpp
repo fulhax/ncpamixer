@@ -27,11 +27,15 @@ public:
                                  pa_context_success_cb_t, void *);
     pa_operation *(*pa_move)(pa_context *, uint32_t, uint32_t,
                              pa_context_success_cb_t, void *);
+    pa_operation *(*pa_set_profile)(pa_context *, uint32_t, const char *,
+                             pa_context_success_cb_t, void *);
+
 
     void set_volume(float perc);
     void step_volume(int dir);
     void move(uint32_t dest);
     void toggle_mute();
+    void set_profile(const char* profile);
 
     virtual uint32_t getSink()
     {

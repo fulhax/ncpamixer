@@ -71,3 +71,18 @@ void PaObject::move(uint32_t dest)
         pa_operation_unref(o);
     }
 }
+
+
+void PaObject::set_profile(const char* profile)
+{
+    if (pa_set_profile != nullptr) {
+        pa_operation *o = pa_set_profile(
+                              pa.pa_ctx,
+                              index,
+                              profile,
+                              NULL,
+                              NULL
+                          );
+        pa_operation_unref(o);
+    }
+}
