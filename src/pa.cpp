@@ -61,6 +61,8 @@ void Pa::deletePaobjects(std::map<uint32_t, PaObject *> *objects)
 void Pa::remove_paobject(std::map<uint32_t, PaObject *> *objects,
                          uint32_t index)
 {
+    std::lock_guard<std::mutex> lk(inputMtx);
+
     for (auto i = objects->begin(); i != objects->end(); i++) {
         if (i->first == index) {
             delete i->second;
