@@ -18,6 +18,7 @@ find_package(PulseAudio REQUIRED)
 set(COMMON_SRC
     "pulsemixer.cpp"
     "pa_object.cpp"
+    "pa_card.cpp"
     "pa_sink.cpp"
     "pa_input.cpp"
     "pa_source.cpp"

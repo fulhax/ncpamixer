@@ -10,6 +10,7 @@
 #include "pa_sink.hpp"
 #include "pa_source.hpp"
 #include "pa_source_output.hpp"
+#include "pa_card.hpp"
 
 struct PA_SINK {
     uint32_t index;
@@ -42,6 +43,7 @@ public:
     void update_input(const pa_sink_input_info *info);
     void update_sink(const pa_sink_info *info);
     void update_source(const pa_source_info *info);
+    void update_card(const pa_card_info *info);
     void update_source_output(const pa_source_output_info *info);
     void remove_paobject(std::map<uint32_t, PaObject *> *objects, uint32_t index);
     void set_volume(PaObject *pobj, int dir);
@@ -63,6 +65,9 @@ public:
                                   int eol, void  *userdata);
     static void ctx_sourceoutputlist_cb(pa_context *ctx,
                                         const pa_source_output_info *info, int eol, void *instance);
+    static void ctx_cardlist_cb(pa_context *ctx, const pa_card_info *info,
+                                int eol, void *instance);
+
     static void read_callback(pa_stream *s, size_t length, void *instance);
     static void stream_suspended_cb(pa_stream *stream, void *instance);
     static void stream_state_cb(pa_stream *stream, void *info);
@@ -74,10 +79,11 @@ public:
     void set_notify_update_cb(notify_update_callback cb);
     void notify_update();
 
-    std::map<uint32_t, PaObject*> PA_INPUTS;
-    std::map<uint32_t, PaObject*> PA_SINKS;
-    std::map<uint32_t, PaObject*> PA_SOURCES;
-    std::map<uint32_t, PaObject*> PA_SOURCE_OUTPUTS;
+    std::map<uint32_t, PaObject *> PA_INPUTS;
+    std::map<uint32_t, PaObject *> PA_SINKS;
+    std::map<uint32_t, PaObject *> PA_SOURCES;
+    std::map<uint32_t, PaObject *> PA_SOURCE_OUTPUTS;
+    std::map<uint32_t, PaObject *> PA_CARDS;
 
     void (*notify_update_cb)();
     std::mutex inputMtx;

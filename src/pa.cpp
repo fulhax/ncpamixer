@@ -21,6 +21,7 @@ Pa::~Pa()
     deletePaobjects(&PA_INPUTS);
     deletePaobjects(&PA_SOURCES);
     deletePaobjects(&PA_SINKS);
+    deletePaobjects(&PA_CARDS);
 
     if (pa_init) {
         exitPa();
@@ -58,10 +59,10 @@ void Pa::deletePaobjects(std::map<uint32_t, PaObject *> *objects)
 }
 
 void Pa::remove_paobject(std::map<uint32_t, PaObject *> *objects,
-                        uint32_t index)
+                         uint32_t index)
 {
     for (auto i = objects->begin(); i != objects->end(); i++) {
-        if(i->first == index){
+        if (i->first == index) {
             delete i->second;
             objects->erase(i);
         }
@@ -157,6 +158,48 @@ void Pa::update_source(const pa_source_info *info)
 
     if (newObj) {
         create_monitor_stream_for_paobject(p);
+    }
+
+    notify_update();
+}
+
+void Pa::update_card(const pa_card_info *info)
+{
+    std::lock_guard<std::mutex> lk(inputMtx);
+    PaCard *p;
+
+    if (PA_CARDS.count(info->index) == 0) {
+        p = new PaCard;
+        PA_CARDS[info->index] = p;
+        p->monitor_index = info->index;
+    } else {
+        p = reinterpret_cast<PaCard *>(PA_CARDS[info->index]);
+    }
+
+    p->index = info->index;
+    p->channels = 0;
+    p->volume = 0;
+    p->mute = NULL;
+    p->updateProfiles(info->profiles, info->n_profiles);
+
+    snprintf(p->active_profile.name, sizeof(p->active_profile.name), "%s",
+             info->active_profile->name);
+    snprintf(p->active_profile.description, sizeof(p->active_profile.description),
+             "%s",
+             info->active_profile->description);
+    snprintf(p->name, sizeof(p->name),
+             "%s",
+             info->name);
+
+
+
+    const char *description;
+    description = pa_proplist_gets(info->proplist, PA_PROP_DEVICE_DESCRIPTION);
+
+    if (description) {
+        snprintf(p->name, sizeof(p->name), "%s", description);
+    } else {
+        snprintf(p->name, sizeof(p->name), "%s", info->name);
     }
 
     notify_update();
@@ -387,6 +430,22 @@ void Pa::notify_update()
     }
 }
 
+void Pa::ctx_cardlist_cb(pa_context *ctx, const pa_card_info *info,
+                         int eol,
+                         void *instance)
+{
+    Pa *pa = reinterpret_cast<Pa *>(instance);
+
+    if (!eol) {
+        pa->update_card(info);
+    }
+
+    return;
+}
+
+
+
+
 void Pa::ctx_sourcelist_cb(pa_context *ctx, const pa_source_info *info,
                            int eol,
                            void *instance)
@@ -505,9 +564,21 @@ void Pa::subscribe_cb(pa_context *ctx, pa_subscription_event_type_t t,
                                   &Pa::ctx_sourceoutputlist_cb, instance);
                 pa_operation_unref(o);
             }
+
             break;
 
         case PA_SUBSCRIPTION_EVENT_CARD:
+            if (type == PA_SUBSCRIPTION_EVENT_REMOVE) {
+                pa->remove_paobject(&pa->PA_CARDS, index);
+            } else if (type == PA_SUBSCRIPTION_EVENT_NEW ||
+                       type == PA_SUBSCRIPTION_EVENT_CHANGE) {
+                pa_operation *o = pa_context_get_card_info_by_index(ctx, index,
+                                  &Pa::ctx_cardlist_cb, instance);
+                pa_operation_unref(o);
+            }
+
+            break;
+
         case PA_SUBSCRIPTION_EVENT_MODULE:
         case PA_SUBSCRIPTION_EVENT_CLIENT:
         case PA_SUBSCRIPTION_EVENT_SAMPLE_CACHE:
@@ -533,6 +604,22 @@ void Pa::ctx_state_cb(pa_context *ctx, void *instance)
         case PA_CONTEXT_READY: {
             pa_operation *o;
 
+            // Subscribe to changes
+            pa_context_set_subscribe_callback(ctx, &Pa::subscribe_cb, instance);
+
+            o = pa_context_subscribe(ctx, (pa_subscription_mask_t)
+                                     (PA_SUBSCRIPTION_MASK_SINK |
+                                      PA_SUBSCRIPTION_MASK_SOURCE |
+                                      PA_SUBSCRIPTION_MASK_SINK_INPUT |
+                                      PA_SUBSCRIPTION_MASK_SOURCE_OUTPUT
+                                     ), NULL, NULL);
+            pa_operation_unref(o);
+
+            // get cards
+            o = pa_context_get_card_info_list(ctx, &Pa::ctx_cardlist_cb,
+                                              instance);
+            pa_operation_unref(o);
+
             // source list cb
             o = pa_context_get_source_info_list(ctx, &Pa::ctx_sourcelist_cb, instance);
             pa_operation_unref(o);
@@ -550,9 +637,6 @@ void Pa::ctx_state_cb(pa_context *ctx, void *instance)
                     instance);
             pa_operation_unref(o);
 
-            // Subscribe to changes
-            pa_context_set_subscribe_callback(ctx, &Pa::subscribe_cb, instance);
-            pa_context_subscribe(ctx, PA_SUBSCRIPTION_MASK_ALL, NULL, NULL);
 
             break;
         }
@@ -563,6 +647,7 @@ void Pa::ctx_state_cb(pa_context *ctx, void *instance)
         case PA_CONTEXT_SETTING_NAME:
         case PA_CONTEXT_FAILED:
         case PA_CONTEXT_TERMINATED:
+            return;
             break;
     }
 }
