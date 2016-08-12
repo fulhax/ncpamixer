@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <utility>
+#include <algorithm>
 
 #include "config.hpp"
 
@@ -95,33 +97,77 @@ void Tab::handleEvents(const char *event)
 }
 
 uint32_t Tab::dropDown(int x, int y, std::map<uint32_t, PaObject *> objects,
-                       uint32_t current)
+                       uint32_t current, int width, int height)
 {
     if (objects.empty()) {
         return -1;
     }
 
+    std::map<uint32_t, std::string> tmp;
+    std::for_each(
+        objects.begin(),
+        objects.end(),
+    [&tmp](std::pair<const uint32_t, PaObject *> const & obj) {
+        tmp[obj.first] = obj.second->name;
+    }
+    );
+
+    return dropDown(x, y, tmp, current, width, height);
+}
+
+uint32_t Tab::dropDown(int x, int y, std::map<uint32_t, std::string> objects,
+                       uint32_t current, int width, int height)
+{
+    if (objects.empty()) {
+        return -1;
+    }
+
+    bool autowidth = false;
+    bool autoheight = false;
+
+    if (width == 0) {
+        autowidth = true;
+    }
+
+    if (height == 0) {
+        autoheight = true;
+    }
+
     uint32_t selected = 0;
-    int width = 0;
-    int height = 0;
 
     std::vector<ITEM *> items;
     MENU *menu = 0;
     WINDOW *menu_win = 0;
 
-    for (auto i : objects) {
-        items.push_back(new_item(i.second->name, ""));
-        set_item_userptr(items.back(), reinterpret_cast<void *>(i.second));
+    for (auto &i : objects) {
+        ITEM *item = new ITEM;
+        memset(item, 0, sizeof(ITEM));
+
+        item->opt = O_SELECTABLE;
+        item->name.str = new char[i.second.length() + 1];
+        memcpy(
+            const_cast<char *>(item->name.str),
+            i.second.c_str(),
+            i.second.length()
+        );
+        item->name.length = i.second.length();
+        item->userptr = static_cast<void *>(&i);
+
+        items.push_back(item);
 
         if (i.first == current) {
             selected = items.size() - 1;
         }
 
-        width = (width < strlen(i.second->name) + 3) ?
-                strlen(i.second->name) :
-                width;
+        if (autowidth) {
+            width = (width < strlen(i.second.c_str()) + 3) ?
+                    strlen(i.second.c_str()) :
+                    width;
+        }
 
-        height = (height < 3) ? height + 1 : 3;
+        if (autoheight) {
+            height = (height < 3) ? height + 1 : 3;
+        }
     }
 
     items.push_back(new_item(nullptr, nullptr));
@@ -165,11 +211,12 @@ uint32_t Tab::dropDown(int x, int y, std::map<uint32_t, PaObject *> objects,
             case KEY_RESIZE:
                 selecting = false;
                 continue;
+
             default:
                 std::string key = std::to_string(input);
                 event = config.getString(
-                        ("keycode." +  key).c_str(),
-                        "unbound"
+                            ("keycode." +  key).c_str(),
+                            "unbound"
                         ).c_str();
 
                 if (!strcmp("unbound", event)) {
@@ -179,25 +226,24 @@ uint32_t Tab::dropDown(int x, int y, std::map<uint32_t, PaObject *> objects,
                 break;
         }
 
-        if(!strcmp("select", event)) {
+        if (!strcmp("select", event)) {
             clrtoeol();
 
-            PaObject *object = reinterpret_cast<PaObject *>(
-                    item_userptr(current_item(menu))
-                    );
-
-            selected = object->index;
+            ITEM *item = current_item(menu);
+            selected = static_cast<std::pair<uint32_t, std::string>*>(
+                           item->userptr
+                       )->first;
 
             selecting = false;
-        } else if(!strcmp("move_down", event)) {
+        } else if (!strcmp("move_down", event)) {
             menu_driver(menu, REQ_DOWN_ITEM);
-        } else if(!strcmp("move_up", event)) {
+        } else if (!strcmp("move_up", event)) {
             menu_driver(menu, REQ_UP_ITEM);
-        } else if(!strcmp("page_up", event)) {
+        } else if (!strcmp("page_up", event)) {
             menu_driver(menu, REQ_SCR_UPAGE);
-        } else if(!strcmp("page_down", event)) {
+        } else if (!strcmp("page_down", event)) {
             menu_driver(menu, REQ_SCR_DPAGE);
-        } else if(!strcmp("quit", event)) {
+        } else if (!strcmp("quit", event)) {
             selecting = false;
         }
 
