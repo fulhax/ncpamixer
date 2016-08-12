@@ -1,7 +1,11 @@
 #ifndef PA_OBJECT_
 #define PA_OBJECT_
 #include <pulse/pulseaudio.h>
-enum pa_object_t {SINK, INPUT, SOURCE, SOURCE_OUTPUT};
+#include <vector>
+#include "pa_object_attribute.hpp"
+#include "pa_port.hpp"
+
+enum pa_object_t {SINK, INPUT, SOURCE, SOURCE_OUTPUT, CARD};
 
 class PaObject
 {
@@ -20,6 +24,14 @@ public:
     uint32_t monitor_index;
     pa_stream *monitor_stream;
     float peak;
+
+    PaPort *active_port = nullptr;
+    std::vector<PaPort *> ports;
+    void clearPorts();
+
+    PaObjectAttribute *active_profile = nullptr;
+    std::vector<PaObjectAttribute *> profiles;
+    void clearProfiles();
 
     pa_operation *(*pa_set_volume)(pa_context *, uint32_t, const pa_cvolume *,
                                    pa_context_success_cb_t, void *);

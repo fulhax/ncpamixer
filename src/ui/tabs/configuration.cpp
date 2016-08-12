@@ -31,9 +31,10 @@ void Configuration::draw(int w, int h)
         if (i.first == selected_index) {
             attron(COLOR_PAIR(1));
         }
-
-        mvaddstr(sy + 2, sx + 2, card->active_profile.description);
-        borderBox(w-2, 2, sx, sy+1);
+        if(card->active_profile != nullptr){
+            mvaddstr(sy + 2, sx + 2, card->active_profile->description);
+            borderBox(w-2, 2, sx, sy+1);
+        }
 
         if (i.first == selected_index) {
             attroff(COLOR_PAIR(1));

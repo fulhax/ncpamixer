@@ -3,7 +3,16 @@
 
 PaObject::~PaObject()
 {
-    
+    if (active_profile != nullptr)  {
+        delete active_profile;
+    }
+
+    if (active_port != nullptr) {
+        delete active_port;
+    }
+
+    clearProfiles();
+    clearPorts();
 }
 
 void PaObject::set_volume(float perc)
@@ -71,7 +80,7 @@ void PaObject::move(uint32_t dest)
 }
 
 
-void PaObject::set_profile(const char* profile)
+void PaObject::set_profile(const char *profile)
 {
     if (pa_set_profile != nullptr) {
         pa_operation *o = pa_set_profile(
@@ -83,4 +92,22 @@ void PaObject::set_profile(const char* profile)
                           );
         pa_operation_unref(o);
     }
+}
+
+void PaObject::clearPorts()
+{
+    for (auto i = ports.begin(); i != ports.end(); i++) {
+        //delete i;
+    }
+
+    ports.clear();
+}
+
+void PaObject::clearProfiles()
+{
+    for (auto i = profiles.begin(); i != profiles.end(); i++) {
+        //delete i;
+    }
+
+    profiles.clear();
 }

@@ -54,6 +54,20 @@ void Input::draw(int w, int h)
 
         mvaddstr(baseY - 2, 1, label);
 
+        if(i.second->active_port != nullptr)
+        {
+            unsigned int len = strlen(i.second->active_port->description);
+            unsigned int sink_pos = w - 1 - len;
+
+            mvaddstr(
+                baseY - 2,
+                sink_pos,
+                i.second->active_port->description
+            );
+        }
+
+
+
         if (i.first == selected_index) {
             attroff(COLOR_PAIR(1));
         }

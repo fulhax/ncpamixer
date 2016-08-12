@@ -253,12 +253,23 @@ void Pa::update_source(const pa_source_info *info)
     p->index = info->index;
     p->channels = info->channel_map.channels;
     p->volume = (const pa_volume_t) pa_cvolume_avg(&info->volume);
-    PA_SOURCES[info->index]->mute = info->mute;
+    p->mute = info->mute;
 
     strncpy(p->name, info->description, 255);
 
     if (newObj) {
-        //create_monitor_stream_for_paobject(p);
+        create_monitor_stream_for_paobject(p);
+    }
+
+    p->updatePorts(info->ports, info->n_ports);
+
+    if(info->active_port != nullptr){
+        p->active_port = new PaPort;
+        snprintf(p->active_port->name, sizeof(p->active_port->name), "%s",
+                 info->active_port->name);
+        snprintf(p->active_port->description, sizeof(p->active_port->description),
+                 "%s",
+                 info->active_port->description);
     }
 
     notify_update();
@@ -284,14 +295,17 @@ void Pa::update_card(const pa_card_info *info)
     p->mute = NULL;
     p->updateProfiles(info->profiles, info->n_profiles);
 
-    snprintf(p->active_profile.name, sizeof(p->active_profile.name), "%s",
-             info->active_profile->name);
-    snprintf(p->active_profile.description, sizeof(p->active_profile.description),
-             "%s",
-             info->active_profile->description);
-    snprintf(p->name, sizeof(p->name),
-             "%s",
-             info->name);
+    if(info->active_profile != nullptr){
+        p->active_profile = new PaObjectAttribute;
+        snprintf(p->active_profile->name, sizeof(p->active_profile->name), "%s",
+                 info->active_profile->name);
+        snprintf(p->active_profile->description, sizeof(p->active_profile->description),
+                 "%s",
+                 info->active_profile->description);
+        snprintf(p->name, sizeof(p->name),
+                 "%s",
+                 info->name);
+    }
 
 
 
@@ -328,6 +342,17 @@ void Pa::update_sink(const pa_sink_info *info)
     p->mute = info->mute;
 
     strncpy(p->name, info->description, 255);
+
+    p->updatePorts(info->ports, info->n_ports);
+
+    if(info->active_port != nullptr){
+        p->active_port = new PaPort;
+        snprintf(p->active_port->name, sizeof(p->active_port->name), "%s",
+                 info->active_port->name);
+        snprintf(p->active_port->description, sizeof(p->active_port->description),
+                 "%s",
+                 info->active_port->description);
+    }
 
     notify_update();
 }
