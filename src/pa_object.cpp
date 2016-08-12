@@ -3,9 +3,7 @@
 
 PaObject::~PaObject()
 {
-    if (monitor_stream != nullptr) {
-        pa_stream_disconnect(monitor_stream);
-    }
+    
 }
 
 void PaObject::set_volume(float perc)

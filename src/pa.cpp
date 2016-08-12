@@ -28,23 +28,120 @@ Pa::~Pa()
     }
 }
 
-void Pa::init()
+bool Pa::init()
 {
     pa_init = true;
     pa_ml = pa_threaded_mainloop_new();
-    pa_api  = pa_threaded_mainloop_get_api(pa_ml);
+
+    if (!pa_ml) {
+        fprintf(stderr, "Unable to create PA main loop.\n");
+        return false;
+    }
+
+    pa_threaded_mainloop_lock(pa_ml);
 
     pa_proplist *proplist = pa_proplist_new();
     pa_proplist_sets(proplist, PA_PROP_APPLICATION_NAME, "ncpamixer");
     pa_proplist_sets(proplist, PA_PROP_APPLICATION_ID, "ncpamixer");
     pa_proplist_sets(proplist, PA_PROP_APPLICATION_ICON_NAME, "audio-card");
+    pa_api  = pa_threaded_mainloop_get_api(pa_ml);
     pa_ctx = pa_context_new_with_proplist(pa_api, NULL, proplist);
     pa_proplist_free(proplist);
 
-    pa_threaded_mainloop_lock(pa_ml);
-    pa_threaded_mainloop_start(pa_ml);
-    pa_context_connect(pa_ctx, NULL, PA_CONTEXT_NOAUTOSPAWN, NULL);
+    if (!pa_ctx) {
+        fprintf(stderr, "Unable to create PA context.\n");
+        pa_threaded_mainloop_unlock(pa_ml);
+        pa_threaded_mainloop_free(pa_ml);
+        return false;
+    }
+
     pa_context_set_state_callback(pa_ctx, &Pa::ctx_state_cb, this);
+    pa_context_set_subscribe_callback(pa_ctx, &Pa::subscribe_cb, this);
+
+    if (pa_context_connect(pa_ctx, NULL, PA_CONTEXT_NOAUTOSPAWN, NULL) < 0) {
+        fprintf(stderr, "Unable to connect to PA context.\n");
+        pa_context_disconnect(pa_ctx);
+        pa_context_unref(pa_ctx); // Tror ej den behövs?
+        pa_threaded_mainloop_unlock(pa_ml);
+        pa_threaded_mainloop_free(pa_ml);
+        return false;
+    }
+
+    if (pa_threaded_mainloop_start(pa_ml) < 0) {
+        fprintf(stderr, "Unable to start PA mainloop.\n");
+        pa_context_disconnect(pa_ctx);
+        pa_context_unref(pa_ctx); // Tror ej den behövs?
+        pa_threaded_mainloop_unlock(pa_ml);
+        pa_threaded_mainloop_free(pa_ml);
+        return false;
+    }
+
+    // Wait until context callback response.
+    pa_threaded_mainloop_wait(pa_ml);
+
+    if (pa_context_get_state(pa_ctx) != PA_CONTEXT_READY) {
+        fprintf(stderr, "Unable to connect to pulse\n");
+        pa_context_disconnect(pa_ctx);
+        pa_context_unref(pa_ctx); // Tror ej den behövs?
+        pa_threaded_mainloop_unlock(pa_ml);
+        pa_threaded_mainloop_free(pa_ml);
+        return false;
+    }
+    pa_threaded_mainloop_unlock(pa_ml);
+
+    fetchPaobjects();
+
+    pa_threaded_mainloop_lock(pa_ml);
+    pa_operation *o = pa_context_subscribe(pa_ctx, (pa_subscription_mask_t)
+                             (PA_SUBSCRIPTION_MASK_SINK |
+                              PA_SUBSCRIPTION_MASK_SOURCE |
+                              PA_SUBSCRIPTION_MASK_SINK_INPUT |
+                              PA_SUBSCRIPTION_MASK_SOURCE_OUTPUT
+                             ), &Pa::ctx_success_cb, this);
+    wait_on_pa_operation(o);
+    pa_operation_unref(o);
+    pa_threaded_mainloop_unlock(pa_ml);
+}
+
+void Pa::ctx_success_cb(pa_context *ctx, int succes, void *instance)
+{
+    Pa *p = reinterpret_cast<Pa *>(instance);
+    pa_threaded_mainloop_signal(p->pa_ml, 0);
+}
+
+void Pa::fetchPaobjects()
+{
+
+    pa_threaded_mainloop_lock(pa_ml);
+    pa_operation *o;
+
+    // get cards
+    o = pa_context_get_card_info_list(pa_ctx, &Pa::ctx_cardlist_cb,
+                                      this);
+    wait_on_pa_operation(o);
+    pa_operation_unref(o);
+
+    // source list cb
+    o = pa_context_get_source_info_list(pa_ctx, &Pa::ctx_sourcelist_cb, this);
+    wait_on_pa_operation(o);
+    pa_operation_unref(o);
+
+    // Sink devices list cb
+    o = pa_context_get_sink_info_list(pa_ctx, &Pa::ctx_sinklist_cb, this);
+    wait_on_pa_operation(o);
+    pa_operation_unref(o);
+
+    // Sink input list (application) cb
+    o = pa_context_get_sink_input_info_list(pa_ctx, &Pa::ctx_inputlist_cb, this);
+    wait_on_pa_operation(o);
+    pa_operation_unref(o);
+
+    // source outputs list cb
+    o = pa_context_get_source_output_info_list(pa_ctx, &Pa::ctx_sourceoutputlist_cb,
+            this);
+    wait_on_pa_operation(o);
+    pa_operation_unref(o);
+
     pa_threaded_mainloop_unlock(pa_ml);
 }
 
@@ -111,6 +208,7 @@ void Pa::update_source_output(const pa_source_output_info *info)
     if (PA_SOURCE_OUTPUTS.count(info->index) == 0) {
         p = new PaSourceOutput;
         PA_SOURCE_OUTPUTS[info->index] = p;
+        p->monitor_stream = nullptr;
     } else {
         p = reinterpret_cast<PaSourceOutput *>(PA_SOURCE_OUTPUTS[info->index]);
     }
@@ -146,6 +244,7 @@ void Pa::update_source(const pa_source_info *info)
         p = new PaSource;
         PA_SOURCES[info->index] = p;
         p->monitor_index = info->index;
+        p->monitor_stream = nullptr;
         newObj = true;
     } else {
         p = reinterpret_cast<PaSource *>(PA_SOURCES[info->index]);
@@ -159,7 +258,7 @@ void Pa::update_source(const pa_source_info *info)
     strncpy(p->name, info->description, 255);
 
     if (newObj) {
-        create_monitor_stream_for_paobject(p);
+        //create_monitor_stream_for_paobject(p);
     }
 
     notify_update();
@@ -174,6 +273,7 @@ void Pa::update_card(const pa_card_info *info)
         p = new PaCard;
         PA_CARDS[info->index] = p;
         p->monitor_index = info->index;
+        p->monitor_stream = nullptr;
     } else {
         p = reinterpret_cast<PaCard *>(PA_CARDS[info->index]);
     }
@@ -216,6 +316,7 @@ void Pa::update_sink(const pa_sink_info *info)
     if (PA_SINKS.count(info->index) == 0) {
         p = new PaSink;
         PA_SINKS[info->index] = p;
+        p->monitor_stream = nullptr;
     } else {
         p = reinterpret_cast<PaSink *>(PA_SINKS[info->index]);
     }
@@ -238,25 +339,26 @@ void Pa::update_input(const pa_sink_input_info *info)
 
     PaInput *p;
 
+    bool sink_changed = true;
+
     if (PA_INPUTS.count(info->index) == 0) {
         p = new PaInput;
         PA_INPUTS[info->index] = p;
+        p->monitor_stream = nullptr;
     } else {
         p = reinterpret_cast<PaInput *>(PA_INPUTS[info->index]);
+
+        if (PA_INPUTS.count(info->index)) {
+            sink_changed = info->sink != p->sink;
+        }
     }
 
-    bool sink_changed = true;
-
-    if (PA_INPUTS.count(info->index)) {
-        sink_changed = info->sink != p->sink;
-    }
 
     p->index = info->index;
     p->channels = info->channel_map.channels;
     p->volume = (const pa_volume_t) pa_cvolume_avg(&info->volume);
     p->mute = info->mute;
     p->sink = info->sink;
-    p->monitor_stream = nullptr;
     strcpy(p->name, info->name);
 
     const char *app_name;
@@ -385,6 +487,7 @@ pa_stream *Pa::create_monitor_stream_for_source(uint32_t source_index,
     if (stream_index != (uint32_t) - 1) {
         pa_stream_set_state_callback(s, &Pa::stream_state_cb,
                                      &PA_INPUTS[stream_index]);
+
     }
 
     flags = (pa_stream_flags_t)(PA_STREAM_DONT_MOVE | PA_STREAM_PEAK_DETECT |
@@ -404,7 +507,7 @@ void Pa::create_monitor_stream_for_paobject(PaObject *po)
         pa_stream_disconnect(po->monitor_stream);
         po->monitor_stream = nullptr;
     }
-
+    
     if (po->type == pa_object_t::INPUT) {
         PaInput *input = reinterpret_cast<PaInput *>(po);
         input->monitor_stream = create_monitor_stream_for_source(
@@ -499,7 +602,6 @@ void Pa::subscribe_cb(pa_context *ctx, pa_subscription_event_type_t t,
 
     int type = (t & PA_SUBSCRIPTION_EVENT_TYPE_MASK);
     Pa *pa = reinterpret_cast<Pa *>(instance);
-
     // https://freedesktop.org/software/pulseaudio/doxygen/def_8h.html#a6bedfa147a9565383f1f44642cfef6a3
 
     switch (t & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) {
@@ -515,6 +617,7 @@ void Pa::subscribe_cb(pa_context *ctx, pa_subscription_event_type_t t,
                                       &Pa::ctx_sinklist_cb,
                                       instance
                                   );
+                pa->wait_on_pa_operation(o);
                 pa_operation_unref(o);
             }
 
@@ -534,6 +637,7 @@ void Pa::subscribe_cb(pa_context *ctx, pa_subscription_event_type_t t,
                                       &Pa::ctx_inputlist_cb,
                                       instance
                                   );
+                pa->wait_on_pa_operation(o);
                 pa_operation_unref(o);
             }
 
@@ -553,19 +657,22 @@ void Pa::subscribe_cb(pa_context *ctx, pa_subscription_event_type_t t,
                     return;
                 }
 
+                pa->wait_on_pa_operation(o);
                 pa_operation_unref(o);
             }
 
             break;
         }
 
-        case PA_SUBSCRIPTION_EVENT_SOURCE_OUTPUT:
+        case PA_SUBSCRIPTION_EVENT_SOURCE_OUTPUT:https://www.youtube.com/watch?v=SoyPbGgZGJ4
             if (type == PA_SUBSCRIPTION_EVENT_REMOVE) {
                 pa->remove_paobject(&pa->PA_SOURCE_OUTPUTS, index);
             } else if (type == PA_SUBSCRIPTION_EVENT_NEW ||
                        type == PA_SUBSCRIPTION_EVENT_CHANGE) {
                 pa_operation *o = pa_context_get_source_output_info(ctx, index,
                                   &Pa::ctx_sourceoutputlist_cb, instance);
+
+                pa->wait_on_pa_operation(o);
                 pa_operation_unref(o);
             }
 
@@ -578,6 +685,8 @@ void Pa::subscribe_cb(pa_context *ctx, pa_subscription_event_type_t t,
                        type == PA_SUBSCRIPTION_EVENT_CHANGE) {
                 pa_operation *o = pa_context_get_card_info_by_index(ctx, index,
                                   &Pa::ctx_cardlist_cb, instance);
+
+                pa->wait_on_pa_operation(o);
                 pa_operation_unref(o);
             }
 
@@ -588,9 +697,10 @@ void Pa::subscribe_cb(pa_context *ctx, pa_subscription_event_type_t t,
         case PA_SUBSCRIPTION_EVENT_SAMPLE_CACHE:
         case PA_SUBSCRIPTION_EVENT_SERVER:
         default:
-            return;
+            break;
 
     }
+
 }
 
 void Pa::wait_on_pa_operation(pa_operation *o)
@@ -603,55 +713,22 @@ void Pa::wait_on_pa_operation(pa_operation *o)
 void Pa::ctx_state_cb(pa_context *ctx, void *instance)
 {
     int state = pa_context_get_state(ctx);
+    Pa *pa = reinterpret_cast<Pa *>(instance);
 
     switch (state) {
-        case PA_CONTEXT_READY: {
-            pa_operation *o;
-
-            // Subscribe to changes
-            pa_context_set_subscribe_callback(ctx, &Pa::subscribe_cb, instance);
-
-            o = pa_context_subscribe(ctx, (pa_subscription_mask_t)
-                                     (PA_SUBSCRIPTION_MASK_SINK |
-                                      PA_SUBSCRIPTION_MASK_SOURCE |
-                                      PA_SUBSCRIPTION_MASK_SINK_INPUT |
-                                      PA_SUBSCRIPTION_MASK_SOURCE_OUTPUT
-                                     ), NULL, NULL);
-            pa_operation_unref(o);
-
-            // get cards
-            o = pa_context_get_card_info_list(ctx, &Pa::ctx_cardlist_cb,
-                                              instance);
-            pa_operation_unref(o);
-
-            // source list cb
-            o = pa_context_get_source_info_list(ctx, &Pa::ctx_sourcelist_cb, instance);
-            pa_operation_unref(o);
-
-            // Sink devices list cb
-            o = pa_context_get_sink_info_list(ctx, &Pa::ctx_sinklist_cb, instance);
-            pa_operation_unref(o);
-
-            // Sink input list (application) cb
-            o = pa_context_get_sink_input_info_list(ctx, &Pa::ctx_inputlist_cb, instance);
-            pa_operation_unref(o);
-
-            // source outputs list cb
-            o = pa_context_get_source_output_info_list(ctx, &Pa::ctx_sourceoutputlist_cb,
-                    instance);
-            pa_operation_unref(o);
-
-
+        case PA_CONTEXT_READY:
+        case PA_CONTEXT_TERMINATED:
+        case PA_CONTEXT_FAILED:
+            pa_threaded_mainloop_signal(pa->pa_ml, 0);
             break;
-        }
+
 
         case PA_CONTEXT_UNCONNECTED:
         case PA_CONTEXT_CONNECTING:
         case PA_CONTEXT_AUTHORIZING:
         case PA_CONTEXT_SETTING_NAME:
-        case PA_CONTEXT_FAILED:
-        case PA_CONTEXT_TERMINATED:
-            return;
             break;
     }
+
+    return;
 }

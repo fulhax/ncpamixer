@@ -37,7 +37,7 @@ public:
     explicit Pa();
     ~Pa();
 
-    void init();
+    bool init();
     void exitPa();
     void updatePeakByDeviceId(uint32_t index, float peak);
     void update_input(const pa_sink_input_info *info);
@@ -52,11 +52,13 @@ public:
     void toggle_input_mute(uint32_t index);
     void toggle_sink_mute(uint32_t index);
     void move_input_sink(uint32_t input_index, uint32_t sink_index);
+    void fetchPaobjects();
     uint32_t exists(std::map<uint32_t, PaObject *> objects, uint32_t index);
 
     static void subscribe_cb(pa_context *ctx, pa_subscription_event_type_t t,
                              uint32_t index, void *userdata);
     static void ctx_state_cb(pa_context *ctx, void *userdata);
+    static void ctx_success_cb(pa_context *ctx, int success, void *userdata);
     static void ctx_sinklist_cb(pa_context *ctx, const pa_sink_info *info,
                                 int eol, void  *userdata);
     static void ctx_inputlist_cb(pa_context *ctx, const pa_sink_input_info *info,
