@@ -47,39 +47,9 @@ void Tab::draw()
         }
 
         char label[255] = {0};
-        char app[255] = {0};
-        const char *app_name = i.second->getAppName();
+        std::string app = {0};
 
-        if (app_name != nullptr && strlen(i.second->getAppName()) > 0) {
-            snprintf(
-                app,
-                sizeof(app),
-                "%s : %s",
-                i.second->getAppName(),
-                i.second->name
-            );
-        } else {
-            snprintf(app, sizeof(app), "%s", i.second->name);
-        }
-
-        if (i.second->mute) {
-            snprintf(
-                label,
-                sizeof(label),
-                "%s (muted)",
-                app
-            );
-        } else {
-            snprintf(
-                label,
-                sizeof(label),
-                "%s (%d%%)",
-                app,
-                static_cast<int>(perc * 1.5f * 100.f)
-            );
-        }
-
-        mvwaddstr(ui.window, baseY + 1, 1, label);
+        int toggle_len = 0;
 
         if (toggle != nullptr) {
             char *name = toggle->find(i.second->getRelation())->second->name;
@@ -94,6 +64,8 @@ void Tab::draw()
                     sink_pos,
                     name
                 );
+
+                toggle_len += strlen(name);
             }
         } else {
             if (i.second->active_port != nullptr) {
@@ -106,8 +78,57 @@ void Tab::draw()
                     sink_pos,
                     i.second->active_port->description
                 );
+
+                toggle_len += strlen(i.second->active_port->description);
             }
         }
+
+        const char *app_name = i.second->getAppName();
+
+        if (app_name != nullptr && strlen(i.second->getAppName()) > 0) {
+            app = std::string(i.second->getAppName()) + ": " + std::string(i.second->name);
+        } else {
+            app = i.second->name;
+        }
+
+        int output_len = 0;
+        bool dots = false;
+
+        while (1) {
+            if (i.second->mute) {
+                snprintf(
+                    label,
+                    sizeof(label),
+                    "%s%s (muted)",
+                    app.c_str(),
+                    (dots) ? "..." : ""
+                );
+            } else {
+                snprintf(
+                    label,
+                    sizeof(label),
+                    "%s%s (%d%%)",
+                    app.c_str(),
+                    (dots) ? "..." : "",
+                    static_cast<int>(perc * 1.5f * 100.f)
+                );
+            }
+
+            output_len = strlen(label);
+            if((output_len + toggle_len + 4) > ui.width) {
+                if(app.length() > 0) {
+                    app.resize(app.length() - 1);
+                } else {
+                    break;
+                }
+
+                dots = true;
+            } else {
+                break;
+            }
+        }
+
+        mvwaddstr(ui.window, baseY + 1, 1, label);
 
         if (current_block == selected_block) {
             wattroff(ui.window, COLOR_PAIR(1));
