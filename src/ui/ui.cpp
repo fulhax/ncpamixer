@@ -17,6 +17,8 @@
 
 #define KEY_ALT(x) (KEY_F(64 - 26) + (x - 'A'))
 
+Ui ui;
+
 Ui::Ui()
 {
     running = false;
@@ -43,11 +45,6 @@ int Ui::init()
     nonl();
     raw();
 
-    keypad(stdscr, true);
-    nodelay(stdscr, true);
-
-    scrollok(stdscr, true);
-
     start_color();
     use_default_colors();
 
@@ -67,6 +64,18 @@ int Ui::init()
     current_tab = new Playback();
 
     getmaxyx(stdscr, height, width);
+
+    statusbar = newwin(1, width, height - 1, 0);
+    window = newwin(0, width, 0, 0);
+
+    keypad(window, true);
+    nodelay(window, true);
+    idlok(window, true);
+
+    refresh();
+
+    wrefresh(window);
+    wrefresh(statusbar);
 
     return 1;
 }
@@ -110,7 +119,7 @@ void Ui::handleInput()
 {
     set_escdelay(25);
 
-    int input = getch();
+    int input = wgetch(window);
     const char *event = 0;
 
     if (input == ERR) {
@@ -119,11 +128,14 @@ void Ui::handleInput()
 
     switch (input) {
         case KEY_RESIZE:
-            clear();
-            refresh();
-
             getmaxyx(stdscr, height, width);
+            wresize(window, 0, width);
+
+            mvwin(statusbar, height - 1, 0);
+            wresize(statusbar, 1, width);
+
             return;
+
         default:
             std::string key = std::to_string(input);
             event = config.getString(
@@ -167,12 +179,11 @@ void Ui::kill()
 
 void Ui::draw()
 {
-    erase();
+    werase(window);
+    current_tab->draw();
+    wrefresh(window);
 
-    current_tab->draw(width, height);
     statusBar();
-
-    refresh();
 }
 
 void Ui::run()
@@ -188,18 +199,22 @@ void Ui::run()
 
 void Ui::statusBar()
 {
+    werase(statusbar);
+
     int len = 0;
 
     for (int i = 0; i < NUM_TABS; ++i) {
         if (tab_index == i) {
-            attron(COLOR_PAIR(1));
+            wattron(statusbar, COLOR_PAIR(1));
         }
 
-        mvaddstr(height - 1, len, tabs[i]);
+        mvwaddstr(statusbar, 0, len, tabs[i]);
         len += strlen(tabs[i]) + 1;
 
         if (tab_index == i) {
-            attroff(COLOR_PAIR(1));
+            wattroff(statusbar, COLOR_PAIR(1));
         }
     }
+
+    wrefresh(statusbar);
 }

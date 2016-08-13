@@ -11,23 +11,39 @@
 #include <algorithm>
 
 #include "config.hpp"
+#include "ui.hpp"
 
-void Tab::draw(int w, int h)
+void Tab::draw()
 {
     if (object == nullptr) {
         return;
     }
 
-    int baseY = 3;
+    int baseY = 0;
+    int current_block = 0;
+
+    int total_blocks = (ui.height - 1) / BLOCK_SIZE;
+    int blocks_drawn = 0;
 
     for (auto &i : *object) {
+        if (current_block <= selected_block - total_blocks) {
+            current_block++;
+            continue;
+        }
+
+        if (blocks_drawn >= total_blocks) {
+            break;
+        }
+
+        blocks_drawn++;
+
         float perc = static_cast<float>(i.second->volume) /
                      (PA_VOLUME_NORM * 1.5f);
 
-        volumeBar(w, h, 0, baseY, perc, i.second->peak);
+        volumeBar(ui.width, ui.height, 0, baseY + 3, perc, i.second->peak);
 
-        if (i.first == selected_index) {
-            attron(COLOR_PAIR(1));
+        if (current_block == selected_block) {
+            wattron(ui.window, COLOR_PAIR(1));
         }
 
         char label[255] = {0};
@@ -36,12 +52,12 @@ void Tab::draw(int w, int h)
 
         if (app_name != nullptr && strlen(i.second->getAppName()) > 0) {
             snprintf(
-                    app,
-                    sizeof(app),
-                    "%s : %s",
-                    i.second->getAppName(),
-                    i.second->name
-                    );
+                app,
+                sizeof(app),
+                "%s : %s",
+                i.second->getAppName(),
+                i.second->name
+            );
         } else {
             snprintf(app, sizeof(app), "%s", i.second->name);
         }
@@ -63,17 +79,18 @@ void Tab::draw(int w, int h)
             );
         }
 
-        mvaddstr(baseY - 2, 1, label);
+        mvwaddstr(ui.window, baseY + 1, 1, label);
 
         if (toggle != nullptr) {
             char *name = toggle->find(i.second->getRelation())->second->name;
 
             if (name != nullptr) {
                 unsigned int len = strlen(name);
-                unsigned int sink_pos = w - 1 - len;
+                unsigned int sink_pos = ui.width - 1 - len;
 
-                mvaddstr(
-                    baseY - 2,
+                mvwaddstr(
+                    ui.window,
+                    baseY + 1,
                     sink_pos,
                     name
                 );
@@ -81,21 +98,23 @@ void Tab::draw(int w, int h)
         } else {
             if (i.second->active_port != nullptr) {
                 unsigned int len = strlen(i.second->active_port->description);
-                unsigned int sink_pos = w - 1 - len;
+                unsigned int sink_pos = ui.width - 1 - len;
 
-                mvaddstr(
-                    baseY - 2,
+                mvwaddstr(
+                    ui.window,
+                    baseY + 1,
                     sink_pos,
                     i.second->active_port->description
                 );
             }
         }
 
-        if (i.first == selected_index) {
-            attroff(COLOR_PAIR(1));
+        if (current_block == selected_block) {
+            wattroff(ui.window, COLOR_PAIR(1));
         }
 
-        baseY += 5;
+        baseY += BLOCK_SIZE;
+        current_block++;
     }
 }
 
@@ -128,24 +147,29 @@ void Tab::handleEvents(const char *event)
 
         if (i != object->end()) {
             selected_index = i->first;
+            selected_block = 0;
         }
+
     } else if (!strcmp("move_last", event)) {
         auto i = object->rbegin();
 
         if (i != object->rend()) {
             selected_index = i->first;
+            selected_block = object->size() - 1;
         }
     } else if (!strcmp("move_up", event)) {
         auto i = std::prev(object->find(selected_index), 1);
 
         if (i != object->end()) {
             selected_index = i->first;
+            selected_block = (selected_block > 0) ? selected_block - 1 : 0;
         }
     } else if (!strcmp("move_down", event)) {
         auto i = std::next(object->find(selected_index), 1);
 
         if (i != object->end()) {
             selected_index = i->first;
+            selected_block++;
         }
     } else if (!strcmp("volume_up", event)) {
         if (selected_pobj != nullptr) {
@@ -352,30 +376,30 @@ uint32_t Tab::dropDown(int x, int y, std::map<uint32_t, std::string> objects,
 
 void Tab::borderBox(int w, int h, int px, int py)
 {
-    mvvline(py, px, ACS_VLINE, h);
-    mvvline(py, px + w, ACS_VLINE, h);
+    mvwvline(ui.window, py, px, ACS_VLINE, h);
+    mvwvline(ui.window, py, px + w, ACS_VLINE, h);
 
-    mvhline(py, px, ACS_HLINE, w);
-    mvhline(py + h, px, ACS_HLINE, w);
+    mvwhline(ui.window, py, px, ACS_HLINE, w);
+    mvwhline(ui.window, py + h, px, ACS_HLINE, w);
 
-    mvhline(py, px, ACS_ULCORNER, 1);
-    mvhline(py, px + w, ACS_URCORNER, 1);
+    mvwhline(ui.window, py, px, ACS_ULCORNER, 1);
+    mvwhline(ui.window, py, px + w, ACS_URCORNER, 1);
 
-    mvhline(py + h, px, ACS_LLCORNER, 1);
-    mvhline(py + h, px + w, ACS_LRCORNER, 1);
+    mvwhline(ui.window, py + h, px, ACS_LLCORNER, 1);
+    mvwhline(ui.window, py + h, px + w, ACS_LRCORNER, 1);
 
 }
 
 void Tab::selectBox(int w, int px, int py, bool selected)
 {
     if (selected) {
-        attron(COLOR_PAIR(1));
+        wattron(ui.window, COLOR_PAIR(1));
     }
 
-    mvaddstr(py + 1, px + 2, "Digital Stereo (HDMI) Output");
+    mvwaddstr(ui.window, py + 1, px + 2, "Digital Stereo (HDMI) Output");
 
     if (selected) {
-        attroff(COLOR_PAIR(1));
+        wattroff(ui.window, COLOR_PAIR(1));
     }
 
     borderBox(w, 2, px, py);
@@ -411,22 +435,22 @@ void Tab::volumeBar(int w, int h, int px, int py, float vol, float peak)
                     );
         }
 
-        attron(COLOR_PAIR(color));
-        mvaddstr(py, i, "\u2588");
-        attroff(COLOR_PAIR(color));
+        wattron(ui.window, COLOR_PAIR(color));
+        mvwaddstr(ui.window, py, i, "\u2588");
+        wattroff(ui.window, COLOR_PAIR(color));
     }
 
     for (int i = 0; i < fw; i++) {
         color = getVolumeColor(
                     (static_cast<float>(pw + i) / w) * 100
                 );
-        attron(COLOR_PAIR(color + 3));
-        mvaddstr(py, pw + i, "\u2593");
-        attroff(COLOR_PAIR(color + 3));
+        wattron(ui.window, COLOR_PAIR(color + 3));
+        mvwaddstr(ui.window, py, pw + i, "\u2593");
+        wattroff(ui.window, COLOR_PAIR(color + 3));
     }
 
     fillW(w, h, 0, py + 1, "\u2594");
-    mvaddstr(py, vw - 1, "\u2588"); // Mark volume
+    mvwaddstr(ui.window, py, vw - 1, "\u2588"); // Mark volume
 
 }
 
@@ -446,6 +470,6 @@ void Tab::fillW(int w, int h, int offset_x, int offset_y, const char *str)
     int wo = (w - offset_x);
 
     for (int i = 0; i < wo; i++) {
-        mvaddstr(offset_y, offset_x + i, str);
+        mvwaddstr(ui.window, offset_y, offset_x + i, str);
     }
 }

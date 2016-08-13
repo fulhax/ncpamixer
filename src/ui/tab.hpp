@@ -5,6 +5,8 @@
 
 #include <map>
 
+#define BLOCK_SIZE 5
+
 class Tab
 {
 public:
@@ -17,10 +19,11 @@ public:
     {
         object = nullptr;
         toggle = nullptr;
+        selected_block = 0;
     };
     virtual ~Tab() {};
-
-    virtual void draw(int w, int h);
+    
+    virtual void draw();
     void handleEvents(const char *event);
 
     void volumeBar(int w, int h, int px, int py, float vol, float peak);
@@ -33,6 +36,8 @@ public:
 private:
     void fillW(int w, int h, int offset_x, int offset_y, const char *str);
     unsigned int getVolumeColor(int p);
+
+    int selected_block;
 };
 
 #endif // TAB_HPP_

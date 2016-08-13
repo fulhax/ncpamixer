@@ -11,8 +11,6 @@ int main(void)
 {
     config.init();
 
-    Ui ui;
-
     pa.init();
 
     if(ui.init() > 0) {

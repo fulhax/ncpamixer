@@ -30,6 +30,9 @@ public:
 
     int width;
     int height;
+
+    WINDOW *window;
+    WINDOW *statusbar;
 private:
     bool running;
 
@@ -51,5 +54,7 @@ private:
     void draw();
     void switchTab(int index);
 };
+
+extern Ui ui;
 
 #endif // UI_HPP_

@@ -55,28 +55,61 @@ public:
     void fetchPaobjects();
     uint32_t exists(std::map<uint32_t, PaObject *> objects, uint32_t index);
 
-    static void subscribe_cb(pa_context *ctx, pa_subscription_event_type_t t,
-                             uint32_t index, void *userdata);
-    static void ctx_state_cb(pa_context *ctx, void *userdata);
-    static void ctx_success_cb(pa_context *ctx, int success, void *userdata);
-    static void ctx_sinklist_cb(pa_context *ctx, const pa_sink_info *info,
-                                int eol, void  *userdata);
-    static void ctx_inputlist_cb(pa_context *ctx, const pa_sink_input_info *info,
-                                 int eol, void  *userdata);
-    static void ctx_sourcelist_cb(pa_context *ctx, const pa_source_info *info,
-                                  int eol, void  *userdata);
-    static void ctx_sourceoutputlist_cb(pa_context *ctx,
-                                        const pa_source_output_info *info, int eol, void *instance);
-    static void ctx_cardlist_cb(pa_context *ctx, const pa_card_info *info,
-                                int eol, void *instance);
+    static void subscribe_cb(
+        pa_context *ctx,
+        pa_subscription_event_type_t t,
+        uint32_t index,
+        void *userdata
+    );
+    static void ctx_state_cb(
+        pa_context *ctx,
+        void *userdata
+    );
+    static void ctx_success_cb(
+        pa_context *ctx,
+        int success,
+        void *userdata
+    );
+    static void ctx_sinklist_cb(
+        pa_context *ctx,
+        const pa_sink_info *info,
+        int eol,
+        void  *userdata
+    );
+    static void ctx_inputlist_cb(
+        pa_context *ctx,
+        const pa_sink_input_info *info,
+        int eol,
+        void  *userdata
+    );
+    static void ctx_sourcelist_cb(
+        pa_context *ctx,
+        const pa_source_info *info,
+        int eol,
+        void  *userdata
+    );
+    static void ctx_sourceoutputlist_cb(
+        pa_context *ctx,
+        const pa_source_output_info *info,
+        int eol,
+        void *instance
+    );
+    static void ctx_cardlist_cb(
+        pa_context *ctx,
+        const pa_card_info *info,
+        int eol,
+        void *instance
+    );
 
     static void read_callback(pa_stream *s, size_t length, void *instance);
     static void stream_suspended_cb(pa_stream *stream, void *instance);
     static void stream_state_cb(pa_stream *stream, void *info);
 
     void create_monitor_stream_for_paobject(PaObject *po);
-    pa_stream *create_monitor_stream_for_source(uint32_t source_index,
-            uint32_t stream_index);
+    pa_stream *create_monitor_stream_for_source(
+        uint32_t source_index,
+        uint32_t stream_index
+    );
 
     void set_notify_update_cb(notify_update_callback cb);
     void notify_update();

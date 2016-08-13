@@ -2,6 +2,8 @@
 #include <cstring>
 #include <functional>
 
+#include <map>
+
 // https://freedesktop.org/software/pulseaudio/doxygen/introspect_8h.html
 
 Pa pa;
@@ -101,6 +103,8 @@ bool Pa::init()
     wait_on_pa_operation(o);
     pa_operation_unref(o);
     pa_threaded_mainloop_unlock(pa_ml);
+
+    return true;
 }
 
 void Pa::ctx_success_cb(pa_context *ctx, int succes, void *instance)
@@ -195,13 +199,14 @@ void Pa::update_source_output(const pa_source_output_info *info)
     // https://github.com/pulseaudio/pavucontrol/blob/master/src/mainwindow.cc#L802
     const char *app;
 
-    if ((app = pa_proplist_gets(info->proplist, PA_PROP_APPLICATION_ID)))
+    if ((app = pa_proplist_gets(info->proplist, PA_PROP_APPLICATION_ID))) {
         if (strcmp(app, "org.PulseAudio.pavucontrol") == 0
             || strcmp(app, "org.gnome.VolumeControl") == 0
             || strcmp(app, "org.kde.kmixd") == 0
             || strcmp(app, "ncpamixer") == 0) {
             return;
         }
+    }
 
     PaSourceOutput *p;
 
@@ -292,7 +297,7 @@ void Pa::update_card(const pa_card_info *info)
     p->index = info->index;
     p->channels = 0;
     p->volume = 0;
-    p->mute = NULL;
+    p->mute = false;
     p->updateProfiles(info->profiles, info->n_profiles);
 
     if(info->active_profile != nullptr){
@@ -384,7 +389,7 @@ void Pa::update_input(const pa_sink_input_info *info)
     p->volume = (const pa_volume_t) pa_cvolume_avg(&info->volume);
     p->mute = info->mute;
     p->sink = info->sink;
-    strcpy(p->name, info->name);
+    snprintf(p->name, sizeof(p->name), "%s", info->name);
 
     const char *app_name;
     app_name = pa_proplist_gets(info->proplist, PA_PROP_APPLICATION_NAME);
@@ -403,7 +408,7 @@ void Pa::update_input(const pa_sink_input_info *info)
 // https://github.com/pulseaudio/pavucontrol/blob/master/src/mainwindow.cc#L541
 void Pa::read_callback(pa_stream *s, size_t length, void *instance)
 {
-    Pa *pa = (Pa *) instance;
+    Pa *pa = reinterpret_cast<Pa *>(instance);
     std::lock_guard<std::mutex> lk(pa->inputMtx);
     const void *data;
     float v;
@@ -689,7 +694,7 @@ void Pa::subscribe_cb(pa_context *ctx, pa_subscription_event_type_t t,
             break;
         }
 
-        case PA_SUBSCRIPTION_EVENT_SOURCE_OUTPUT:https://www.youtube.com/watch?v=SoyPbGgZGJ4
+        case PA_SUBSCRIPTION_EVENT_SOURCE_OUTPUT:
             if (type == PA_SUBSCRIPTION_EVENT_REMOVE) {
                 pa->remove_paobject(&pa->PA_SOURCE_OUTPUTS, index);
             } else if (type == PA_SUBSCRIPTION_EVENT_NEW ||
