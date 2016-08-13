@@ -9,8 +9,6 @@ class Playback : public Tab
 public:
     Playback();
     ~Playback();
-
-    void draw(int w, int h);
 };
 
 #endif // PLAYBACK_HPP_

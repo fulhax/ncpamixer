@@ -20,7 +20,7 @@ public:
     };
     virtual ~Tab() {};
 
-    virtual void draw(int w, int h) = 0;
+    virtual void draw(int w, int h);
     void handleEvents(const char *event);
 
     void volumeBar(int w, int h, int px, int py, float vol, float peak);

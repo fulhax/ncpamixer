@@ -9,7 +9,7 @@ public:
     uint32_t sink;
     char app_name[255];
 
-    virtual uint32_t getSink() {
+    virtual uint32_t getRelation() {
         return sink;
     };
 

@@ -12,6 +12,93 @@
 
 #include "config.hpp"
 
+void Tab::draw(int w, int h)
+{
+    if (object == nullptr) {
+        return;
+    }
+
+    int baseY = 3;
+
+    for (auto &i : *object) {
+        float perc = static_cast<float>(i.second->volume) /
+                     (PA_VOLUME_NORM * 1.5f);
+
+        volumeBar(w, h, 0, baseY, perc, i.second->peak);
+
+        if (i.first == selected_index) {
+            attron(COLOR_PAIR(1));
+        }
+
+        char label[255] = {0};
+        char app[255] = {0};
+        const char *app_name = i.second->getAppName();
+
+        if (app_name != nullptr && strlen(i.second->getAppName()) > 0) {
+            snprintf(
+                    app,
+                    sizeof(app),
+                    "%s : %s",
+                    i.second->getAppName(),
+                    i.second->name
+                    );
+        } else {
+            snprintf(app, sizeof(app), "%s", i.second->name);
+        }
+
+        if (i.second->mute) {
+            snprintf(
+                label,
+                sizeof(label),
+                "%s (muted)",
+                app
+            );
+        } else {
+            snprintf(
+                label,
+                sizeof(label),
+                "%s (%d%%)",
+                app,
+                static_cast<int>(perc * 1.5f * 100.f)
+            );
+        }
+
+        mvaddstr(baseY - 2, 1, label);
+
+        if (toggle != nullptr) {
+            char *name = toggle->find(i.second->getRelation())->second->name;
+
+            if (name != nullptr) {
+                unsigned int len = strlen(name);
+                unsigned int sink_pos = w - 1 - len;
+
+                mvaddstr(
+                    baseY - 2,
+                    sink_pos,
+                    name
+                );
+            }
+        } else {
+            if (i.second->active_port != nullptr) {
+                unsigned int len = strlen(i.second->active_port->description);
+                unsigned int sink_pos = w - 1 - len;
+
+                mvaddstr(
+                    baseY - 2,
+                    sink_pos,
+                    i.second->active_port->description
+                );
+            }
+        }
+
+        if (i.first == selected_index) {
+            attroff(COLOR_PAIR(1));
+        }
+
+        baseY += 5;
+    }
+}
+
 void Tab::handleEvents(const char *event)
 {
     if (object == nullptr) {
@@ -70,7 +157,7 @@ void Tab::handleEvents(const char *event)
         }
     } else if (!strcmp("switch", event)) {
         if (selected_pobj != nullptr && toggle != nullptr) {
-            auto current_toggle = toggle->find(selected_pobj->getSink());
+            auto current_toggle = toggle->find(selected_pobj->getRelation());
             current_toggle = std::next(current_toggle, 1);
 
             if (current_toggle == toggle->end()) {
@@ -88,7 +175,7 @@ void Tab::handleEvents(const char *event)
                                           1,
                                           1,
                                           *toggle,
-                                          i->second->getSink()
+                                          i->second->getRelation()
                                       );
                 selected_pobj->move(new_toggle);
             }

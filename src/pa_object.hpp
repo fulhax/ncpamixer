@@ -49,17 +49,12 @@ public:
     void toggle_mute();
     void set_profile(const char* profile);
 
-    virtual uint32_t getSink()
-    {
-        throw - 1;
-    };
-
     virtual char *getAppName()
     {
-        throw - 1;
+        return nullptr;
     };
 
-    virtual uint32_t getSource()
+    virtual uint32_t getRelation()
     {
         throw - 1;
     };

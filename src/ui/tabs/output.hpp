@@ -9,8 +9,6 @@ class Output : public Tab
 public:
     Output();
     ~Output();
-
-    void draw(int w, int h);
 };
 
 #endif // PLAYBACK_HPP_

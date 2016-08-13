@@ -9,8 +9,6 @@ class Input : public Tab
 public:
     Input();
     ~Input();
-
-    void draw(int w, int h);
 };
 
 #endif // PLAYBACK_HPP_
