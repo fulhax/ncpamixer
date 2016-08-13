@@ -439,7 +439,7 @@ void Tab::volumeBar(int w, int h, int px, int py, float vol, float peak)
 
     float dw = static_cast<float>(w);
 
-    int pw = dw * peak;
+    int pw = dw * peak + 0.1f;
     int vw = dw * vol;
     int fw = w - pw;
 
