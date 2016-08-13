@@ -265,7 +265,7 @@ uint32_t Tab::dropDown(int x, int y, std::map<uint32_t, std::string> objects,
 
     set_menu_win(menu, menu_win);
     set_menu_sub(menu, derwin(menu_win, height + 1, width, 1, 1));
-    set_menu_format(menu, height + 1, 1);
+    set_menu_format(menu, height, 1);
 
     //wbkgd(menu_win, COLOR_PAIR(7));
     //set_menu_back(menu, COLOR_PAIR(7));
