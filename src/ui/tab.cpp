@@ -22,16 +22,21 @@ void Tab::draw()
     int baseY = 0;
     int current_block = 0;
 
-    int total_blocks = (ui.height - 1) / BLOCK_SIZE;
+    total_blocks = (ui.height - 2) / BLOCK_SIZE;
     int blocks_drawn = 0;
+
+    bool more_up = false;
+    bool more_down = false;
 
     for (auto &i : *object) {
         if (current_block <= selected_block - total_blocks) {
             current_block++;
+            more_up = true;
             continue;
         }
 
         if (blocks_drawn >= total_blocks) {
+            more_down = true;
             break;
         }
 
@@ -40,7 +45,34 @@ void Tab::draw()
         float perc = static_cast<float>(i.second->volume) /
                      (PA_VOLUME_NORM * 1.5f);
 
-        volumeBar(ui.width, ui.height, 0, baseY + 3, perc, i.second->peak);
+        if (has_volume) {
+            volumeBar(
+                ui.width,
+                ui.height,
+                0,
+                baseY + 3,
+                perc,
+                i.second->peak
+            );
+        } else { // Configuration
+            if (i.first == selected_index) {
+                wattron(ui.window, COLOR_PAIR(1));
+            }
+
+            if (i.second->active_profile != nullptr) {
+                mvwaddstr(
+                    ui.window,
+                    baseY + 3,
+                    3,
+                    i.second->active_profile->description
+                );
+                borderBox(ui.width - 2, 2, 1, baseY + 2);
+            }
+
+            if (i.first == selected_index) {
+                wattroff(ui.window, COLOR_PAIR(1));
+            }
+        }
 
         if (current_block == selected_block) {
             wattron(ui.window, COLOR_PAIR(1));
@@ -86,7 +118,8 @@ void Tab::draw()
         const char *app_name = i.second->getAppName();
 
         if (app_name != nullptr && strlen(i.second->getAppName()) > 0) {
-            app = std::string(i.second->getAppName()) + ": " + std::string(i.second->name);
+            app = std::string(i.second->getAppName()) + ": " + std::string(
+                      i.second->name);
         } else {
             app = i.second->name;
         }
@@ -95,28 +128,40 @@ void Tab::draw()
         bool dots = false;
 
         while (1) {
-            if (i.second->mute) {
-                snprintf(
-                    label,
-                    sizeof(label),
-                    "%s%s (muted)",
-                    app.c_str(),
-                    (dots) ? "..." : ""
-                );
+            if (has_volume) {
+                if (i.second->mute) {
+                    snprintf(
+                        label,
+                        sizeof(label),
+                        "%s%s (muted)",
+                        app.c_str(),
+                        (dots) ? "..." : ""
+                    );
+                } else {
+                    snprintf(
+                        label,
+                        sizeof(label),
+                        "%s%s (%d%%)",
+                        app.c_str(),
+                        (dots) ? "..." : "",
+                        static_cast<int>(perc * 1.5f * 100.f)
+                    );
+                }
             } else {
                 snprintf(
                     label,
                     sizeof(label),
-                    "%s%s (%d%%)",
+                    "%s%s",
                     app.c_str(),
-                    (dots) ? "..." : "",
-                    static_cast<int>(perc * 1.5f * 100.f)
+                    (dots) ? "..." : ""
                 );
             }
 
             output_len = strlen(label);
-            if((output_len + toggle_len + 4) > ui.width) {
-                if(app.length() > 0) {
+            int volume_len = (has_volume) ? 4 : 1;
+
+            if ((output_len + toggle_len + volume_len) > ui.width) {
+                if (app.length() > 0) {
                     app.resize(app.length() - 1);
                 } else {
                     break;
@@ -136,6 +181,24 @@ void Tab::draw()
 
         baseY += BLOCK_SIZE;
         current_block++;
+    }
+
+    if (more_up) {
+        mvwaddstr(
+            ui.window,
+            0,
+            (ui.width / 2) - 4,
+            "\u2191\u2191\u2191\u2191"
+        );
+    }
+
+    if (more_down) {
+        mvwaddstr(
+            ui.window,
+            ui.height - 2,
+            (ui.width / 2) - 4,
+            "\u2193\u2193\u2193\u2193"
+        );
     }
 }
 
@@ -217,8 +280,11 @@ void Tab::handleEvents(const char *event)
 
             if (i != object->end()) {
                 uint32_t new_toggle = dropDown(
-                                          1,
-                                          1,
+                                          -1,
+                                          std::min(
+                                              selected_block * (BLOCK_SIZE),
+                                              (total_blocks - 1) * BLOCK_SIZE
+                                          ),
                                           *toggle,
                                           i->second->getRelation()
                                       );
@@ -298,12 +364,16 @@ uint32_t Tab::dropDown(int x, int y, std::map<uint32_t, std::string> objects,
         }
 
         if (autoheight) {
-            height = (height < 3) ? height + 1 : 3;
+            height = (height < 5) ? height + 1 : 5;
         }
     }
 
     items.push_back(new_item(nullptr, nullptr));
     menu = new_menu(&items[0]);
+
+    if (x < 0) {
+        x = ui.width - (width + 2);
+    }
 
     menu_win = newwin(height + 2, width + 2, y, x);
     keypad(menu_win, true);

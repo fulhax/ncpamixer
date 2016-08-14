@@ -10,6 +10,7 @@
 class Tab
 {
 public:
+    bool has_volume;
     uint32_t selected_index;
 
     std::map<uint32_t, PaObject *> *object;
@@ -20,6 +21,8 @@ public:
         object = nullptr;
         toggle = nullptr;
         selected_block = 0;
+        total_blocks = 0;
+        has_volume = true;
     };
     virtual ~Tab() {};
     
@@ -38,6 +41,7 @@ private:
     unsigned int getVolumeColor(int p);
 
     int selected_block;
+    int total_blocks;
 };
 
 #endif // TAB_HPP_

@@ -10,7 +10,7 @@ public:
     Configuration();
     ~Configuration();
 
-    void draw();
+    // void draw();
 };
 
 #endif // PLAYBACK_HPP_

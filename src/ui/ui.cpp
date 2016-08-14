@@ -72,6 +72,7 @@ int Ui::init()
     nodelay(window, true);
     idlok(window, true);
 
+    erase();
     refresh();
 
     wrefresh(window);
