@@ -210,7 +210,7 @@ void Tab::handleEvents(const char *event)
 
     selected_index = pa.exists(*object, selected_index);
 
-    if (selected_index == -1) {
+    if (selected_index == (uint32_t)(-1)) {
         return;
     }
 
@@ -295,7 +295,7 @@ void Tab::handleEvents(const char *event)
 }
 
 uint32_t Tab::dropDown(int x, int y, std::map<uint32_t, PaObject *> objects,
-                       uint32_t current, int width, int height)
+                       uint32_t current, uint32_t width, uint32_t height)
 {
     if (objects.empty()) {
         return -1;
@@ -314,7 +314,7 @@ uint32_t Tab::dropDown(int x, int y, std::map<uint32_t, PaObject *> objects,
 }
 
 uint32_t Tab::dropDown(int x, int y, std::map<uint32_t, std::string> objects,
-                       uint32_t current, int width, int height)
+                       uint32_t current, uint32_t width, uint32_t height)
 {
     if (objects.empty()) {
         return -1;

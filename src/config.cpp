@@ -26,7 +26,7 @@ const char *Config::getHomeDir()
     size_t bufsize;
     bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
 
-    if (bufsize == -1) {
+    if (bufsize == (size_t)(-1)) {
         bufsize = 16384;
     }
 
