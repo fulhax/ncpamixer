@@ -55,6 +55,7 @@ bool Pa::init()
         fprintf(stderr, "Unable to create PA context.\n");
         pa_threaded_mainloop_unlock(pa_ml);
         pa_threaded_mainloop_free(pa_ml);
+        pa_ctx = nullptr;
         return false;
     }
 
@@ -67,6 +68,7 @@ bool Pa::init()
         pa_context_unref(pa_ctx); // Tror ej den behövs?
         pa_threaded_mainloop_unlock(pa_ml);
         pa_threaded_mainloop_free(pa_ml);
+        pa_ctx = nullptr;
         return false;
     }
 
@@ -76,6 +78,7 @@ bool Pa::init()
         pa_context_unref(pa_ctx); // Tror ej den behövs?
         pa_threaded_mainloop_unlock(pa_ml);
         pa_threaded_mainloop_free(pa_ml);
+        pa_ctx = nullptr;
         return false;
     }
 
@@ -88,6 +91,7 @@ bool Pa::init()
         pa_context_unref(pa_ctx); // Tror ej den behövs?
         pa_threaded_mainloop_unlock(pa_ml);
         pa_threaded_mainloop_free(pa_ml);
+        pa_ctx = nullptr;
         return false;
     }
     pa_threaded_mainloop_unlock(pa_ml);
@@ -175,9 +179,11 @@ void Pa::remove_paobject(std::map<uint32_t, PaObject *> *objects,
 
 void Pa::exitPa()
 {
-    pa_context_disconnect(pa_ctx);
-    pa_threaded_mainloop_stop(pa_ml);
-    pa_threaded_mainloop_free(pa_ml);
+    if(pa_ctx) {
+        pa_context_disconnect(pa_ctx);
+        pa_threaded_mainloop_stop(pa_ml);
+        pa_threaded_mainloop_free(pa_ml);
+    }
 }
 
 uint32_t Pa::exists(std::map<uint32_t, PaObject *> objects, uint32_t index)
