@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <pwd.h>
+#include <string.h>
 
 #include <string>
 
@@ -46,7 +47,7 @@ const char *Config::getHomeDir()
 
 Config::Config()
 {
-
+    memset(filename, 0, sizeof(filename));
 }
 
 Config::~Config()

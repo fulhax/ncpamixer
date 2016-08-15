@@ -124,7 +124,6 @@ void Tab::draw()
             app = i.second->name;
         }
 
-        int output_len = 0;
         bool dots = false;
 
         while (1) {
@@ -157,7 +156,7 @@ void Tab::draw()
                 );
             }
 
-            output_len = strlen(label);
+            int output_len = strlen(label);
             int volume_len = (has_volume) ? 4 : 1;
 
             if ((output_len + toggle_len + volume_len) > ui.width) {

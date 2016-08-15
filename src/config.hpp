@@ -19,7 +19,7 @@ private:
     std::map<std::string, std::string> config;
     char filename[255];
 
-    const char *getHomeDir();
+    static const char *getHomeDir();
     void createDefault();
     int readConfig();
 };

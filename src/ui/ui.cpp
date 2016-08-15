@@ -23,6 +23,8 @@ Ui::Ui()
 {
     running = false;
     current_tab = nullptr;
+    window = nullptr;
+    statusbar = nullptr;
     width = 0;
     height = 0;
     tab_index = 0;
