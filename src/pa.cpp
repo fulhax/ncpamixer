@@ -14,6 +14,7 @@ Pa::Pa()
     pa_ml = nullptr;
     pa_api  = nullptr;
     pa_init = false;
+    pa_ctx = nullptr;
 }
 
 Pa::~Pa()

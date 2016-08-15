@@ -1,5 +1,24 @@
 #include "pa_object.hpp"
+
+#include <string.h>
+
 #include "pa.hpp"
+
+PaObject::PaObject() : type(pa_object_t::SINK)
+{
+    index = 0;
+    memset(name, 0, sizeof(name));
+    channels = 0;
+    mute = false;
+    monitor_index = 0;
+    monitor_stream = 0;
+    peak = 0;
+    pa_set_volume = nullptr;
+    pa_set_mute = nullptr;
+    pa_move = nullptr;
+    pa_set_profile = nullptr;
+
+}
 
 PaObject::~PaObject()
 {

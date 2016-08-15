@@ -34,7 +34,7 @@ typedef void (*notify_update_callback)();
 class Pa
 {
 public:
-    explicit Pa();
+    Pa();
     ~Pa();
 
     bool init();
@@ -53,7 +53,11 @@ public:
     void toggle_sink_mute(uint32_t index);
     void move_input_sink(uint32_t input_index, uint32_t sink_index);
     void fetchPaobjects();
-    uint32_t exists(std::map<uint32_t, PaObject *> objects, uint32_t index);
+    static uint32_t exists(
+        std::map<uint32_t,
+        PaObject *> objects,
+        uint32_t index
+    );
 
     static void subscribe_cb(
         pa_context *ctx,
