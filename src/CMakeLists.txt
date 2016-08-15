@@ -32,17 +32,18 @@ set(COMMON_SRC
     "ui/tabs/output.cpp"
     "ui/tabs/input.cpp"
     "ui/tabs/configuration.cpp"
-)
+    )
 
 include_directories(
     "src/"
     ${CURSES_INCLUDE_DIR}
     ${PULSEAUDIO_INCLUDE_DIR}
-)
+    )
 
 add_executable(${CMAKE_PROJECT_NAME} ${COMMON_SRC} ${UI_RESOURCES})
 
 target_link_libraries(${CMAKE_PROJECT_NAME}
     ${CURSES_LIBRARIES}
     ${PULSEAUDIO_LIBRARY}
-)
+    )
+install(TARGETS ${CMAKE_PROJECT_NAME} RUNTIME DESTINATION bin )
