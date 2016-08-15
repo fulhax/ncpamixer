@@ -481,16 +481,6 @@ void Pa::updatePeakByDeviceId(uint32_t index, float peak)
     }
 }
 
-void Pa::stream_state_cb(pa_stream *stream, void *instance)
-{
-    pa_stream_state_t state = pa_stream_get_state(stream);
-
-    if (state == PA_STREAM_TERMINATED || state == PA_STREAM_FAILED) {
-        PaInput *i = reinterpret_cast<PaInput *>(instance);
-        i->monitor_stream = nullptr;
-    }
-}
-
 // https://github.com/pulseaudio/pavucontrol/blob/master/src/mainwindow.cc#L574
 pa_stream *Pa::create_monitor_stream_for_source(uint32_t source_index,
         uint32_t stream_index = -1)
@@ -520,12 +510,6 @@ pa_stream *Pa::create_monitor_stream_for_source(uint32_t source_index,
     }
 
     pa_stream_set_read_callback(s, &Pa::read_callback, this);
-
-    if (stream_index != (uint32_t) - 1) {
-        pa_stream_set_state_callback(s, &Pa::stream_state_cb,
-                                     &PA_INPUTS[stream_index]);
-
-    }
 
     flags = (pa_stream_flags_t)(PA_STREAM_DONT_MOVE | PA_STREAM_PEAK_DETECT |
                                 PA_STREAM_ADJUST_LATENCY);

@@ -11,7 +11,7 @@ PaObject::PaObject() : type(pa_object_t::SINK)
     channels = 0;
     mute = false;
     monitor_index = 0;
-    monitor_stream = 0;
+    monitor_stream = nullptr;
     peak = 0;
     pa_set_volume = nullptr;
     pa_set_mute = nullptr;
@@ -115,8 +115,8 @@ void PaObject::set_profile(const char *profile)
 
 void PaObject::clearPorts()
 {
-    for (auto i = ports.begin(); i != ports.end(); i++) {
-        //delete i;
+    for (int i = 0; i < ports.size(); i++) {
+        delete ports[i];
     }
 
     ports.clear();
@@ -124,8 +124,8 @@ void PaObject::clearPorts()
 
 void PaObject::clearProfiles()
 {
-    for (auto i = profiles.begin(); i != profiles.end(); i++) {
-        //delete i;
+    for (int i = 0; i < profiles.size(); i++) {
+        delete profiles[i];
     }
 
     profiles.clear();

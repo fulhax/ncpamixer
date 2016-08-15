@@ -12,15 +12,6 @@ PaCard::PaCard()
     active_profile = nullptr;
 }
 
-
-//void PaCard::clearProfiles()
-//{
-//    for (auto i = profiles->begin(); i != profiles->end(); i++) {
-//        delete i->second;
-//    }
-//    profiles.clear();
-//}
-
 void PaCard::updateProfiles(pa_card_profile_info *pa_profiles, uint32_t n_profile)
 {
     clearProfiles();
