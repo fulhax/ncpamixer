@@ -1,0 +1,31 @@
+# Maintainer: Fredrik Hansson <fredrikhansson_12345 at yahoo dot com>
+
+pkgname=ncpamixer-git
+pkgver=0
+pkgrel=1
+pkgdesc="An Ncurses mixer for PulseAudio inspired by pavucontrol."
+arch=('i686' 'x86_64')
+url="https://github.com/fulhax/ncpamixer"
+license=('MIT')
+depends=('ncurses' 'pulseaudio')
+conflicts=('')
+source=("${pkgname}::git+https://github.com/fulhax/ncpamixer.git")
+sha512sums=('SKIP')
+
+
+pkgver() {
+    cd "$pkgname"
+    git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
+build() {
+    cd "$srcdir/$pkgname"
+    cmake -DCMAKE_BUILD_TYPE=release $srcdir/$pkgname/src\
+    -DCMAKE_INSTALL_PREFIX="$pkgdir/usr"
+    make
+}
+
+package() {
+    cd "$srcdir/$pkgname"
+    make install
+}
