@@ -58,12 +58,19 @@ public:
         pa_context_success_cb_t,
         void *
     );
+    pa_operation *(*pa_set_default)(
+        pa_context *,
+        const char* name,
+        pa_context_success_cb_t,
+        void *
+    );
 
     void set_volume(float perc);
     void step_volume(int dir);
     void move(uint32_t dest);
     void toggle_mute();
     void set_active_attribute(const char* name);
+    void set_default();
     void clearAttributes();
 
     virtual char *getAppName()

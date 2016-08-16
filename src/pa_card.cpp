@@ -10,6 +10,7 @@ PaCard::PaCard()
     pa_set_mute = nullptr;
     pa_move = nullptr;
     active_attribute = nullptr;
+    pa_set_default = nullptr;
 }
 
 void PaCard::updateProfiles(pa_card_profile_info *pa_profiles, uint32_t n_profile)

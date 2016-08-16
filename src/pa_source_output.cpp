@@ -9,6 +9,7 @@ PaSourceOutput::PaSourceOutput()
     pa_set_mute = &pa_context_set_source_output_mute;
     pa_move = &pa_context_move_source_output_by_index;
     pa_set_active_attribute = nullptr;
+    pa_set_default = nullptr;
 
     source = 0;
 }
