@@ -22,6 +22,10 @@ PaObject::PaObject() : type(pa_object_t::SINK)
 
 PaObject::~PaObject()
 {
+    if (active_attribute != nullptr) {
+        delete active_attribute;
+    }
+
     clearAttributes();
 }
 
