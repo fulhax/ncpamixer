@@ -40,10 +40,13 @@ Configuration is stored in `$XDG_CONFIG_HOME/ncpamixer.conf`
 
 ### Dependencies
 * Pulseaudio :alien:
-* CMake (For building)
 * Ncurses
 
-### Tested in
+### Build dependencies
+* CMake 
+* c++14 compatible compiler
+
+### Tested on
 * Gentoo kernel 4.6.2, pulseaudio 9.0 and ncurses 6.0-r1
 * Arch Linux 4.6.4-1 Pulseaudio 9.0 
 
