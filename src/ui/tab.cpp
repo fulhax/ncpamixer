@@ -275,54 +275,67 @@ void Tab::handleEvents(const char *event)
             }
 
             selected_pobj->move(current_toggle->first);
+        } else if (selected_pobj != nullptr) {
+            uint32_t current_attribute = selected_pobj->getRelation();
+
+            if (current_attribute + 1 < selected_pobj->attributes.size()) {
+                current_attribute++;
+            } else {
+                current_attribute = 0;
+            }
+
+            selected_pobj->set_active_attribute(
+                selected_pobj->attributes[current_attribute]->name
+            );
         }
     } else if (!strcmp("dropdown", event)) {
         uint32_t selected = 0;
 
-        auto i = object->find(selected_index);
 
-        if (i != object->end()) {
-            if (selected_pobj != nullptr && toggle != nullptr) {
-                selected = dropDown(
-                               -1,
-                               std::min(
-                                   selected_block * (BLOCK_SIZE),
-                                   (total_blocks - 1) * BLOCK_SIZE
-                               ),
-                               *toggle,
-                               i->second->getRelation()
-                           );
+        if (selected_pobj != nullptr && toggle != nullptr) {
+            selected = dropDown(
+                           -1,
+                           std::min(
+                               selected_block * (BLOCK_SIZE),
+                               (total_blocks - 1) * BLOCK_SIZE
+                           ),
+                           *toggle,
+                           selected_pobj->getRelation()
+                       );
 
-                if (selected != static_cast<uint32_t>(-1)) {
-                    selected_pobj->move(selected);
-                }
-            } else if (selected_pobj != nullptr) {
-                uint32_t w = 0;
-                int x = 0;
+            if (selected != static_cast<uint32_t>(-1)) {
+                selected_pobj->move(selected);
+            }
+        } else if (selected_pobj != nullptr) {
+            uint32_t w = 0;
+            int x = 0;
 
-                int y = std::min(
-                            selected_block * (BLOCK_SIZE),
-                            (total_blocks - 1) * BLOCK_SIZE
-                        );
+            int y = std::min(
+                        selected_block * (BLOCK_SIZE),
+                        (total_blocks - 1) * BLOCK_SIZE
+                    );
 
 
-                if (has_volume) {
-                    x = -1;
-                } else {
-                    x = 1;
-                    w = ui.width - 3;
-                    y += 2;
-                }
+            if (has_volume) {
+                x = -1;
+            } else {
+                x = 1;
+                w = ui.width - 3;
+                y += 2;
+            }
 
-                selected = dropDown(
-                               x,
-                               y,
-                               i->second->attributes,
-                               i->second->getRelation(),
-                               w
-                           );
+            selected = dropDown(
+                           x,
+                           y,
+                           selected_pobj->attributes,
+                           selected_pobj->getRelation(),
+                           w
+                       );
 
-                // Should set new active attribute here
+            if (selected != static_cast<uint32_t>(-1)) {
+                selected_pobj->set_active_attribute(
+                    selected_pobj->attributes[selected]->name
+                );
             }
         }
     }
