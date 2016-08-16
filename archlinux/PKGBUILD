@@ -8,6 +8,7 @@ arch=('i686' 'x86_64')
 url="https://github.com/fulhax/ncpamixer"
 license=('MIT')
 depends=('ncurses' 'pulseaudio')
+makedepends=('cmake')
 conflicts=('')
 source=("${pkgname}::git+https://github.com/fulhax/ncpamixer.git")
 sha512sums=('SKIP')
