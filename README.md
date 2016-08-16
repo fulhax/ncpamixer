@@ -8,7 +8,7 @@ An Ncurses mixer for PulseAudio inspired by pavucontrol.
 ![demo](https://cloud.githubusercontent.com/assets/1078548/17714097/90dff48c-63fe-11e6-8d37-1d20c44981ef.gif)
 
 ### Custom bindings? Sure!
-Configuration is stored in `$XDG_CONFIG_HOME/ncpamixer.conf`
+Your configuration gets created on first run. If  `$XDG_CONFIG_HOME` is defined then it will be created at `$XDG_CONFIG_HOME/ncpamixer.conf` else $HOME/.ncpamixer.conf
 
 ### Default bindings
 | Event | Default | |
@@ -16,6 +16,7 @@ Configuration is stored in `$XDG_CONFIG_HOME/ncpamixer.conf`
 | switch | tab | Cycle trought sinks, outputs, profile and ports |
 | select | enter | Select option in dropdowns |
 | quit | escape | Quit |
+| quit | q | Quit |
 | dropdown | c | Open dropdown for selecting sinks, outputs, profile and ports |
 | mute | m | Mute selected item |
 | volume_up | l | Increase volume on selected item |
@@ -39,16 +40,16 @@ Configuration is stored in `$XDG_CONFIG_HOME/ncpamixer.conf`
 | move_first | g | Move to first item |
 
 ### Dependencies
-* Pulseaudio :alien:
+* PulseAudio :alien:
 * Ncurses
 
 ### Build dependencies
 * CMake 
-* c++14 compatible compiler
+* C++14 compatible compiler
 
 ### Tested on
-* Gentoo kernel 4.6.2, pulseaudio 9.0 and ncurses 6.0-r1
-* Arch Linux 4.6.4-1 Pulseaudio 9.0 
+* Gentoo kernel 4.6.2, PulseAudio 9.0 and ncurses 6.0-r1
+* Arch Linux 4.6.4-1 PulseAudio 9.0 and ncurses 6.0-4
 
 ### License
 
