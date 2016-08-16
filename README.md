@@ -35,7 +35,7 @@ Configuration is stored in `$XDG_CONFIG_HOME/ncpamixer.conf`
 | tab_output | F3 | Jump to output tab |
 | tab_input | F4 | Jump to input tab |
 | tab_config | F5 | Jump to configuration tab |
-| move_last | G | Move to laste item |
+| move_last | G | Move to last item |
 | move_first | g | Move to first item |
 
 ### Dependencies
