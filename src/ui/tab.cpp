@@ -59,12 +59,12 @@ void Tab::draw()
                 wattron(ui.window, COLOR_PAIR(1));
             }
 
-            if (i.second->active_profile != nullptr) {
+            if (i.second->active_attribute != nullptr) {
                 mvwaddstr(
                     ui.window,
                     baseY + 3,
                     3,
-                    i.second->active_profile->description
+                    i.second->active_attribute->description
                 );
                 borderBox(ui.width - 2, 2, 1, baseY + 2);
             }
@@ -100,18 +100,21 @@ void Tab::draw()
                 toggle_len += strlen(name);
             }
         } else {
-            if (i.second->active_port != nullptr) {
-                unsigned int len = strlen(i.second->active_port->description);
+            if (i.second->active_attribute != nullptr && has_volume) {
+                unsigned int len = strlen(
+                                       i.second->active_attribute->description
+                                   );
+
                 unsigned int sink_pos = ui.width - 1 - len;
 
                 mvwaddstr(
                     ui.window,
                     baseY + 1,
                     sink_pos,
-                    i.second->active_port->description
+                    i.second->active_attribute->description
                 );
 
-                toggle_len += strlen(i.second->active_port->description);
+                toggle_len += strlen(i.second->active_attribute->description);
             }
         }
 
@@ -274,23 +277,72 @@ void Tab::handleEvents(const char *event)
             selected_pobj->move(current_toggle->first);
         }
     } else if (!strcmp("dropdown", event)) {
-        if (selected_pobj != nullptr && toggle != nullptr) {
-            auto i = object->find(selected_index);
+        uint32_t selected = 0;
 
-            if (i != object->end()) {
-                uint32_t new_toggle = dropDown(
-                                          -1,
-                                          std::min(
-                                              selected_block * (BLOCK_SIZE),
-                                              (total_blocks - 1) * BLOCK_SIZE
-                                          ),
-                                          *toggle,
-                                          i->second->getRelation()
-                                      );
-                selected_pobj->move(new_toggle);
+        auto i = object->find(selected_index);
+
+        if (i != object->end()) {
+            if (selected_pobj != nullptr && toggle != nullptr) {
+                selected = dropDown(
+                               -1,
+                               std::min(
+                                   selected_block * (BLOCK_SIZE),
+                                   (total_blocks - 1) * BLOCK_SIZE
+                               ),
+                               *toggle,
+                               i->second->getRelation()
+                           );
+
+                if (selected != static_cast<uint32_t>(-1)) {
+                    selected_pobj->move(selected);
+                }
+            } else if (selected_pobj != nullptr) {
+                uint32_t w = 0;
+                int x = 0;
+
+                int y = std::min(
+                            selected_block * (BLOCK_SIZE),
+                            (total_blocks - 1) * BLOCK_SIZE
+                        );
+
+
+                if (has_volume) {
+                    x = -1;
+                } else {
+                    x = 1;
+                    w = ui.width - 3;
+                    y += 2;
+                }
+
+                selected = dropDown(
+                               x,
+                               y,
+                               i->second->attributes,
+                               i->second->getRelation(),
+                               w
+                           );
+
+                // Should set new active attribute here
             }
         }
     }
+}
+
+uint32_t Tab::dropDown(int x, int y,
+                       std::vector<PaObjectAttribute *> attributes,
+                       uint32_t current, uint32_t width, uint32_t height)
+{
+    if (attributes.empty()) {
+        return -1;
+    }
+
+    std::map<uint32_t, std::string> tmp;
+
+    for (uint32_t i = 0; i < attributes.size(); i++) {
+        tmp[i] = attributes[i]->description;
+    }
+
+    return dropDown(x, y, tmp, current, width, height);
 }
 
 uint32_t Tab::dropDown(int x, int y, std::map<uint32_t, PaObject *> objects,

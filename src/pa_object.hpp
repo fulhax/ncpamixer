@@ -27,13 +27,8 @@ public:
     pa_stream *monitor_stream;
     float peak;
 
-    PaPort *active_port = nullptr;
-    std::vector<PaPort *> ports;
-    void clearPorts();
-
-    PaObjectAttribute *active_profile = nullptr;
-    std::vector<PaObjectAttribute *> profiles;
-    void clearProfiles();
+    PaObjectAttribute *active_attribute;
+    std::vector<PaObjectAttribute *> attributes;
 
     pa_operation *(*pa_set_volume)(
         pa_context *,
@@ -68,17 +63,15 @@ public:
     void step_volume(int dir);
     void move(uint32_t dest);
     void toggle_mute();
-    void set_active_attribute(const char* profile);
+    void set_active_attribute(const char* name);
+    void clearAttributes();
 
     virtual char *getAppName()
     {
         return nullptr;
     };
 
-    virtual uint32_t getRelation()
-    {
-        throw - 1;
-    };
+    virtual uint32_t getRelation();
 };
 
 #endif // PA_OBJECT_

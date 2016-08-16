@@ -15,6 +15,23 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 find_package(CursesW REQUIRED)
 find_package(PulseAudio REQUIRED)
 
+string(TIMESTAMP BUILD_DATE "%Y-%m-%d %H:%M")
+string(TOLOWER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
+
+execute_process(COMMAND
+    "git" "describe" "--tags" "--dirty"
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+    OUTPUT_VARIABLE GIT_VERSION
+    ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/version.cpp.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/version.cpp"
+    )
+
+message("-- Got version ${GIT_VERSION}")
+
 set(COMMON_SRC
     "pulsemixer.cpp"
     "pa_object.cpp"
@@ -32,6 +49,7 @@ set(COMMON_SRC
     "ui/tabs/output.cpp"
     "ui/tabs/input.cpp"
     "ui/tabs/configuration.cpp"
+    "${CMAKE_CURRENT_BINARY_DIR}/version.cpp"
     )
 
 include_directories(
@@ -46,4 +64,5 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
     ${CURSES_LIBRARIES}
     ${PULSEAUDIO_LIBRARY}
     )
-install(TARGETS ${CMAKE_PROJECT_NAME} RUNTIME DESTINATION bin )
+
+install(TARGETS ${CMAKE_PROJECT_NAME} RUNTIME DESTINATION bin)

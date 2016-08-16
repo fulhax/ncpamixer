@@ -14,12 +14,17 @@ PaSource::PaSource()
 
 void PaSource::updatePorts(pa_source_port_info **info, uint32_t n_ports)
 {
-    clearPorts();
+    clearAttributes();
+
     for (uint32_t i = 0; i < n_ports; i++) {
         PaPort *p = new PaPort;
         snprintf(p->name, sizeof(p->name), "%s", info[i]->name);
-        snprintf(p->description, sizeof(p->description), "%s",
-             info[i]->description);
-       ports.push_back(p); 
+        snprintf(
+            p->description,
+            sizeof(p->description),
+            "%s",
+            info[i]->description
+        );
+        attributes.push_back(p);
     }
 }

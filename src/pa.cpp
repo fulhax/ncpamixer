@@ -276,12 +276,19 @@ void Pa::update_source(const pa_source_info *info)
     p->updatePorts(info->ports, info->n_ports);
 
     if(info->active_port != nullptr){
-        p->active_port = new PaPort;
-        snprintf(p->active_port->name, sizeof(p->active_port->name), "%s",
-                 info->active_port->name);
-        snprintf(p->active_port->description, sizeof(p->active_port->description),
-                 "%s",
-                 info->active_port->description);
+        p->active_attribute = new PaPort;
+        snprintf(
+            p->active_attribute->name,
+            sizeof(p->active_attribute->name),
+            "%s",
+            info->active_port->name
+        );
+        snprintf(
+            p->active_attribute->description,
+            sizeof(p->active_attribute->description),
+            "%s",
+            info->active_port->description
+        );
     }
 
     notify_update();
@@ -308,18 +315,26 @@ void Pa::update_card(const pa_card_info *info)
     p->updateProfiles(info->profiles, info->n_profiles);
 
     if(info->active_profile != nullptr){
-        p->active_profile = new PaObjectAttribute;
-        snprintf(p->active_profile->name, sizeof(p->active_profile->name), "%s",
-                 info->active_profile->name);
-        snprintf(p->active_profile->description, sizeof(p->active_profile->description),
-                 "%s",
-                 info->active_profile->description);
-        snprintf(p->name, sizeof(p->name),
-                 "%s",
-                 info->name);
+        p->active_attribute = new PaObjectAttribute;
+        snprintf(
+            p->active_attribute->name,
+            sizeof(p->active_attribute->name),
+            "%s",
+            info->active_profile->name
+        );
+        snprintf(
+            p->active_attribute->description,
+            sizeof(p->active_attribute->description),
+            "%s",
+            info->active_profile->description
+        );
+        snprintf(
+            p->name,
+            sizeof(p->name),
+            "%s",
+            info->name
+        );
     }
-
-
 
     const char *description;
     description = pa_proplist_gets(info->proplist, PA_PROP_DEVICE_DESCRIPTION);
@@ -358,12 +373,19 @@ void Pa::update_sink(const pa_sink_info *info)
     p->updatePorts(info->ports, info->n_ports);
 
     if(info->active_port != nullptr){
-        p->active_port = new PaPort;
-        snprintf(p->active_port->name, sizeof(p->active_port->name), "%s",
-                 info->active_port->name);
-        snprintf(p->active_port->description, sizeof(p->active_port->description),
-                 "%s",
-                 info->active_port->description);
+        p->active_attribute = new PaPort;
+        snprintf(
+            p->active_attribute->name,
+            sizeof(p->active_attribute->name),
+            "%s",
+            info->active_port->name
+        );
+        snprintf(
+            p->active_attribute->description,
+            sizeof(p->active_attribute->description),
+            "%s",
+            info->active_port->description
+        );
     }
 
     notify_update();

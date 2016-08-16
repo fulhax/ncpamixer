@@ -46,6 +46,9 @@ $(BUILD_DIR)/$(UNAME)/$(BUILD_TYPE)/Makefile: src/CMakeLists.txt
 		-DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
 		"$(BASE_DIR)/src"
 
+release:
+	$(MAKE) RELEASE=1
+
 clean:
 	$(MAKE) -C "$(BUILD_DIR)/$(UNAME)/$(BUILD_TYPE)" clean
 
