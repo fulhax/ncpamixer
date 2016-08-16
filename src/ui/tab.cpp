@@ -59,12 +59,12 @@ void Tab::draw()
                 wattron(ui.window, COLOR_PAIR(1));
             }
 
-            if (i.second->active_profile != nullptr) {
+            if (i.second->active_attribute != nullptr) {
                 mvwaddstr(
                     ui.window,
                     baseY + 3,
                     3,
-                    i.second->active_profile->description
+                    i.second->active_attribute->description
                 );
                 borderBox(ui.width - 2, 2, 1, baseY + 2);
             }
@@ -100,18 +100,20 @@ void Tab::draw()
                 toggle_len += strlen(name);
             }
         } else {
-            if (i.second->active_port != nullptr) {
-                unsigned int len = strlen(i.second->active_port->description);
+            if (i.second->active_attribute != nullptr) {
+                unsigned int len = strlen(
+                                       i.second->active_attribute->description
+                                   );
                 unsigned int sink_pos = ui.width - 1 - len;
 
                 mvwaddstr(
                     ui.window,
                     baseY + 1,
                     sink_pos,
-                    i.second->active_port->description
+                    i.second->active_attribute->description
                 );
 
-                toggle_len += strlen(i.second->active_port->description);
+                toggle_len += strlen(i.second->active_attribute->description);
             }
         }
 
@@ -278,16 +280,20 @@ void Tab::handleEvents(const char *event)
             auto i = object->find(selected_index);
 
             if (i != object->end()) {
-                uint32_t new_toggle = dropDown(
-                                          -1,
-                                          std::min(
-                                              selected_block * (BLOCK_SIZE),
-                                              (total_blocks - 1) * BLOCK_SIZE
-                                          ),
-                                          *toggle,
-                                          i->second->getRelation()
-                                      );
+                uint32_t new_toggle =
+                    dropDown(
+                        -1,
+                        std::min(
+                            selected_block * (BLOCK_SIZE),
+                            (total_blocks - 1) * BLOCK_SIZE
+                        ),
+                        *toggle,
+                        i->second->getRelation()
+                    );
+
                 selected_pobj->move(new_toggle);
+            } else if(selected_pobj != nullptr) {
+                // Attributes here
             }
         }
     }

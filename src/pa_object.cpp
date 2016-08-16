@@ -17,21 +17,12 @@ PaObject::PaObject() : type(pa_object_t::SINK)
     pa_set_mute = nullptr;
     pa_move = nullptr;
     pa_set_profile = nullptr;
-
+    active_attribute = nullptr;
 }
 
 PaObject::~PaObject()
 {
-    if (active_profile != nullptr)  {
-        delete active_profile;
-    }
-
-    if (active_port != nullptr) {
-        delete active_port;
-    }
-
-    clearProfiles();
-    clearPorts();
+    clearAttributes();
 }
 
 void PaObject::set_volume(float perc)
@@ -113,20 +104,11 @@ void PaObject::set_profile(const char *profile)
     }
 }
 
-void PaObject::clearPorts()
+void PaObject::clearAttributes()
 {
-    for (int i = 0; i < ports.size(); i++) {
-        delete ports[i];
+    for (uint32_t i = 0; i < attributes.size(); i++) {
+        delete attributes[i];
     }
 
-    ports.clear();
-}
-
-void PaObject::clearProfiles()
-{
-    for (int i = 0; i < profiles.size(); i++) {
-        delete profiles[i];
-    }
-
-    profiles.clear();
+    attributes.clear();
 }
