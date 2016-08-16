@@ -284,9 +284,11 @@ void Tab::handleEvents(const char *event)
                 current_attribute = 0;
             }
 
-            selected_pobj->set_active_attribute(
-                selected_pobj->attributes[current_attribute]->name
-            );
+            if (selected_pobj->attributes.size() > 0) {
+                selected_pobj->set_active_attribute(
+                    selected_pobj->attributes[current_attribute]->name
+                );
+            }
         }
     } else if (!strcmp("dropdown", event)) {
         uint32_t selected = 0;
