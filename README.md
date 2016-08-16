@@ -3,12 +3,12 @@ dev:    [![Build Status](http://fredrik.fulhax.nu:8090/job/ncpamixer-dev/badge/i
 
 # Ncurses PulseAudio Mixer
 
-An Ncurses mixer for PulseAudio inspired by pavucontrol.
+An ncurses mixer for PulseAudio inspired by pavucontrol.
 
 ![demo](https://cloud.githubusercontent.com/assets/1078548/17714097/90dff48c-63fe-11e6-8d37-1d20c44981ef.gif)
 
 ### Custom bindings? Sure!
-Your configuration gets created on first run. If  `$XDG_CONFIG_HOME` is defined then it will be created at `$XDG_CONFIG_HOME/ncpamixer.conf` else $HOME/.ncpamixer.conf
+Your configuration gets created on first run. If  `$XDG_CONFIG_HOME` is defined then it will be created at `$XDG_CONFIG_HOME/ncpamixer.conf` otherwise $HOME/.ncpamixer.conf
 
 ### Default bindings
 | Event | Default | |
@@ -27,8 +27,8 @@ Your configuration gets created on first run. If  `$XDG_CONFIG_HOME` is defined 
 | move_down | j | Move down |
 | move_up | arrow up | Move up |
 | move_down | arrow down | Move down |
-| page_up | page up | |
-| page_down | page down | |
+| page_up | page up | Previous page in dropdown |
+| page_down | page down | Next page in dropdown |
 | tab_next | L | Next tab | 
 | tab_prev | H | Previous tab | 
 | tab_playback | F1 | Jump to playback tab|
@@ -41,7 +41,7 @@ Your configuration gets created on first run. If  `$XDG_CONFIG_HOME` is defined 
 
 ### Dependencies
 * PulseAudio :alien:
-* Ncurses
+* ncurses
 
 ### Build dependencies
 * CMake 
