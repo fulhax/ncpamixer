@@ -112,3 +112,18 @@ void PaObject::clearAttributes()
 
     attributes.clear();
 }
+
+uint32_t PaObject::getRelation()
+{
+    if (active_attribute != nullptr) {
+        for (uint32_t j = 0; j < attributes.size(); j++) {
+            int current = strcmp(attributes[j]->name, active_attribute->name);
+
+            if (current == 0) {
+                return j;
+            }
+        }
+    }
+
+    return -1;
+}

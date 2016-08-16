@@ -71,10 +71,7 @@ public:
         return nullptr;
     };
 
-    virtual uint32_t getRelation()
-    {
-        throw - 1;
-    };
+    virtual uint32_t getRelation();
 };
 
 #endif // PA_OBJECT_

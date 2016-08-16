@@ -2,6 +2,7 @@
 #define TAB_HPP_
 
 #include <map>
+#include <vector>
 #include <string>
 
 #include "pa.hpp"
@@ -55,6 +56,14 @@ public:
         int y,
         std::map<uint32_t,
         std::string> objects,
+        uint32_t current = 0,
+        uint32_t width = 0,
+        uint32_t height = 0
+    );
+    static uint32_t dropDown(
+        int x,
+        int y,
+        std::vector<PaObjectAttribute *> attributes,
         uint32_t current = 0,
         uint32_t width = 0,
         uint32_t height = 0
