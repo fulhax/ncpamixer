@@ -5,7 +5,7 @@ dev:    [![Build Status](http://fredrik.fulhax.nu:8090/job/ncpamixer-dev/badge/i
 
 An Ncurses mixer for PulseAudio inspired by pavucontrol.
 
-![demo](https://cloud.githubusercontent.com/assets/1078548/17714001/0a03a8aa-63fe-11e6-8232-0211eb534a90.gif)
+![demo](https://cloud.githubusercontent.com/assets/1078548/17714097/90dff48c-63fe-11e6-8d37-1d20c44981ef.gif)
 
 ### License
 
