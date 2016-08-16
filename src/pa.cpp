@@ -94,17 +94,19 @@ bool Pa::init()
         pa_ctx = nullptr;
         return false;
     }
+
     pa_threaded_mainloop_unlock(pa_ml);
 
     fetchPaobjects();
 
     pa_threaded_mainloop_lock(pa_ml);
     pa_operation *o = pa_context_subscribe(pa_ctx, (pa_subscription_mask_t)
-                             (PA_SUBSCRIPTION_MASK_SINK |
-                              PA_SUBSCRIPTION_MASK_SOURCE |
-                              PA_SUBSCRIPTION_MASK_SINK_INPUT |
-                              PA_SUBSCRIPTION_MASK_SOURCE_OUTPUT
-                             ), &Pa::ctx_success_cb, this);
+                                           (PA_SUBSCRIPTION_MASK_SINK |
+                                            PA_SUBSCRIPTION_MASK_SOURCE |
+                                            PA_SUBSCRIPTION_MASK_SINK_INPUT |
+                                            PA_SUBSCRIPTION_MASK_SOURCE_OUTPUT |
+                                            PA_SUBSCRIPTION_MASK_CARD
+                                           ), &Pa::ctx_success_cb, this);
     wait_on_pa_operation(o);
     pa_operation_unref(o);
     pa_threaded_mainloop_unlock(pa_ml);
@@ -146,7 +148,8 @@ void Pa::fetchPaobjects()
     pa_operation_unref(o);
 
     // source outputs list cb
-    o = pa_context_get_source_output_info_list(pa_ctx, &Pa::ctx_sourceoutputlist_cb,
+    o = pa_context_get_source_output_info_list(pa_ctx,
+            &Pa::ctx_sourceoutputlist_cb,
             this);
     wait_on_pa_operation(o);
     pa_operation_unref(o);
@@ -179,7 +182,7 @@ void Pa::remove_paobject(std::map<uint32_t, PaObject *> *objects,
 
 void Pa::exitPa()
 {
-    if(pa_ctx) {
+    if (pa_ctx) {
         pa_context_disconnect(pa_ctx);
         pa_threaded_mainloop_stop(pa_ml);
         pa_threaded_mainloop_free(pa_ml);
@@ -275,20 +278,13 @@ void Pa::update_source(const pa_source_info *info)
 
     p->updatePorts(info->ports, info->n_ports);
 
-    if(info->active_port != nullptr){
-        p->active_attribute = new PaPort;
-        snprintf(
-            p->active_attribute->name,
-            sizeof(p->active_attribute->name),
-            "%s",
-            info->active_port->name
-        );
-        snprintf(
-            p->active_attribute->description,
-            sizeof(p->active_attribute->description),
-            "%s",
-            info->active_port->description
-        );
+    if (info->active_port != nullptr) {
+        for (uint32_t i = 0; i < p->attributes.size(); i++) {
+            if (strcmp(p->attributes[i]->name, info->active_port->name) == 0) {
+                p->active_attribute = p->attributes[i];
+                break;
+            }
+        }
     }
 
     notify_update();
@@ -313,27 +309,15 @@ void Pa::update_card(const pa_card_info *info)
     p->volume = 0;
     p->mute = false;
     p->updateProfiles(info->profiles, info->n_profiles);
+    p->active_attribute = nullptr;
 
-    if(info->active_profile != nullptr){
-        p->active_attribute = new PaObjectAttribute;
-        snprintf(
-            p->active_attribute->name,
-            sizeof(p->active_attribute->name),
-            "%s",
-            info->active_profile->name
-        );
-        snprintf(
-            p->active_attribute->description,
-            sizeof(p->active_attribute->description),
-            "%s",
-            info->active_profile->description
-        );
-        snprintf(
-            p->name,
-            sizeof(p->name),
-            "%s",
-            info->name
-        );
+    if (info->active_profile != nullptr) {
+        for (uint32_t i = 0; i < p->attributes.size(); i++) {
+            if (strcmp(p->attributes[i]->name, info->active_profile->name) == 0) {
+                p->active_attribute = p->attributes[i];
+                break;
+            }
+        }
     }
 
     const char *description;
@@ -372,20 +356,13 @@ void Pa::update_sink(const pa_sink_info *info)
 
     p->updatePorts(info->ports, info->n_ports);
 
-    if(info->active_port != nullptr){
-        p->active_attribute = new PaPort;
-        snprintf(
-            p->active_attribute->name,
-            sizeof(p->active_attribute->name),
-            "%s",
-            info->active_port->name
-        );
-        snprintf(
-            p->active_attribute->description,
-            sizeof(p->active_attribute->description),
-            "%s",
-            info->active_port->description
-        );
+    if (info->active_port != nullptr) {
+        for (uint32_t i = 0; i < p->attributes.size(); i++) {
+            if (strcmp(p->attributes[i]->name, info->active_port->name) == 0) {
+                p->active_attribute = p->attributes[i];
+                break;
+            }
+        }
     }
 
     notify_update();
@@ -550,7 +527,7 @@ void Pa::create_monitor_stream_for_paobject(PaObject *po)
         pa_stream_disconnect(po->monitor_stream);
         po->monitor_stream = nullptr;
     }
-    
+
     if (po->type == pa_object_t::INPUT) {
         PaInput *input = reinterpret_cast<PaInput *>(po);
         input->monitor_stream = create_monitor_stream_for_source(
