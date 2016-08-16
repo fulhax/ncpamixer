@@ -9,7 +9,7 @@ PaSink::PaSink()
     pa_set_volume = &pa_context_set_sink_volume_by_index;
     pa_set_mute = &pa_context_set_sink_mute_by_index;
     pa_move = nullptr;
-    pa_set_profile = nullptr;
+    pa_set_active_attribute = pa_context_set_sink_port_by_index;
 }
 
 

@@ -56,7 +56,7 @@ public:
         pa_context_success_cb_t,
         void *
     );
-    pa_operation *(*pa_set_profile)(
+    pa_operation *(*pa_set_active_attribute)(
         pa_context *,
         uint32_t,
         const char *,
@@ -68,7 +68,7 @@ public:
     void step_volume(int dir);
     void move(uint32_t dest);
     void toggle_mute();
-    void set_profile(const char* profile);
+    void set_active_attribute(const char* profile);
 
     virtual char *getAppName()
     {

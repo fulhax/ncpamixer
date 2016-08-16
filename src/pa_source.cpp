@@ -9,7 +9,7 @@ PaSource::PaSource()
     pa_set_volume = &pa_context_set_source_volume_by_index;
     pa_set_mute = &pa_context_set_source_mute_by_index ;
     pa_move = nullptr;
-    pa_set_profile = nullptr;
+    pa_set_active_attribute = pa_context_set_source_port_by_index;
 }
 
 void PaSource::updatePorts(pa_source_port_info **info, uint32_t n_ports)

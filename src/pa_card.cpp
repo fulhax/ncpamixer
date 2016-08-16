@@ -5,7 +5,7 @@ PaCard::PaCard()
 {
     type = pa_object_t::CARD;
     monitor_stream = nullptr;
-    pa_set_profile = pa_context_set_card_profile_by_index;
+    pa_set_active_attribute = pa_context_set_card_profile_by_index;
     pa_set_volume = nullptr;
     pa_set_mute = nullptr;
     pa_move = nullptr;
