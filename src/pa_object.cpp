@@ -104,6 +104,20 @@ void PaObject::set_active_attribute(const char *attribute)
     }
 }
 
+
+void PaObject::set_default(const char *nname)
+{
+    if (pa_set_default != nullptr) {
+        pa_operation *o = pa_set_default(
+                              pa.pa_ctx,
+                              nname,
+                              NULL,
+                              NULL
+                          );
+        pa_operation_unref(o);
+    }
+}
+
 void PaObject::clearAttributes()
 {
     for (uint32_t i = 0; i < attributes.size(); i++) {

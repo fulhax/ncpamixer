@@ -60,7 +60,7 @@ public:
     );
     pa_operation *(*pa_set_default)(
         pa_context *,
-        const char* name,
+        const char*,
         pa_context_success_cb_t,
         void *
     );
@@ -70,7 +70,7 @@ public:
     void move(uint32_t dest);
     void toggle_mute();
     void set_active_attribute(const char* name);
-    void set_default();
+    void set_default(const char* name);
     void clearAttributes();
 
     virtual char *getAppName()
