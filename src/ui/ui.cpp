@@ -120,7 +120,7 @@ void Ui::switchTab(int index)
 
 void Ui::handleInput()
 {
-    set_escdelay(25);
+    set_escdelay(0);
 
     int input = wgetch(window);
     const char *event = 0;
@@ -139,6 +139,40 @@ void Ui::handleInput()
 
             return;
 
+        case 27: { // Fix for alt/escape (also f-keys on some terminals)
+            nodelay(window, true);
+            input = wgetch(window);
+            nodelay(window, false);
+
+            if (input != -1 && input != 79) {
+                std::string key = std::to_string(input);
+
+                event = config.getString(
+                            ("keycode.alt." +  key).c_str(),
+                            "unbound"
+                        ).c_str();
+
+                break;
+            } else if (input == 79) {
+                nodelay(window, true);
+                input = wgetch(window);
+                nodelay(window, false);
+
+                if (input != -1) {
+                    std::string key = std::to_string(input);
+
+                    event = config.getString(
+                                ("keycode.f." +  key).c_str(),
+                                "unbound"
+                            ).c_str();
+
+                    break;
+                }
+            }
+
+            input = 27;
+        }
+
         default:
             std::string key = std::to_string(input);
             event = config.getString(
@@ -146,11 +180,11 @@ void Ui::handleInput()
                         "unbound"
                     ).c_str();
 
-            if (!strcmp("unbound", event)) {
-                return;
-            }
-
             break;
+    }
+
+    if (!strcmp("unbound", event)) {
+        return;
     }
 
     if (!strcmp("quit", event)) {
