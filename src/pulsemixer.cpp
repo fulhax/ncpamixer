@@ -13,7 +13,8 @@
 int main(int argc, char *argv[])
 {
     static const struct option longOpts[] = {
-        { "version", no_argument, 0, 'v' }
+        { "version", no_argument, 0, 'v' },
+        { 0, 0, 0, 0 }
     };
 
     int c;
