@@ -53,7 +53,6 @@ private:
     void kill();
     void draw();
     void switchTab(int index);
-    void fixEscapeKeys();
 };
 
 extern Ui ui;
