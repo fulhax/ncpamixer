@@ -315,7 +315,7 @@ void Tab::handleEvents(const char *event)
         }
     } else if (!strcmp("set_volume_100", event)) {
         if (selected_pobj != nullptr) {
-            selected_pobj->set_volume(1.1f);
+            selected_pobj->set_volume(1.01f);
         }
     } else if (!strcmp("switch", event)) {
         if (selected_pobj != nullptr && toggle != nullptr) {
