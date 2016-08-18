@@ -56,18 +56,18 @@ int Ui::init()
 
     init_pair(
         COLOR_BAR_LOW,
-        config.getInt((theme + ".bar_low").c_str(), COLOR_GREEN),
-        COLOR_BACKGROUND
+        config.getInt((theme + ".bar_low.back").c_str(), COLOR_BLACK),
+        config.getInt((theme + ".bar_low.front").c_str(), COLOR_GREEN)
     );
     init_pair(
         COLOR_BAR_MID,
-        config.getInt((theme + ".bar_mid").c_str(), COLOR_YELLOW),
-        COLOR_BACKGROUND
+        config.getInt((theme + ".bar_mid.back").c_str(), COLOR_BLACK),
+        config.getInt((theme + ".bar_mid.front").c_str(), COLOR_YELLOW)
     );
     init_pair(
         COLOR_BAR_HIGH,
-        config.getInt((theme + ".bar_high").c_str(), COLOR_RED),
-        COLOR_BACKGROUND
+        config.getInt((theme + ".bar_mid.back").c_str(), COLOR_BLACK),
+        config.getInt((theme + ".bar_mid.front").c_str(), COLOR_RED)
     );
     init_pair(
         COLOR_VOLUME_LOW,
