@@ -1,6 +1,9 @@
 #include "pa.hpp"
 #include <cstring>
 #include <functional>
+#include <thread>
+#include <mutex>
+#include <unistd.h>
 
 #include <map>
 
@@ -15,29 +18,61 @@ Pa::Pa()
     pa_api  = nullptr;
     pa_init = false;
     pa_ctx = nullptr;
+    reconnect_running = false;
+    connected = false;
 }
 
 Pa::~Pa()
 {
 
-    deletePaobjects(&PA_SOURCE_OUTPUTS);
-    deletePaobjects(&PA_INPUTS);
-    deletePaobjects(&PA_SOURCES);
-    deletePaobjects(&PA_SINKS);
-    deletePaobjects(&PA_CARDS);
+    clearAllPaObjects();
 
     if (pa_init) {
         exitPa();
     }
 }
 
-bool Pa::init()
-{
-    pa_init = true;
-    pa_ml = pa_threaded_mainloop_new();
 
-    if (!pa_ml) {
-        fprintf(stderr, "Unable to create PA main loop.\n");
+void Pa::clearAllPaObjects()
+{
+    deletePaobjects(&PA_SOURCE_OUTPUTS);
+    deletePaobjects(&PA_INPUTS);
+    deletePaobjects(&PA_SOURCES);
+    deletePaobjects(&PA_SINKS);
+    deletePaobjects(&PA_CARDS);
+}
+
+
+void Pa::do_reconnect(Pa *pa)
+{
+    if (pa->reconnect_running || pa->connected) {
+        return;
+    }
+
+    pa->reconnect_running = true;
+    pa->clearAllPaObjects();
+
+    while (!pa->connected) {
+        pa->pa_connect();
+        usleep(500000);
+    }
+
+    pa->reconnect_running = false;
+}
+
+void Pa::reconnect()
+{
+
+    if (!reconnect_running && !connected) {
+        std::thread rThread(do_reconnect, this);
+        rThread.detach();
+    }
+}
+
+
+bool Pa::pa_connect()
+{
+    if (pa_ctx) {
         return false;
     }
 
@@ -47,69 +82,65 @@ bool Pa::init()
     pa_proplist_sets(proplist, PA_PROP_APPLICATION_NAME, "ncpamixer");
     pa_proplist_sets(proplist, PA_PROP_APPLICATION_ID, "ncpamixer");
     pa_proplist_sets(proplist, PA_PROP_APPLICATION_ICON_NAME, "audio-card");
-    pa_api  = pa_threaded_mainloop_get_api(pa_ml);
     pa_ctx = pa_context_new_with_proplist(pa_api, NULL, proplist);
     pa_proplist_free(proplist);
 
     if (!pa_ctx) {
         fprintf(stderr, "Unable to create PA context.\n");
         pa_threaded_mainloop_unlock(pa_ml);
-        pa_threaded_mainloop_free(pa_ml);
         pa_ctx = nullptr;
+        exit(EXIT_FAILURE);
         return false;
     }
 
     pa_context_set_state_callback(pa_ctx, &Pa::ctx_state_cb, this);
     pa_context_set_subscribe_callback(pa_ctx, &Pa::subscribe_cb, this);
 
-    if (pa_context_connect(pa_ctx, NULL, PA_CONTEXT_NOAUTOSPAWN, NULL) < 0) {
-        fprintf(stderr, "Unable to connect to PA context.\n");
+    if (pa_context_connect(pa_ctx, NULL, PA_CONTEXT_NOFAIL, NULL) < 0) {
         pa_context_disconnect(pa_ctx);
         pa_context_unref(pa_ctx); // Tror ej den behövs?
         pa_threaded_mainloop_unlock(pa_ml);
-        pa_threaded_mainloop_free(pa_ml);
         pa_ctx = nullptr;
+
+        connectionMtx.unlock();
+        reconnect();
         return false;
     }
+
+    pa_threaded_mainloop_unlock(pa_ml);
+
+    connectionMtx.unlock();
+    return true;
+
+}
+
+bool Pa::init()
+{
+    pa_init = true;
+
+    pa_ml = pa_threaded_mainloop_new();
+
+    if (!pa_ml) {
+        fprintf(stderr, "Unable to create PA main loop.\n");
+        exit(EXIT_FAILURE);
+        return false;
+    }
+
+    pa_api  = pa_threaded_mainloop_get_api(pa_ml);
 
     if (pa_threaded_mainloop_start(pa_ml) < 0) {
         fprintf(stderr, "Unable to start PA mainloop.\n");
         pa_context_disconnect(pa_ctx);
-        pa_context_unref(pa_ctx); // Tror ej den behövs?
+        pa_context_unref(pa_ctx);
         pa_threaded_mainloop_unlock(pa_ml);
-        pa_threaded_mainloop_free(pa_ml);
         pa_ctx = nullptr;
+        exit(EXIT_FAILURE);
         return false;
     }
 
-    // Wait until context callback response.
-    pa_threaded_mainloop_wait(pa_ml);
 
-    if (pa_context_get_state(pa_ctx) != PA_CONTEXT_READY) {
-        fprintf(stderr, "Unable to connect to pulse\n");
-        pa_context_disconnect(pa_ctx);
-        pa_context_unref(pa_ctx); // Tror ej den behövs?
-        pa_threaded_mainloop_unlock(pa_ml);
-        pa_threaded_mainloop_free(pa_ml);
-        pa_ctx = nullptr;
-        return false;
-    }
+    pa_connect();
 
-    pa_threaded_mainloop_unlock(pa_ml);
-
-    fetchPaobjects();
-
-    pa_threaded_mainloop_lock(pa_ml);
-    pa_operation *o = pa_context_subscribe(pa_ctx, (pa_subscription_mask_t)
-                                           (PA_SUBSCRIPTION_MASK_SINK |
-                                            PA_SUBSCRIPTION_MASK_SOURCE |
-                                            PA_SUBSCRIPTION_MASK_SINK_INPUT |
-                                            PA_SUBSCRIPTION_MASK_SOURCE_OUTPUT |
-                                            PA_SUBSCRIPTION_MASK_CARD
-                                           ), &Pa::ctx_success_cb, this);
-    wait_on_pa_operation(o);
-    pa_operation_unref(o);
-    pa_threaded_mainloop_unlock(pa_ml);
 
     return true;
 }
@@ -123,7 +154,7 @@ void Pa::ctx_success_cb(pa_context *ctx, int succes, void *instance)
 void Pa::fetchPaobjects()
 {
 
-    pa_threaded_mainloop_lock(pa_ml);
+    //pa_threaded_mainloop_lock(pa_ml);
     pa_operation *o;
 
     // get cards
@@ -154,7 +185,7 @@ void Pa::fetchPaobjects()
     wait_on_pa_operation(o);
     pa_operation_unref(o);
 
-    pa_threaded_mainloop_unlock(pa_ml);
+    //pa_threaded_mainloop_unlock(pa_ml);
 }
 
 void Pa::deletePaobjects(std::map<uint32_t, PaObject *> *objects)
@@ -585,7 +616,9 @@ void Pa::ctx_sourcelist_cb(pa_context *ctx, const pa_source_info *info,
 }
 
 void Pa::ctx_sourceoutputlist_cb(pa_context *ctx,
-                                 const pa_source_output_info *info, int eol, void *instance)
+                                 const pa_source_output_info *info,
+                                 int eol,
+                                 void *instance)
 {
     Pa *pa = reinterpret_cast<Pa *>(instance);
 
@@ -736,10 +769,33 @@ void Pa::ctx_state_cb(pa_context *ctx, void *instance)
     Pa *pa = reinterpret_cast<Pa *>(instance);
 
     switch (state) {
-        case PA_CONTEXT_READY:
-        case PA_CONTEXT_TERMINATED:
+        case PA_CONTEXT_READY: {
+            pa_operation *o = pa_context_subscribe(
+                                  pa->pa_ctx,
+                                  (pa_subscription_mask_t)
+                                  (PA_SUBSCRIPTION_MASK_SINK |
+                                   PA_SUBSCRIPTION_MASK_SOURCE |
+                                   PA_SUBSCRIPTION_MASK_SINK_INPUT |
+                                   PA_SUBSCRIPTION_MASK_SOURCE_OUTPUT |
+                                   PA_SUBSCRIPTION_MASK_CARD
+                                  ), &Pa::ctx_success_cb, instance);
+            pa->wait_on_pa_operation(o);
+            pa_operation_unref(o);
+            pa->fetchPaobjects();
+
+            pa->connectionMtx.lock();
+            pa->connected = true;
+            pa->connectionMtx.unlock();
+            break;
+        }
+
         case PA_CONTEXT_FAILED:
-            pa_threaded_mainloop_signal(pa->pa_ml, 0);
+            pa->connectionMtx.lock();
+            pa->connected = false;
+            pa_context_unref(pa->pa_ctx);
+            pa->pa_ctx = nullptr;
+            pa->connectionMtx.unlock();
+            pa->reconnect();
             break;
 
 
@@ -747,6 +803,10 @@ void Pa::ctx_state_cb(pa_context *ctx, void *instance)
         case PA_CONTEXT_CONNECTING:
         case PA_CONTEXT_AUTHORIZING:
         case PA_CONTEXT_SETTING_NAME:
+            break;
+
+        case PA_CONTEXT_TERMINATED:
+            exit(EXIT_FAILURE);
             break;
     }
 

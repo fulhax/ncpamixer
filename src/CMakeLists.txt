@@ -14,6 +14,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 find_package(CursesW REQUIRED)
 find_package(PulseAudio REQUIRED)
+find_package(Threads REQUIRED)
 
 string(TIMESTAMP BUILD_DATE "%Y-%m-%d %H:%M")
 string(TOLOWER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
@@ -63,6 +64,7 @@ add_executable(${CMAKE_PROJECT_NAME} ${COMMON_SRC} ${UI_RESOURCES})
 target_link_libraries(${CMAKE_PROJECT_NAME}
     ${CURSES_LIBRARIES}
     ${PULSEAUDIO_LIBRARY}
+     ${CMAKE_THREAD_LIBS_INIT}
     )
 
 install(TARGETS ${CMAKE_PROJECT_NAME} RUNTIME DESTINATION bin)

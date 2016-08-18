@@ -50,6 +50,14 @@ public:
     void toggle_sink_mute(uint32_t index);
     void move_input_sink(uint32_t input_index, uint32_t sink_index);
     void fetchPaobjects();
+    void reconnect();
+    void static do_reconnect(Pa *pa);
+    bool pa_connect();
+    void clearAllPaObjects();
+
+    bool reconnect_running;
+    bool connected;
+
     static uint32_t exists(
         std::map<uint32_t,
         PaObject *> objects,
@@ -123,6 +131,7 @@ public:
 
     void (*notify_update_cb)();
     std::mutex inputMtx;
+    std::mutex connectionMtx;
 
     pa_context *pa_ctx;
     pa_threaded_mainloop *pa_ml;
