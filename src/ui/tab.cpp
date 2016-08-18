@@ -273,6 +273,50 @@ void Tab::handleEvents(const char *event)
         if (selected_pobj != nullptr) {
             selected_pobj->step_volume(-1);
         }
+    } else if (!strcmp("set_volume_0", event)) {
+        if (selected_pobj != nullptr) {
+            selected_pobj->set_volume(0);
+        }
+    } else if (!strcmp("set_volume_10", event)) {
+        if (selected_pobj != nullptr) {
+            selected_pobj->set_volume(.11f);
+        }
+    } else if (!strcmp("set_volume_20", event)) {
+        if (selected_pobj != nullptr) {
+            selected_pobj->set_volume(.21f);
+        }
+    } else if (!strcmp("set_volume_30", event)) {
+        if (selected_pobj != nullptr) {
+            selected_pobj->set_volume(.31f);
+        }
+    } else if (!strcmp("set_volume_40", event)) {
+        if (selected_pobj != nullptr) {
+            selected_pobj->set_volume(.41f);
+        }
+    } else if (!strcmp("set_volume_50", event)) {
+        if (selected_pobj != nullptr) {
+            selected_pobj->set_volume(.51f);
+        }
+    } else if (!strcmp("set_volume_60", event)) {
+        if (selected_pobj != nullptr) {
+            selected_pobj->set_volume(.61f);
+        }
+    } else if (!strcmp("set_volume_70", event)) {
+        if (selected_pobj != nullptr) {
+            selected_pobj->set_volume(.71f);
+        }
+    } else if (!strcmp("set_volume_80", event)) {
+        if (selected_pobj != nullptr) {
+            selected_pobj->set_volume(.81f);
+        }
+    } else if (!strcmp("set_volume_90", event)) {
+        if (selected_pobj != nullptr) {
+            selected_pobj->set_volume(.91f);
+        }
+    } else if (!strcmp("set_volume_100", event)) {
+        if (selected_pobj != nullptr) {
+            selected_pobj->set_volume(1.1f);
+        }
     } else if (!strcmp("switch", event)) {
         if (selected_pobj != nullptr && toggle != nullptr) {
             auto current_toggle = toggle->find(selected_pobj->getRelation());

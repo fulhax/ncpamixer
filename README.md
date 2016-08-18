@@ -38,6 +38,17 @@ Your configuration gets created on first run. If  `$XDG_CONFIG_HOME` is defined 
 | tab_config | F5 | Jump to configuration tab |
 | move_last | G | Move to last item |
 | move_first | g | Move to first item |
+| set_volume_0 | 0 | Set volume to 0% |
+| set_volume_10 | 1 | Set volume to 10% |
+| set_volume_20 | 2 | Set volume to 20% |
+| set_volume_30 | 3 | Set volume to 30% |
+| set_volume_40 | 4 | Set volume to 40% |
+| set_volume_50 | 5 | Set volume to 50% |
+| set_volume_60 | 6 | Set volume to 60% |
+| set_volume_70 | 7 | Set volume to 70% |
+| set_volume_80 | 8 | Set volume to 80% |
+| set_volume_90 | 9 | Set volume to 90% |
+| set_volume_100 | Unbound | Set volume to 100% |
 
 ### Dependencies
 * PulseAudio :alien:

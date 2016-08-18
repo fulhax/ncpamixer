@@ -46,9 +46,6 @@ public:
     void update_card(const pa_card_info *info);
     void update_source_output(const pa_source_output_info *info);
     void remove_paobject(std::map<uint32_t, PaObject *> *objects, uint32_t index);
-    void set_volume(PaObject *pobj, int dir);
-    void set_input_volume(uint32_t index, int dir);
-    void set_sink_volume(uint32_t index, int dir);
     void toggle_input_mute(uint32_t index);
     void toggle_sink_mute(uint32_t index);
     void move_input_sink(uint32_t input_index, uint32_t sink_index);

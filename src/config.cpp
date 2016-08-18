@@ -64,11 +64,13 @@ bool Config::fileExists(const char *name)
 
 void Config::init(const char *conf)
 {
-    if(fileExists(conf)) {
-        snprintf(filename, sizeof(filename), "%s", conf);
-    } else {
-        fprintf(stderr, "Unable to find config file %s.\n", conf);
-        exit(EXIT_FAILURE);
+    if (strlen(conf) != 0) {
+        if (fileExists(conf)) {
+            snprintf(filename, sizeof(filename), "%s", conf);
+        } else {
+            fprintf(stderr, "Unable to find config file %s.\n", conf);
+            exit(EXIT_FAILURE);
+        }
     }
 
     if (strlen(filename) == 0) {
@@ -201,36 +203,47 @@ void Config::createDefault()
         fprintf(
             f,
             "# Keybinds {\n"
-            "   \"keycode.9\"   = \"switch\"         # tab\n"
-            "   \"keycode.13\"  = \"select\"         # enter\n"
-            "   \"keycode.27\"  = \"quit\"           # escape\n"
-            "   \"keycode.99\"  = \"dropdown\"       # c\n"
-            "   \"keycode.113\" = \"quit\"           # q\n"
-            "   \"keycode.109\" = \"mute\"           # m\n"
-            "   \"keycode.108\" = \"volume_up\"      # l\n"
-            "   \"keycode.104\" = \"volume_down\"    # h\n"
-            "   \"keycode.261\" = \"volume_up\"      # arrow right\n"
-            "   \"keycode.260\" = \"volume_down\"    # arrow left\n"
-            "   \"keycode.107\" = \"move_up\"        # k\n"
-            "   \"keycode.106\" = \"move_down\"      # j\n"
-            "   \"keycode.259\" = \"move_up\"        # arrow up\n"
-            "   \"keycode.258\" = \"move_down\"      # arrow down\n"
-            "   \"keycode.338\" = \"page_up\"        # page up\n"
-            "   \"keycode.339\" = \"page_down\"      # page down\n"
-            "   \"keycode.76\"  = \"tab_next\"       # L\n"
-            "   \"keycode.72\"  = \"tab_prev\"       # H\n"
-            "   \"keycode.265\" = \"tab_playback\"   # f1\n"
-            "   \"keycode.266\" = \"tab_recording\"  # f2\n"
-            "   \"keycode.267\" = \"tab_output\"     # f3\n"
-            "   \"keycode.268\" = \"tab_input\"      # f4\n"
-            "   \"keycode.269\" = \"tab_config\"     # f5\n"
-            "   \"keycode.f.80\" = \"tab_playback\"  # f1 VT100\n"
-            "   \"keycode.f.81\" = \"tab_recording\" # f2 VT100\n"
-            "   \"keycode.f.82\" = \"tab_output\"    # f3 VT100\n"
-            "   \"keycode.f.83\" = \"tab_input\"     # f4 VT100\n"
-            "   \"keycode.f.84\" = \"tab_config\"    # f5 VT100\n"
-            "   \"keycode.71\"  = \"move_last\"      # G\n"
-            "   \"keycode.103\" = \"move_first\"     # g\n"
+            "   \"keycode.9\"    = \"switch\"          # tab\n"
+            "   \"keycode.13\"   = \"select\"          # enter\n"
+            "   \"keycode.27\"   = \"quit\"            # escape\n"
+            "   \"keycode.99\"   = \"dropdown\"        # c\n"
+            "   \"keycode.113\"  = \"quit\"            # q\n"
+            "   \"keycode.109\"  = \"mute\"            # m\n"
+            "   \"keycode.108\"  = \"volume_up\"       # l\n"
+            "   \"keycode.104\"  = \"volume_down\"     # h\n"
+            "   \"keycode.261\"  = \"volume_up\"       # arrow right\n"
+            "   \"keycode.260\"  = \"volume_down\"     # arrow left\n"
+            "   \"keycode.107\"  = \"move_up\"         # k\n"
+            "   \"keycode.106\"  = \"move_down\"       # j\n"
+            "   \"keycode.259\"  = \"move_up\"         # arrow up\n"
+            "   \"keycode.258\"  = \"move_down\"       # arrow down\n"
+            "   \"keycode.338\"  = \"page_up\"         # page up\n"
+            "   \"keycode.339\"  = \"page_down\"       # page down\n"
+            "   \"keycode.76\"   = \"tab_next\"        # L\n"
+            "   \"keycode.72\"   = \"tab_prev\"        # H\n"
+            "   \"keycode.265\"  = \"tab_playback\"    # f1\n"
+            "   \"keycode.266\"  = \"tab_recording\"   # f2\n"
+            "   \"keycode.267\"  = \"tab_output\"      # f3\n"
+            "   \"keycode.268\"  = \"tab_input\"       # f4\n"
+            "   \"keycode.269\"  = \"tab_config\"      # f5\n"
+            "   \"keycode.f.80\" = \"tab_playback\"    # f1 VT100\n"
+            "   \"keycode.f.81\" = \"tab_recording\"   # f2 VT100\n"
+            "   \"keycode.f.82\" = \"tab_output\"      # f3 VT100\n"
+            "   \"keycode.f.83\" = \"tab_input\"       # f4 VT100\n"
+            "   \"keycode.f.84\" = \"tab_config\"      # f5 VT100\n"
+            "   \"keycode.71\"   = \"move_last\"       # G\n"
+            "   \"keycode.103\"  = \"move_first\"      # g\n"
+            "#   \"keycode.48\"   = \"set_volume_100\"  # 0\n"
+            "   \"keycode.48\"   = \"set_volume_0\"    # 0\n"
+            "   \"keycode.49\"   = \"set_volume_10\"   # 1\n"
+            "   \"keycode.50\"   = \"set_volume_20\"   # 2\n"
+            "   \"keycode.51\"   = \"set_volume_30\"   # 3\n"
+            "   \"keycode.52\"   = \"set_volume_40\"   # 4\n"
+            "   \"keycode.53\"   = \"set_volume_50\"   # 5\n"
+            "   \"keycode.54\"   = \"set_volume_60\"   # 6\n"
+            "   \"keycode.55\"   = \"set_volume_70\"   # 7\n"
+            "   \"keycode.56\"   = \"set_volume_80\"   # 8\n"
+            "   \"keycode.57\"   = \"set_volume_90\"   # 9\n"
             "# }"
         );
         fclose(f);
