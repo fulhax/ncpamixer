@@ -115,7 +115,7 @@ int Ui::init()
 
     init_pair(
         COLOR_DROPDOWN_SELECTED,
-        COLOR_FOREGROUND,
+        config.getInt((theme + ".dropdown.selected.text").c_str(), COLOR_BLACK),
         config.getInt((theme + ".dropdown.selected").c_str(), COLOR_GREEN)
     );
 
