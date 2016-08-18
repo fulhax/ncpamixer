@@ -65,7 +65,7 @@ ncpamixer supports 256 colors. You can change them in ncpamixer.conf
 ### Install
 
 ##### Arch Linux
-`packer -s ncpamixer-git`
+`packer -S ncpamixer-git`
 https://aur.archlinux.org/packages/ncpamixer-git/
 
 #### Gentoo ebuild
