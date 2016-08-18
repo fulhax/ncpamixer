@@ -50,6 +50,7 @@ set(COMMON_SRC
     "ui/tabs/output.cpp"
     "ui/tabs/input.cpp"
     "ui/tabs/configuration.cpp"
+    "ui/tabs/fallback.cpp"
     "${CMAKE_CURRENT_BINARY_DIR}/version.cpp"
     )
 

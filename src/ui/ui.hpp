@@ -54,6 +54,7 @@ public:
     WINDOW *statusbar;
 private:
     bool running;
+    bool disconnect;
 
     const char *tabs[NUM_TABS] = {
         "Playback",
@@ -72,6 +73,7 @@ private:
     void kill();
     void draw();
     void switchTab(int index);
+    void checkPulseAudio();
 };
 
 extern Ui ui;

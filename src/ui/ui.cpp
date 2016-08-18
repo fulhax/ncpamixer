@@ -14,6 +14,7 @@
 #include "tabs/output.hpp"
 #include "tabs/input.hpp"
 #include "tabs/configuration.hpp"
+#include "tabs/fallback.hpp"
 
 #define KEY_ALT(x) (KEY_F(64 - 26) + (x - 'A'))
 
@@ -21,6 +22,7 @@ Ui ui;
 
 Ui::Ui()
 {
+    disconnect = false;
     running = false;
     current_tab = nullptr;
     window = nullptr;
@@ -150,8 +152,23 @@ int Ui::init()
     return 1;
 }
 
+void Ui::checkPulseAudio()
+{
+    if(!pa.connected && !disconnect) {
+        disconnect = true;
+        current_tab = new Fallback();
+    } else if(pa.connected && disconnect){
+        disconnect = false;
+        switchTab(tab_index);
+    }
+}
+
 void Ui::switchTab(int index)
 {
+    if(disconnect) {
+        return;
+    }
+
     if (current_tab != nullptr) {
         delete current_tab;
     }
@@ -293,6 +310,7 @@ void Ui::draw()
 void Ui::run()
 {
     while (running) {
+        checkPulseAudio();
         draw();
 
         usleep(20000);
