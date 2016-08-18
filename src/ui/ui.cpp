@@ -61,13 +61,13 @@ int Ui::init()
     );
     init_pair(
         COLOR_BAR_MID,
-        config.getInt((theme + ".bar_mid.back").c_str(), COLOR_BLACK),
-        config.getInt((theme + ".bar_mid.front").c_str(), COLOR_YELLOW)
+        config.getInt((theme + ".bar_mid.front").c_str(), COLOR_BLACK),
+        config.getInt((theme + ".bar_mid.back").c_str(), COLOR_YELLOW)
     );
     init_pair(
         COLOR_BAR_HIGH,
-        config.getInt((theme + ".bar_mid.back").c_str(), COLOR_BLACK),
-        config.getInt((theme + ".bar_mid.front").c_str(), COLOR_RED)
+        config.getInt((theme + ".bar_high.front").c_str(), COLOR_BLACK),
+        config.getInt((theme + ".bar_high.back").c_str(), COLOR_RED)
     );
     init_pair(
         COLOR_VOLUME_LOW,
