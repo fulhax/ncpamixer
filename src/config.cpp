@@ -182,7 +182,7 @@ void Config::createDefault()
     if (f) {
         fprintf(
             f,
-            "current.theme = \"default\"\n"
+            "\"theme\" = \"default\"\n"
             "\n"
             "# Default theme {\n"
             "   \"theme.default.bar_low\"                = 2\n"

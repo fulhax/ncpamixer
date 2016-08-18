@@ -51,10 +51,7 @@ int Ui::init()
     use_default_colors();
 
     std::string theme = std::string(
-                            "theme." + config.getString(
-                                "current.theme",
-                                "default"
-                            )
+                            "theme." + config.getString("theme", "default")
                         );
 
     init_pair(
