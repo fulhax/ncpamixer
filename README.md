@@ -58,6 +58,15 @@ Your configuration gets created on first run. If  `$XDG_CONFIG_HOME` is defined 
 * CMake 
 * C++14 compatible compiler
 
+### Install
+
+##### Arch Linux
+`packer -s ncpamixer-git`
+https://aur.archlinux.org/packages/ncpamixer-git/
+
+#### Gentoo ebuild
+https://github.com/fulhax/fulhax-overlay/tree/master/media-sound/ncpamixer
+
 ### Tested on
 * Gentoo kernel 4.6.2, PulseAudio 9.0 and ncurses 6.0-r1
 * Arch Linux 4.6.4-1 PulseAudio 9.0 and ncurses 6.0-4
