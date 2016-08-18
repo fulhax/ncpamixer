@@ -7,14 +7,18 @@ An ncurses mixer for PulseAudio inspired by pavucontrol.
 
 ![demo](https://cloud.githubusercontent.com/assets/1078548/17714097/90dff48c-63fe-11e6-8d37-1d20c44981ef.gif)
 
-### Custom bindings? Sure!
+### Config
 Your configuration gets created on first run. If  `$XDG_CONFIG_HOME` is defined then it will be created at `$XDG_CONFIG_HOME/ncpamixer.conf` otherwise `$HOME/.ncpamixer.conf`
+
+
 
 ### Custom colors? Why not!
 ncpamixer supports 256 colors. You can change them in ncpamixer.conf
 
+### Custom bindings? Sure!
+You find them in ncpamixer.conf 
 
-### Default bindings
+#### Default bindings
 | Event | Default | |
 | --- | --- |---|
 | switch | tab | Cycle trought sinks, outputs, profile and ports |
