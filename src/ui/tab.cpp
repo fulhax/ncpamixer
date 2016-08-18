@@ -152,7 +152,7 @@ void Tab::draw()
                         "%s%s (%d%%)",
                         app.c_str(),
                         (dots) ? "..." : "",
-                        static_cast<int>(perc * 1.5f * 100.f)
+                        static_cast<int>(perc * (1.5f * 100.f) + 0.1f)
                     );
                 }
             } else {
@@ -279,43 +279,43 @@ void Tab::handleEvents(const char *event)
         }
     } else if (!strcmp("set_volume_10", event)) {
         if (selected_pobj != nullptr) {
-            selected_pobj->set_volume(.11f);
+            selected_pobj->set_volume(.1f);
         }
     } else if (!strcmp("set_volume_20", event)) {
         if (selected_pobj != nullptr) {
-            selected_pobj->set_volume(.21f);
+            selected_pobj->set_volume(.2f);
         }
     } else if (!strcmp("set_volume_30", event)) {
         if (selected_pobj != nullptr) {
-            selected_pobj->set_volume(.31f);
+            selected_pobj->set_volume(.3f);
         }
     } else if (!strcmp("set_volume_40", event)) {
         if (selected_pobj != nullptr) {
-            selected_pobj->set_volume(.41f);
+            selected_pobj->set_volume(.4f);
         }
     } else if (!strcmp("set_volume_50", event)) {
         if (selected_pobj != nullptr) {
-            selected_pobj->set_volume(.51f);
+            selected_pobj->set_volume(.5f);
         }
     } else if (!strcmp("set_volume_60", event)) {
         if (selected_pobj != nullptr) {
-            selected_pobj->set_volume(.61f);
+            selected_pobj->set_volume(.6f);
         }
     } else if (!strcmp("set_volume_70", event)) {
         if (selected_pobj != nullptr) {
-            selected_pobj->set_volume(.71f);
+            selected_pobj->set_volume(.7f);
         }
     } else if (!strcmp("set_volume_80", event)) {
         if (selected_pobj != nullptr) {
-            selected_pobj->set_volume(.81f);
+            selected_pobj->set_volume(.8f);
         }
     } else if (!strcmp("set_volume_90", event)) {
         if (selected_pobj != nullptr) {
-            selected_pobj->set_volume(.91f);
+            selected_pobj->set_volume(.9f);
         }
     } else if (!strcmp("set_volume_100", event)) {
         if (selected_pobj != nullptr) {
-            selected_pobj->set_volume(1.01f);
+            selected_pobj->set_volume(1.0f);
         }
     } else if (!strcmp("switch", event)) {
         if (selected_pobj != nullptr && toggle != nullptr) {
