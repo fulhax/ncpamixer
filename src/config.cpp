@@ -196,7 +196,7 @@ void Config::createDefault()
             "   \"theme.default.selected\"               = 2\n"
             "   \"theme.default.default\"                = -1\n"
             "   \"theme.default.border\"                 = -1\n"
-            "   \"theme.default.dropdown.selected.text\" = 0\n"
+            "   \"theme.default.dropdown.selected_text\" = 0\n"
             "   \"theme.default.dropdown.selected\"      = 2\n"
             "   \"theme.default.dropdown.unselected\"    = -1\n"
             "# }"
