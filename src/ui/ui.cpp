@@ -50,17 +50,87 @@ int Ui::init()
     start_color();
     use_default_colors();
 
-    // BG
-    init_pair(1, COLOR_GREEN, -1);
-    init_pair(2, COLOR_YELLOW, -1);
-    init_pair(3, COLOR_RED, -1);
+    std::string theme = std::string(
+                            "theme." + config.getString(
+                                "current.theme",
+                                "default"
+                            )
+                        );
+
+    init_pair(
+        COLOR_BAR_LOW,
+        config.getInt((theme + ".bar_low").c_str(), COLOR_GREEN),
+        COLOR_BACKGROUND
+    );
+    init_pair(
+        COLOR_BAR_MID,
+        config.getInt((theme + ".bar_mid").c_str(), COLOR_YELLOW),
+        COLOR_BACKGROUND
+    );
+    init_pair(
+        COLOR_BAR_HIGH,
+        config.getInt((theme + ".bar_high").c_str(), COLOR_RED),
+        COLOR_BACKGROUND
+    );
+    init_pair(
+        COLOR_VOLUME_LOW,
+        config.getInt((theme + ".volume_low").c_str(), COLOR_GREEN),
+        COLOR_BACKGROUND
+    );
+    init_pair(
+        COLOR_VOLUME_MID,
+        config.getInt((theme + ".volume_mid").c_str(), COLOR_YELLOW),
+        COLOR_BACKGROUND
+    );
+    init_pair(
+        COLOR_VOLUME_HIGH,
+        config.getInt((theme + ".volume_high").c_str(), COLOR_RED),
+        COLOR_BACKGROUND
+    );
+    init_pair(
+        COLOR_VOLUME_PEAK,
+        config.getInt((theme + ".volume_peak").c_str(), COLOR_RED),
+        COLOR_BACKGROUND
+    );
+    init_pair(
+        COLOR_VOLUME_INDICATOR,
+        config.getInt((theme + ".volume_indicator").c_str(), COLOR_FOREGROUND),
+        COLOR_BACKGROUND
+    );
+    init_pair(
+        COLOR_SELECTED,
+        config.getInt((theme + ".selected").c_str(), COLOR_GREEN),
+        COLOR_BACKGROUND
+    );
+    init_pair(
+        COLOR_DEFAULT,
+        config.getInt((theme + ".default").c_str(), COLOR_FOREGROUND),
+        COLOR_BACKGROUND
+    );
+    init_pair(
+        COLOR_BORDER,
+        config.getInt((theme + ".border").c_str(), COLOR_FOREGROUND),
+        COLOR_BACKGROUND
+    );
+
+    init_pair(
+        COLOR_DROPDOWN_SELECTED,
+        COLOR_FOREGROUND,
+        config.getInt((theme + ".dropdown.selected").c_str(), COLOR_GREEN)
+    );
+
+    init_pair(
+        COLOR_DROPDOWN_UNSELECTED,
+        config.getInt((theme + ".dropdown.unselected").c_str(), COLOR_FOREGROUND),
+        COLOR_BACKGROUND
+    );
 
     // FG
-    init_pair(4, 0, COLOR_GREEN);
-    init_pair(5, 0, COLOR_YELLOW);
-    init_pair(6, 0, COLOR_RED);
-
-    init_pair(7, COLOR_BLACK, COLOR_WHITE);
+    // init_pair(4, 0, COLOR_GREEN);
+    // init_pair(5, 0, COLOR_YELLOW);
+    // init_pair(6, 0, COLOR_RED);
+    //
+    // init_pair(7, COLOR_BLACK, COLOR_WHITE);
 
     running = true;
     current_tab = new Playback();
@@ -242,14 +312,18 @@ void Ui::statusBar()
 
     for (int i = 0; i < NUM_TABS; ++i) {
         if (tab_index == i) {
-            wattron(statusbar, COLOR_PAIR(1));
+            wattron(statusbar, COLOR_PAIR(COLOR_SELECTED));
+        } else {
+            wattron(statusbar, COLOR_PAIR(COLOR_DEFAULT));
         }
 
         mvwaddstr(statusbar, 0, len, tabs[i]);
         len += strlen(tabs[i]) + 1;
 
         if (tab_index == i) {
-            wattroff(statusbar, COLOR_PAIR(1));
+            wattroff(statusbar, COLOR_PAIR(COLOR_SELECTED));
+        } else {
+            wattroff(statusbar, COLOR_PAIR(COLOR_DEFAULT));
         }
     }
 

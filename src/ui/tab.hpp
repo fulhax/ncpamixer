@@ -77,6 +77,7 @@ private:
         const char *str
     );
     static unsigned int getVolumeColor(int p);
+    static unsigned int getBarColor(int p);
 
     int selected_block;
     int total_blocks;

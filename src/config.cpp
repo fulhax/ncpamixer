@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <pwd.h>
 #include <string.h>
 
@@ -12,6 +13,16 @@
 #define MAX_LINE 300
 
 Config config;
+
+Config::Config()
+{
+    memset(filename, 0, sizeof(filename));
+}
+
+Config::~Config()
+{
+
+}
 
 const char *Config::getHomeDir()
 {
@@ -45,32 +56,37 @@ const char *Config::getHomeDir()
     return homedir;
 }
 
-Config::Config()
+bool Config::fileExists(const char *name)
 {
-    memset(filename, 0, sizeof(filename));
+    struct stat buffer;
+    return (stat(name, &buffer) == 0);
 }
 
-Config::~Config()
+void Config::init(const char *conf)
 {
-
-}
-
-void Config::init()
-{
-    const char *confdir = nullptr;
-    char file[255] = {"/ncpamixer.conf"};
-
-    confdir = getenv("XDG_CONFIG_HOME");
-
-    if (confdir == nullptr) {
-        snprintf(file, sizeof(file), "/.ncpamixer.conf");
-        confdir = getHomeDir();
+    if(fileExists(conf)) {
+        snprintf(filename, sizeof(filename), "%s", conf);
+    } else {
+        fprintf(stderr, "Unable to find config file %s.\n", conf);
+        exit(EXIT_FAILURE);
     }
 
-    snprintf(filename, sizeof(filename), "%s%s", confdir, file);
+    if (strlen(filename) == 0) {
+        const char *confdir = nullptr;
+        char file[255] = {"/ncpamixer.conf"};
+
+        confdir = getenv("XDG_CONFIG_HOME");
+
+        if (confdir == nullptr) {
+            snprintf(file, sizeof(file), "/.ncpamixer.conf");
+            confdir = getHomeDir();
+        }
+
+        snprintf(filename, sizeof(filename), "%s%s", confdir, file);
+    }
 
     for (;;) {
-        if(!readConfig()) {
+        if (!readConfig()) {
             fprintf(
                 stderr,
                 "Unable to find config file %s, creating default config.\n",
@@ -162,6 +178,26 @@ void Config::createDefault()
     FILE *f = fopen(filename, "w");
 
     if (f) {
+        fprintf(
+            f,
+            "current.theme = \"default\"\n"
+            "\n"
+            "# Default theme {\n"
+            "   \"theme.default.bar_low\"             = 2\n"
+            "   \"theme.default.bar_mid\"             = 3\n"
+            "   \"theme.default.bar_high\"            = 1\n"
+            "   \"theme.default.volume_low\"          = 2\n"
+            "   \"theme.default.volume_mid\"          = 3\n"
+            "   \"theme.default.volume_high\"         = 1\n"
+            "   \"theme.default.volume_peak\"         = 1\n"
+            "   \"theme.default.volume_indicator\"    = -1\n"
+            "   \"theme.default.selected\"            = 2\n"
+            "   \"theme.default.default\"             = -1\n"
+            "   \"theme.default.border\"              = -1\n"
+            "   \"theme.default.dropdown.selected\"   = 2\n"
+            "   \"theme.default.dropdown.unselected\" = -1\n"
+            "# }"
+        );
         fprintf(
             f,
             "# Keybinds {\n"

@@ -56,7 +56,9 @@ void Tab::draw()
             );
         } else { // Configuration
             if (i.first == selected_index) {
-                wattron(ui.window, COLOR_PAIR(1));
+                wattron(ui.window, COLOR_PAIR(COLOR_SELECTED));
+            } else {
+                wattron(ui.window, COLOR_PAIR(COLOR_DEFAULT));
             }
 
             if (i.second->active_attribute != nullptr) {
@@ -70,12 +72,16 @@ void Tab::draw()
             }
 
             if (i.first == selected_index) {
-                wattroff(ui.window, COLOR_PAIR(1));
+                wattroff(ui.window, COLOR_PAIR(COLOR_SELECTED));
+            } else {
+                wattroff(ui.window, COLOR_PAIR(COLOR_DEFAULT));
             }
         }
 
         if (current_block == selected_block) {
-            wattron(ui.window, COLOR_PAIR(1));
+            wattron(ui.window, COLOR_PAIR(COLOR_SELECTED));
+        } else {
+            wattron(ui.window, COLOR_PAIR(COLOR_DEFAULT));
         }
 
         char label[255] = {0};
@@ -178,7 +184,9 @@ void Tab::draw()
         mvwaddstr(ui.window, baseY + 1, 1, label);
 
         if (current_block == selected_block) {
-            wattroff(ui.window, COLOR_PAIR(1));
+            wattroff(ui.window, COLOR_PAIR(COLOR_SELECTED));
+        } else {
+            wattroff(ui.window, COLOR_PAIR(COLOR_DEFAULT));
         }
 
         baseY += BLOCK_SIZE;
@@ -448,10 +456,10 @@ uint32_t Tab::dropDown(int x, int y, std::map<uint32_t, std::string> objects,
     set_menu_sub(menu, derwin(menu_win, height + 1, width, 1, 1));
     set_menu_format(menu, height, 1);
 
-    //wbkgd(menu_win, COLOR_PAIR(7));
+    wbkgd(menu_win, COLOR_PAIR(COLOR_BORDER));
     //set_menu_back(menu, COLOR_PAIR(7));
-    set_menu_fore(menu, COLOR_PAIR(4));
-    //set_menu_grey(menu, COLOR_PAIR(7));
+    set_menu_fore(menu, COLOR_PAIR(COLOR_DROPDOWN_SELECTED));
+    set_menu_grey(menu, COLOR_PAIR(COLOR_DROPDOWN_UNSELECTED));
 
     //set_menu_mark(menu, "* ");
     set_menu_mark(menu, "");
@@ -460,6 +468,7 @@ uint32_t Tab::dropDown(int x, int y, std::map<uint32_t, std::string> objects,
     menu_opts_off(menu, O_NONCYCLIC);
 
     box(menu_win, 0, 0);
+
     post_menu(menu);
     set_current_item(menu, items[selected]);
 
@@ -533,6 +542,8 @@ uint32_t Tab::dropDown(int x, int y, std::map<uint32_t, std::string> objects,
 
 void Tab::borderBox(int w, int h, int px, int py)
 {
+    wattron(ui.window, COLOR_PAIR(COLOR_BORDER));
+
     mvwvline(ui.window, py, px, ACS_VLINE, h);
     mvwvline(ui.window, py, px + w, ACS_VLINE, h);
 
@@ -545,18 +556,23 @@ void Tab::borderBox(int w, int h, int px, int py)
     mvwhline(ui.window, py + h, px, ACS_LLCORNER, 1);
     mvwhline(ui.window, py + h, px + w, ACS_LRCORNER, 1);
 
+    wattroff(ui.window, COLOR_PAIR(COLOR_BORDER));
 }
 
 void Tab::selectBox(int w, int px, int py, bool selected)
 {
     if (selected) {
-        wattron(ui.window, COLOR_PAIR(1));
+        wattron(ui.window, COLOR_PAIR(COLOR_SELECTED));
+    } else {
+        wattron(ui.window, COLOR_PAIR(COLOR_DEFAULT));
     }
 
     mvwaddstr(ui.window, py + 1, px + 2, "Digital Stereo (HDMI) Output");
 
     if (selected) {
-        wattroff(ui.window, COLOR_PAIR(1));
+        wattroff(ui.window, COLOR_PAIR(COLOR_SELECTED));
+    } else {
+        wattroff(ui.window, COLOR_PAIR(COLOR_DEFAULT));
     }
 
     borderBox(w, 2, px, py);
@@ -585,7 +601,7 @@ void Tab::volumeBar(int w, int h, int px, int py, float vol, float peak)
 
     for (int i = 0; i < pw; i++) {
         if (i >= vw) {
-            color = 3;
+            color = COLOR_VOLUME_PEAK;
         } else {
             color = getVolumeColor(
                         (static_cast<float>(i) / w) * 100
@@ -598,27 +614,41 @@ void Tab::volumeBar(int w, int h, int px, int py, float vol, float peak)
     }
 
     for (int i = 0; i < fw; i++) {
-        color = getVolumeColor(
+        color = getBarColor(
                     (static_cast<float>(pw + i) / w) * 100
                 );
-        wattron(ui.window, COLOR_PAIR(color + 3));
+
+        wattron(ui.window, COLOR_PAIR(color));
         mvwaddstr(ui.window, py, pw + i, "\u2593");
-        wattroff(ui.window, COLOR_PAIR(color + 3));
+        wattroff(ui.window, COLOR_PAIR(color));
     }
 
     fillW(w, h, 0, py + 1, "\u2594");
-    mvwaddstr(ui.window, py, vw - 1, "\u2588"); // Mark volume
 
+    wattron(ui.window, COLOR_PAIR(COLOR_VOLUME_INDICATOR));
+    mvwaddstr(ui.window, py, vw - 1, "\u2588"); // Mark volume
+    wattroff(ui.window, COLOR_PAIR(COLOR_VOLUME_INDICATOR));
 }
 
 unsigned int Tab::getVolumeColor(int p)
 {
     if (p < 33) {
-        return 1;
+        return COLOR_VOLUME_LOW;
     } else if (p >= 33 && p < 66) {
-        return 2;
+        return COLOR_VOLUME_MID;
     } else {
-        return 3;
+        return COLOR_VOLUME_HIGH;
+    }
+}
+
+unsigned int Tab::getBarColor(int p)
+{
+    if (p < 33) {
+        return COLOR_BAR_LOW;
+    } else if (p >= 33 && p < 66) {
+        return COLOR_BAR_MID;
+    } else {
+        return COLOR_BAR_HIGH;
     }
 }
 
@@ -626,7 +656,11 @@ void Tab::fillW(int w, int h, int offset_x, int offset_y, const char *str)
 {
     int wo = (w - offset_x);
 
+    wattron(ui.window, COLOR_PAIR(COLOR_BORDER));
+
     for (int i = 0; i < wo; i++) {
         mvwaddstr(ui.window, offset_y, offset_x + i, str);
     }
+
+    wattroff(ui.window, COLOR_PAIR(COLOR_BORDER));
 }

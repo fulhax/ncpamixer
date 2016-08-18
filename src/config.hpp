@@ -10,7 +10,7 @@ public:
     Config();
     virtual ~Config();
 
-    void init();
+    void init(const char* conf);
 
     std::string getString(const char *key, std::string def);
     int getInt(const char *key, int def);
@@ -20,6 +20,7 @@ private:
     char filename[255];
 
     static const char *getHomeDir();
+    static bool fileExists(const char *name);
     void createDefault();
     int readConfig();
 };
