@@ -33,27 +33,30 @@ endif
 .PHONY: all build distclean clean
 .SILENT:
 
-all: build
+all: release
 
-build: $(BUILD_DIR)/$(UNAME)/$(BUILD_TYPE)/Makefile
-	$(MAKE) -C $(BUILD_DIR)/$(UNAME)/$(BUILD_TYPE)
+build: $(BUILD_DIR)/Makefile
+	$(MAKE) -C $(BUILD_DIR)/
 
-$(BUILD_DIR)/$(UNAME)/$(BUILD_TYPE)/Makefile: src/CMakeLists.txt
-	-@$(MKDIR) "$(BUILD_DIR)/$(UNAME)/$(BUILD_TYPE)"
-	@cd "$(BUILD_DIR)/$(UNAME)/$(BUILD_TYPE)" && \
+$(BUILD_DIR)/Makefile: src/CMakeLists.txt
+	-@$(MKDIR) "$(BUILD_DIR)"
+	@cd "$(BUILD_DIR)" && \
 		cmake -G $(BUILD_TARGET) \
 		-DCMAKE_BUILD_TYPE=$(BUILD_INFO) \
 		-DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
 		"$(BASE_DIR)/src"
 
+debug:
+	$(MAKE) build DEBUG=1
+
 release:
-	$(MAKE) RELEASE=1
+	$(MAKE) build RELEASE=1
 
 install: release
-	$(MAKE) -C $(BUILD_DIR)/$(UNAME)/release install
+	$(MAKE) -C $(BUILD_DIR) install
 
 clean:
-	$(MAKE) -C "$(BUILD_DIR)/$(UNAME)/$(BUILD_TYPE)" clean
+	$(MAKE) -C "$(BUILD_DIR)" clean
 
 distclean:
 	@rm -rf $(BUILD_DIR)
