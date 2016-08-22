@@ -1,17 +1,6 @@
 BASE_DIR=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 BUILD_DIR=$(BASE_DIR)/build/
 
-UNAME=$(shell uname)
-ifeq ($(UNAME), windows32)
-	MKDIR=mkdir
-	BUILD_TARGET="MinGW Makefiles"
-else ifeq ($(UNAME), windows64)
-	MKDIR=mkdir
-	BUILD_TARGET="MinGW Makefiles"
-else
-	MKDIR=mkdir -p
-	BUILD_TARGET="Unix Makefiles"
-endif
 
 BUILD_TYPE=debug
 BUILD_INFO=Debug
@@ -25,9 +14,9 @@ ifdef RELEASE
 	BUILD_INFO=Release
 	export RELEASE=1
 endif
-PLATFORM_LIST=default
-ifdef PLATFORM
-	PLATFORM_LIST=$(PLATFORM)
+
+ifdef PREFIX
+	CMAKE_PREFIX="-DCMAKE_INSTALL_PREFIX=$(shell readlink -f $(PREFIX))"
 endif
 
 .PHONY: all build distclean clean
@@ -39,12 +28,13 @@ build: $(BUILD_DIR)/Makefile
 	$(MAKE) -C $(BUILD_DIR)/
 
 $(BUILD_DIR)/Makefile: src/CMakeLists.txt
-	-@$(MKDIR) "$(BUILD_DIR)"
+	@mkdir -p "$(BUILD_DIR)"
 	@cd "$(BUILD_DIR)" && \
-		cmake -G $(BUILD_TARGET) \
+		cmake \
 		-DCMAKE_BUILD_TYPE=$(BUILD_INFO) \
 		-DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
-		"$(BASE_DIR)/src"
+		"$(BASE_DIR)/src" \
+		 $(CMAKE_PREFIX)
 
 debug:
 	$(MAKE) build DEBUG=1
