@@ -49,6 +49,9 @@ $(BUILD_DIR)/$(UNAME)/$(BUILD_TYPE)/Makefile: src/CMakeLists.txt
 release:
 	$(MAKE) RELEASE=1
 
+install: release
+	$(MAKE) -C $(BUILD_DIR)/$(UNAME)/release install
+
 clean:
 	$(MAKE) -C "$(BUILD_DIR)/$(UNAME)/$(BUILD_TYPE)" clean
 
