@@ -10,7 +10,7 @@ public:
     virtual ~Fallback() {}
 
     void draw();
-    void handleEvents(const char *event)
+    static void handleEvents(const char *event)
     {
         // Do nothing
     }
