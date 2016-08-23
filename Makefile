@@ -1,6 +1,4 @@
 BASE_DIR=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-BUILD_DIR=$(BASE_DIR)/build/
-
 
 BUILD_TYPE=debug
 BUILD_INFO=Debug
@@ -19,34 +17,45 @@ ifdef PREFIX
 	CMAKE_PREFIX="-DCMAKE_INSTALL_PREFIX=$(shell readlink -f $(PREFIX))"
 endif
 
-.PHONY: all build distclean clean
+.PHONY: all build distclean clean release release_dbg_info debug install verifybuildtype
 .SILENT:
 
 all: release
 
-build: $(BUILD_DIR)/Makefile
-	$(MAKE) -C $(BUILD_DIR)/
+build: build/Makefile
+	$(MAKE) -C build/
 
-$(BUILD_DIR)/Makefile: src/CMakeLists.txt
-	@mkdir -p "$(BUILD_DIR)"
-	@cd "$(BUILD_DIR)" && \
+build/Makefile: src/CMakeLists.txt
+	@mkdir -p "build"
+	@cd "build" && \
 		cmake \
 		-DCMAKE_BUILD_TYPE=$(BUILD_INFO) \
 		-DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
 		"$(BASE_DIR)/src" \
 		 $(CMAKE_PREFIX)
 
+verifybuildtype: build/Makefile
+	if ! grep -q "^CMAKE_BUILD_TYPE:STRING=$(BUILD_TYPE)$$" build/CMakeCache.txt > /dev/null; \
+		then cd build;cmake -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) $(BASE_DIR)/src; \
+		fi
+
 debug:
+	$(MAKE) verifybuildtype DEBUG=1
 	$(MAKE) build DEBUG=1
 
 release:
+	$(MAKE) verifybuildtype RELEASE=1
 	$(MAKE) build RELEASE=1
 
-install: release
-	$(MAKE) -C $(BUILD_DIR) install
+release_dbg_info:
+	$(MAKE) verifybuildtype RELEASE_DBG_INFO=1
+	$(MAKE) build RELEASE_DBG_INFO=1
+
+install: build
+	$(MAKE) -C build install
 
 clean:
-	$(MAKE) -C "$(BUILD_DIR)" clean
+	$(MAKE) -C "build" clean
 
 distclean:
-	@rm -rf $(BUILD_DIR)
+	@rm -rf build
