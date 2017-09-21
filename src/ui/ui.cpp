@@ -224,9 +224,7 @@ void Ui::handleInput()
             return;
 
         case 27: { // Fix for alt/escape (also f-keys on some terminals)
-            nodelay(window, true);
             input = wgetch(window);
-            nodelay(window, false);
 
             if (input != -1 && input != 79) {
                 std::string key = std::to_string(input);
@@ -238,9 +236,7 @@ void Ui::handleInput()
 
                 break;
             } else if (input == 79) {
-                nodelay(window, true);
                 input = wgetch(window);
-                nodelay(window, false);
 
                 if (input != -1) {
                     std::string key = std::to_string(input);

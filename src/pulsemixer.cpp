@@ -3,6 +3,7 @@
 #include <string.h>
 #include <pulse/pulseaudio.h>
 #include <wordexp.h>
+#include <errno.h>
 
 #include <vector>
 
@@ -46,7 +47,7 @@ int main(int argc, char *argv[])
     int c;
     int longIndex = 0;
 
-    char conf[255] = {0};
+    char conf[PATH_MAX] = {0};
 
     while ((c = getopt_long(argc, argv, "vhc:", longOpts, &longIndex)) != -1) {
 
@@ -60,7 +61,14 @@ int main(int argc, char *argv[])
                 return 0;
 
             case 'c':
-                realpath(optarg, conf);
+                if(realpath(optarg, conf) == NULL) {
+                    fprintf(
+                        stderr,
+                        "realpath error code: %d, %s",
+                        errno,
+                        strerror(errno)
+                    );
+                }
                 break;
 
             case '?':
