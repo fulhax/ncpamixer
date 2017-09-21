@@ -18,6 +18,8 @@ public:
 
     uint32_t index;
     char name[255];
+    char pa_name[255];
+    bool is_default;
 
     unsigned int channels;
     pa_volume_t volume;

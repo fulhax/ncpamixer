@@ -156,6 +156,10 @@ int Ui::init()
         hide_bottom = true;
     }
 
+    indicator.assign(
+        config.getString((theme + ".default_indicator").c_str(), u8"♦ ")
+    );
+
     running = true;
     current_tab = new Playback();
 

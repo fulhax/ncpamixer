@@ -49,6 +49,7 @@ public:
     void toggle_input_mute(uint32_t index);
     void toggle_sink_mute(uint32_t index);
     void move_input_sink(uint32_t input_index, uint32_t sink_index);
+    void set_defaults(const pa_server_info *info);
     void fetchPaobjects();
     void reconnect();
     void static do_reconnect(Pa *pa);
@@ -109,6 +110,11 @@ public:
         int eol,
         void *instance
     );
+    static void ctx_serverinfo_cb(
+        pa_context *ctx,
+        const pa_server_info *info,
+        void *instance
+    );
 
     static void read_callback(pa_stream *s, size_t length, void *instance);
     static void stream_suspended_cb(pa_stream *stream, void *instance);
@@ -136,7 +142,6 @@ public:
     pa_context *pa_ctx;
     pa_threaded_mainloop *pa_ml;
     pa_mainloop_api *pa_api;
-
 private:
     bool pa_init;
     void wait_on_pa_operation(pa_operation *o);

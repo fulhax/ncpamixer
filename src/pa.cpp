@@ -1,10 +1,11 @@
 #include "pa.hpp"
+
+#include <unistd.h>
+
 #include <cstring>
 #include <functional>
 #include <thread>
 #include <mutex>
-#include <unistd.h>
-
 #include <map>
 
 // https://freedesktop.org/software/pulseaudio/doxygen/introspect_8h.html
@@ -158,8 +159,7 @@ void Pa::fetchPaobjects()
     pa_operation *o;
 
     // get cards
-    o = pa_context_get_card_info_list(pa_ctx, &Pa::ctx_cardlist_cb,
-                                      this);
+    o = pa_context_get_card_info_list(pa_ctx, &Pa::ctx_cardlist_cb, this);
     wait_on_pa_operation(o);
     pa_operation_unref(o);
 
@@ -179,9 +179,16 @@ void Pa::fetchPaobjects()
     pa_operation_unref(o);
 
     // source outputs list cb
-    o = pa_context_get_source_output_info_list(pa_ctx,
+    o = pa_context_get_source_output_info_list(
+            pa_ctx,
             &Pa::ctx_sourceoutputlist_cb,
-            this);
+            this
+        );
+    wait_on_pa_operation(o);
+    pa_operation_unref(o);
+
+    // Get server info
+    o = pa_context_get_server_info(pa_ctx, &Pa::ctx_serverinfo_cb, this);
     wait_on_pa_operation(o);
     pa_operation_unref(o);
 
@@ -233,6 +240,27 @@ uint32_t Pa::exists(std::map<uint32_t, PaObject *> objects, uint32_t index)
     return index;
 }
 
+void Pa::set_defaults(const pa_server_info *info)
+{
+    std::lock_guard<std::mutex> lk(inputMtx);
+
+    for (auto &s : PA_SINKS) {
+        if (!strcmp(s.second->pa_name, info->default_sink_name)) {
+            s.second->is_default = true;
+        } else {
+            s.second->is_default = false;
+        }
+    }
+
+    for (auto &s : PA_SOURCES) {
+        if (!strcmp(s.second->pa_name, info->default_source_name)) {
+            s.second->is_default = true;
+        } else {
+            s.second->is_default = false;
+        }
+    }
+}
+
 void Pa::update_source_output(const pa_source_output_info *info)
 {
     std::lock_guard<std::mutex> lk(inputMtx);
@@ -266,13 +294,13 @@ void Pa::update_source_output(const pa_source_output_info *info)
     p->volume = (const pa_volume_t) pa_cvolume_avg(&info->volume);
     p->mute = info->mute;
 
-    strncpy(p->name, info->name, 255);
+    strncpy(p->name, info->name, sizeof(p->name));
 
     const char *app_name;
     app_name = pa_proplist_gets(info->proplist, PA_PROP_APPLICATION_NAME);
 
     if (app_name != nullptr) {
-        strncpy(p->app_name, app_name, 255);
+        strncpy(p->app_name, app_name, sizeof(p->app_name));
     }
 
     notify_update();
@@ -301,7 +329,8 @@ void Pa::update_source(const pa_source_info *info)
     p->volume = (const pa_volume_t) pa_cvolume_avg(&info->volume);
     p->mute = info->mute;
 
-    strncpy(p->name, info->description, 255);
+    strncpy(p->name, info->description, sizeof(p->name));
+    strncpy(p->pa_name, info->name, sizeof(p->pa_name));
 
     if (newObj) {
         create_monitor_stream_for_paobject(p);
@@ -383,7 +412,8 @@ void Pa::update_sink(const pa_sink_info *info)
     p->volume = (const pa_volume_t) pa_cvolume_avg(&info->volume);
     p->mute = info->mute;
 
-    strncpy(p->name, info->description, 255);
+    strncpy(p->name, info->description, sizeof(p->name));
+    strncpy(p->pa_name, info->name, sizeof(p->pa_name));
 
     p->updatePorts(info->ports, info->n_ports);
 
@@ -432,7 +462,7 @@ void Pa::update_input(const pa_sink_input_info *info)
     app_name = pa_proplist_gets(info->proplist, PA_PROP_APPLICATION_NAME);
 
     if (app_name != nullptr) {
-        strncpy(p->app_name, app_name, 255);
+        strncpy(p->app_name, app_name, sizeof(p->app_name));
     }
 
     if (sink_changed) {
@@ -611,8 +641,6 @@ void Pa::ctx_sourcelist_cb(pa_context *ctx, const pa_source_info *info,
     if (!eol) {
         pa->update_source(info);
     }
-
-    return;
 }
 
 void Pa::ctx_sourceoutputlist_cb(pa_context *ctx,
@@ -625,8 +653,6 @@ void Pa::ctx_sourceoutputlist_cb(pa_context *ctx,
     if (!eol) {
         pa->update_source_output(info);
     }
-
-    return;
 }
 
 void Pa::ctx_inputlist_cb(pa_context *ctx, const pa_sink_input_info *info,
@@ -647,6 +673,14 @@ void Pa::ctx_sinklist_cb(pa_context *ctx, const pa_sink_info *info, int eol,
     if (!eol) {
         pa->update_sink(info);
     }
+}
+
+void Pa::ctx_serverinfo_cb(pa_context *ctx, const pa_server_info *info,
+                           void *instance)
+{
+    Pa *pa = reinterpret_cast<Pa *>(instance);
+
+    pa->set_defaults(info);
 }
 
 void Pa::subscribe_cb(pa_context *ctx, pa_subscription_event_type_t t,
@@ -745,10 +779,19 @@ void Pa::subscribe_cb(pa_context *ctx, pa_subscription_event_type_t t,
 
             break;
 
+        case PA_SUBSCRIPTION_EVENT_SERVER: {
+                pa_operation *o = pa_context_get_server_info(ctx,
+                                  &Pa::ctx_serverinfo_cb, instance);
+
+                pa->wait_on_pa_operation(o);
+                pa_operation_unref(o);
+            }
+
+            break;
+
         case PA_SUBSCRIPTION_EVENT_MODULE:
         case PA_SUBSCRIPTION_EVENT_CLIENT:
         case PA_SUBSCRIPTION_EVENT_SAMPLE_CACHE:
-        case PA_SUBSCRIPTION_EVENT_SERVER:
         default:
             break;
 
@@ -777,7 +820,8 @@ void Pa::ctx_state_cb(pa_context *ctx, void *instance)
                                    PA_SUBSCRIPTION_MASK_SOURCE |
                                    PA_SUBSCRIPTION_MASK_SINK_INPUT |
                                    PA_SUBSCRIPTION_MASK_SOURCE_OUTPUT |
-                                   PA_SUBSCRIPTION_MASK_CARD
+                                   PA_SUBSCRIPTION_MASK_CARD |
+                                   PA_SUBSCRIPTION_MASK_SERVER
                                   ), &Pa::ctx_success_cb, instance);
             pa->wait_on_pa_operation(o);
             pa_operation_unref(o);

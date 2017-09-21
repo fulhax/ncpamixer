@@ -19,6 +19,7 @@ PaObject::PaObject() : type(pa_object_t::SINK)
     pa_set_active_attribute = nullptr;
     pa_set_default = nullptr;
     active_attribute = nullptr;
+    is_default = false;
 }
 
 PaObject::~PaObject()

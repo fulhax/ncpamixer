@@ -63,6 +63,7 @@ public:
     WINDOW *statusbar;
 
     std::string bar[BAR_SIZE + 1];
+    std::string indicator;
 
     bool hide_indicator;
     bool hide_top;

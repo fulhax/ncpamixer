@@ -23,11 +23,13 @@ void Tab::draw()
     int current_block = 0;
     int BLOCK_SIZE = 5;
 
-    if (ui.hide_top) {
-        BLOCK_SIZE -= 1;
-    }
-    if (ui.hide_bottom) {
-        BLOCK_SIZE -= 1;
+    if (has_volume) {
+        if (ui.hide_top) {
+            BLOCK_SIZE -= 1;
+        }
+        if (ui.hide_bottom) {
+            BLOCK_SIZE -= 1;
+        }
     }
 
     total_blocks = (ui.height - 2) / BLOCK_SIZE;
@@ -139,10 +141,14 @@ void Tab::draw()
         const char *app_name = i.second->getAppName();
 
         if (app_name != nullptr && strlen(i.second->getAppName()) > 0) {
-            app = std::string(i.second->getAppName()) + ": " + std::string(
-                      i.second->name);
+            app = std::string(i.second->getAppName()) + ": " + 
+                std::string(i.second->name);
         } else {
             app = i.second->name;
+        }
+
+        if (i.second->is_default) {
+            app = ui.indicator + app;
         }
 
         bool dots = false;
@@ -339,6 +345,10 @@ void Tab::handleEvents(const char *event)
     } else if (!strcmp("set_volume_100", event)) {
         if (selected_pobj != nullptr) {
             selected_pobj->set_volume(1.0f);
+        }
+    } else if (!strcmp("set_default", event)) {
+        if (selected_pobj != nullptr) {
+            selected_pobj->set_default(selected_pobj->pa_name);
         }
     } else if (!strcmp("switch", event)) {
         if (selected_pobj != nullptr && toggle != nullptr) {
