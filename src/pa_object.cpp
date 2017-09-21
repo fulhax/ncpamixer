@@ -8,6 +8,7 @@ PaObject::PaObject() : type(pa_object_t::SINK)
 {
     index = 0;
     memset(name, 0, sizeof(name));
+    memset(pa_name, 0, sizeof(pa_name));
     channels = 0;
     mute = false;
     monitor_index = 0;
