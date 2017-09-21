@@ -30,6 +30,9 @@ Ui::Ui()
     width = 0;
     height = 0;
     tab_index = 0;
+    hide_indicator = false;
+    hide_top = false;
+    hide_bottom = false;
 }
 
 Ui::~Ui()
@@ -127,18 +130,31 @@ int Ui::init()
     bar[BAR_BG].assign(
         config.getString((theme + ".bar_style.bg").c_str(), u8"░")
     );
-    bar[BAR_MARK].assign(
-        config.getString((theme + ".bar_style.mark").c_str(), u8"█")
-    );
     bar[BAR_FG].assign(
         config.getString((theme + ".bar_style.fg").c_str(), u8"█")
     );
-    bar[BAR_LOWER].assign(
-        config.getString((theme + ".bar_style.lower").c_str(), u8"▁")
-    );
-    bar[BAR_HIGHER].assign(
-        config.getString((theme + ".bar_style.higher").c_str(), u8"▔")
-    );
+
+    if(!config.keyEmpty((theme + ".bar_style.indicator").c_str())) {
+        bar[BAR_INDICATOR].assign(
+            config.getString((theme + ".bar_style.indicator").c_str(), u8"█")
+        );
+    } else {
+        hide_indicator = true;
+    }
+    if(!config.keyEmpty((theme + ".bar_style.top").c_str())) {
+        bar[BAR_TOP].assign(
+            config.getString((theme + ".bar_style.top").c_str(), u8"▁")
+        );
+    } else {
+        hide_top = true;
+    }
+    if(!config.keyEmpty((theme + ".bar_style.bottom").c_str())) {
+        bar[BAR_BOTTOM].assign(
+            config.getString((theme + ".bar_style.bottom").c_str(), u8"▔")
+        );
+    } else {
+        hide_bottom = true;
+    }
 
     running = true;
     current_tab = new Playback();

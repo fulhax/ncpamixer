@@ -41,9 +41,9 @@ enum THEME {
 enum BAR {
     BAR_BG = 0,
     BAR_FG,
-    BAR_MARK,
-    BAR_LOWER,
-    BAR_HIGHER,
+    BAR_INDICATOR,
+    BAR_TOP,
+    BAR_BOTTOM,
     BAR_SIZE,
 };
 
@@ -63,6 +63,10 @@ public:
     WINDOW *statusbar;
 
     std::string bar[BAR_SIZE + 1];
+
+    bool hide_indicator;
+    bool hide_top;
+    bool hide_bottom;
 private:
     bool running;
     bool disconnect;

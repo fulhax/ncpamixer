@@ -7,8 +7,6 @@
 
 #include "pa.hpp"
 
-#define BLOCK_SIZE 5
-
 class Tab
 {
 public:

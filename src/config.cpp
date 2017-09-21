@@ -134,7 +134,7 @@ int Config::readConfig()
                 tmp++;
             }
 
-            if (key.length() > 0 && val.length() > 0) {
+            if (key.length() > 0) {
                 config[key] = val;
             }
         }
@@ -175,6 +175,28 @@ bool Config::getBool(const char *key, bool def)
     return false;
 }
 
+bool Config::keyExists(const char *key)
+{
+    auto conf = config.find(key);
+
+    if (conf == config.end()) {
+        return false;
+    }
+
+    return true;
+}
+
+bool Config::keyEmpty(const char *key)
+{
+    if (keyExists(key)) {
+        if (config[key] == "") {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void Config::createDefault()
 {
     // light      ░ \u2593
@@ -193,12 +215,12 @@ void Config::createDefault()
             f,
             "\"theme\" = \"default\"\n"
             "\n"
-            "# Default theme {\n" 
+            "# Default theme {\n"
             "   \"theme.default.bar_style.bg\"           = \"░\"\n"
             "   \"theme.default.bar_style.fg\"           = \"█\"\n"
-            "   \"theme.default.bar_style.mark\"         = \"█\"\n"
-            "   \"theme.default.bar_style.lower\"        = \"▁\"\n"
-            "   \"theme.default.bar_style.higher\"       = \"▔\"\n"
+            "   \"theme.default.bar_style.indicator\"    = \"█\"\n"
+            "   \"theme.default.bar_style.top\"          = \"▁\"\n"
+            "   \"theme.default.bar_style.bottom\"       = \"▔\"\n"
             "   \"theme.default.bar_low.front\"          = 2\n"
             "   \"theme.default.bar_low.back\"           = 0\n"
             "   \"theme.default.bar_mid.front\"          = 3\n"
