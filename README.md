@@ -27,6 +27,7 @@ You find them in ncpamixer.conf
 | quit | q | Quit |
 | dropdown | c | Open dropdown for selecting sinks, outputs, profile and ports |
 | mute | m | Mute selected item |
+| set_default | d | Set default sink/source |
 | volume_up | l | Increase volume on selected item |
 | volume_down | h | Decrease volume on selected item |
 | volume_up | arrow right |  Increase volume on selected item |
@@ -76,6 +77,7 @@ https://aur.archlinux.org/packages/ncpamixer-git/
 https://github.com/fulhax/fulhax-overlay/tree/master/media-sound/ncpamixer
 
 ### Tested on
+* Gentoo kernel 4.12.10, PulseAudio 11.0 and ncurses 6.0-r1
 * Gentoo kernel 4.6.2, PulseAudio 9.0 and ncurses 6.0-r1
 * Arch Linux 4.6.4-1 PulseAudio 9.0 and ncurses 6.0-4
 
