@@ -90,20 +90,24 @@ void Tab::draw()
         int toggle_len = 0;
 
         if (toggle != nullptr) {
-            char *name = toggle->find(i.second->getRelation())->second->name;
+            auto rel = toggle->find(i.second->getRelation());
 
-            if (name != nullptr) {
-                unsigned int len = strlen(name);
-                unsigned int sink_pos = ui.width - 1 - len;
+            if(rel != toggle->end()) {
+                char *name = rel->second->name;
 
-                mvwaddstr(
-                    ui.window,
-                    baseY + 1,
-                    sink_pos,
-                    name
-                );
+                if (name != nullptr) {
+                    unsigned int len = strlen(name);
+                    unsigned int sink_pos = ui.width - 1 - len;
 
-                toggle_len += strlen(name);
+                    mvwaddstr(
+                            ui.window,
+                            baseY + 1,
+                            sink_pos,
+                            name
+                            );
+
+                    toggle_len += strlen(name);
+                }
             }
         } else {
             if (i.second->active_attribute != nullptr && has_volume) {
