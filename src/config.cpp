@@ -255,7 +255,7 @@ void Config::createDefault()
             "   \"theme.c0r73x.volume_mid\"             = 6\n"
             "   \"theme.c0r73x.volume_high\"            = 6\n"
             "   \"theme.c0r73x.volume_peak\"            = 1\n"
-            "   \"theme.c0r73x.volume_indicator\"       = 7\n"
+            "   \"theme.c0r73x.volume_indicator\"       = 15\n"
             "   \"theme.c0r73x.selected\"               = 6\n"
             "   \"theme.c0r73x.default\"                = -1\n"
             "   \"theme.c0r73x.border\"                 = -1\n"
