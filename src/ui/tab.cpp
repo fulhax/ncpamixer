@@ -628,15 +628,6 @@ void Tab::selectBox(int w, int px, int py, bool selected)
 
 void Tab::volumeBar(int w, int h, int px, int py, float vol, float peak)
 {
-    // light      ░ \u2593
-    // medium     ▒ \u2592
-    // dark shade ▓ \u2593
-    // block      █ \u2588
-    // lower      ▁ \u2581
-    // higher     ▔ \u2594
-    // triangle   ▲ \u25b2
-    // https://en.wikipedia.org/wiki/Block_Elements
-
     float dw = static_cast<float>(w);
 
     int pw = dw * peak + 0.1f;
@@ -645,7 +636,7 @@ void Tab::volumeBar(int w, int h, int px, int py, float vol, float peak)
 
     unsigned int color;
 
-    fillW(w, h, 0, py - 1, "\u2581");
+    fillW(w, h, 0, py - 1, ui.bar[BAR_LOWER].c_str());
 
     for (int i = 0; i < pw; i++) {
         if (i >= vw) {
@@ -657,7 +648,7 @@ void Tab::volumeBar(int w, int h, int px, int py, float vol, float peak)
         }
 
         wattron(ui.window, COLOR_PAIR(color));
-        mvwaddstr(ui.window, py, i, "\u2588");
+        mvwaddstr(ui.window, py, i, ui.bar[BAR_FG].c_str());
         wattroff(ui.window, COLOR_PAIR(color));
     }
 
@@ -667,14 +658,14 @@ void Tab::volumeBar(int w, int h, int px, int py, float vol, float peak)
                 );
 
         wattron(ui.window, COLOR_PAIR(color));
-        mvwaddstr(ui.window, py, pw + i, "\u2593");
+        mvwaddstr(ui.window, py, pw + i, ui.bar[BAR_BG].c_str());
         wattroff(ui.window, COLOR_PAIR(color));
     }
 
-    fillW(w, h, 0, py + 1, "\u2594");
+    fillW(w, h, 0, py + 1, ui.bar[BAR_HIGHER].c_str());
 
     wattron(ui.window, COLOR_PAIR(COLOR_VOLUME_INDICATOR));
-    mvwaddstr(ui.window, py, vw - 1, "\u2588"); // Mark volume
+    mvwaddstr(ui.window, py, vw - 1, ui.bar[BAR_MARK].c_str()); // Mark volume
     wattroff(ui.window, COLOR_PAIR(COLOR_VOLUME_INDICATOR));
 }
 

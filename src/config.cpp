@@ -177,6 +177,15 @@ bool Config::getBool(const char *key, bool def)
 
 void Config::createDefault()
 {
+    // light      ░ \u2593
+    // medium     ▒ \u2592
+    // dark shade ▓ \u2593
+    // block      █ \u2588
+    // lower      ▁ \u2581
+    // higher     ▔ \u2594
+    // triangle   ▲ \u25b2
+    // https://en.wikipedia.org/wiki/Block_Elements
+
     FILE *f = fopen(filename, "w");
 
     if (f) {
@@ -184,7 +193,12 @@ void Config::createDefault()
             f,
             "\"theme\" = \"default\"\n"
             "\n"
-            "# Default theme {\n"
+            "# Default theme {\n" 
+            "   \"theme.default.bar_style.bg\"           = \"░\"\n"
+            "   \"theme.default.bar_style.fg\"           = \"█\"\n"
+            "   \"theme.default.bar_style.mark\"         = \"█\"\n"
+            "   \"theme.default.bar_style.lower\"        = \"▁\"\n"
+            "   \"theme.default.bar_style.higher\"       = \"▔\"\n"
             "   \"theme.default.bar_low.front\"          = 2\n"
             "   \"theme.default.bar_low.back\"           = 0\n"
             "   \"theme.default.bar_mid.front\"          = 3\n"

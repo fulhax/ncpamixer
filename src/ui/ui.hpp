@@ -38,6 +38,15 @@ enum THEME {
     COLOR_BORDER
 };
 
+enum BAR {
+    BAR_BG = 0,
+    BAR_FG,
+    BAR_MARK,
+    BAR_LOWER,
+    BAR_HIGHER,
+    BAR_SIZE,
+};
+
 class Ui
 {
 public:
@@ -52,6 +61,8 @@ public:
 
     WINDOW *window;
     WINDOW *statusbar;
+
+    std::string bar[BAR_SIZE + 1];
 private:
     bool running;
     bool disconnect;

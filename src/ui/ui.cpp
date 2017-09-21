@@ -124,12 +124,21 @@ int Ui::init()
         COLOR_BACKGROUND
     );
 
-    // FG
-    // init_pair(4, 0, COLOR_GREEN);
-    // init_pair(5, 0, COLOR_YELLOW);
-    // init_pair(6, 0, COLOR_RED);
-    //
-    // init_pair(7, COLOR_BLACK, COLOR_WHITE);
+    bar[BAR_BG].assign(
+        config.getString((theme + ".bar_style.bg").c_str(), u8"░")
+    );
+    bar[BAR_MARK].assign(
+        config.getString((theme + ".bar_style.mark").c_str(), u8"█")
+    );
+    bar[BAR_FG].assign(
+        config.getString((theme + ".bar_style.fg").c_str(), u8"█")
+    );
+    bar[BAR_LOWER].assign(
+        config.getString((theme + ".bar_style.lower").c_str(), u8"▁")
+    );
+    bar[BAR_HIGHER].assign(
+        config.getString((theme + ".bar_style.higher").c_str(), u8"▔")
+    );
 
     running = true;
     current_tab = new Playback();
@@ -154,10 +163,10 @@ int Ui::init()
 
 void Ui::checkPulseAudio()
 {
-    if(!pa.connected && !disconnect) {
+    if (!pa.connected && !disconnect) {
         disconnect = true;
         current_tab = new Fallback();
-    } else if(pa.connected && disconnect){
+    } else if (pa.connected && disconnect) {
         disconnect = false;
         switchTab(tab_index);
     }
@@ -165,7 +174,7 @@ void Ui::checkPulseAudio()
 
 void Ui::switchTab(int index)
 {
-    if(disconnect) {
+    if (disconnect) {
         return;
     }
 
