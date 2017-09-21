@@ -803,10 +803,7 @@ void Pa::ctx_state_cb(pa_context *ctx, void *instance)
         case PA_CONTEXT_CONNECTING:
         case PA_CONTEXT_AUTHORIZING:
         case PA_CONTEXT_SETTING_NAME:
-            break;
-
         case PA_CONTEXT_TERMINATED:
-            exit(EXIT_FAILURE);
             break;
     }
 
