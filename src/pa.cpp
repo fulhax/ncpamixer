@@ -146,7 +146,7 @@ bool Pa::init()
     return true;
 }
 
-void Pa::ctx_success_cb(pa_context *ctx, int succes, void *instance)
+void Pa::ctx_success_cb(pa_context *ctx, int success, void *instance)
 {
     Pa *p = reinterpret_cast<Pa *>(instance);
     pa_threaded_mainloop_signal(p->pa_ml, 0);

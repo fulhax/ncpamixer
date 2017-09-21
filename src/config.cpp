@@ -74,10 +74,8 @@ void Config::init(const char *conf)
     }
 
     if (strlen(filename) == 0) {
-        const char *confdir = nullptr;
+        const char *confdir = getenv("XDG_CONFIG_HOME");
         char file[255] = {"/ncpamixer.conf"};
-
-        confdir = getenv("XDG_CONFIG_HOME");
 
         if (confdir == nullptr) {
             snprintf(file, sizeof(file), "/.ncpamixer.conf");

@@ -69,7 +69,7 @@ public:
         pa_context *ctx,
         pa_subscription_event_type_t t,
         uint32_t index,
-        void *userdata
+        void *instance
     );
     static void ctx_state_cb(
         pa_context *ctx,
@@ -78,25 +78,25 @@ public:
     static void ctx_success_cb(
         pa_context *ctx,
         int success,
-        void *userdata
+        void *instance
     );
     static void ctx_sinklist_cb(
         pa_context *ctx,
         const pa_sink_info *info,
         int eol,
-        void  *userdata
+        void  *instance
     );
     static void ctx_inputlist_cb(
         pa_context *ctx,
         const pa_sink_input_info *info,
         int eol,
-        void  *userdata
+        void  *instance
     );
     static void ctx_sourcelist_cb(
         pa_context *ctx,
         const pa_source_info *info,
         int eol,
-        void  *userdata
+        void  *instance
     );
     static void ctx_sourceoutputlist_cb(
         pa_context *ctx,

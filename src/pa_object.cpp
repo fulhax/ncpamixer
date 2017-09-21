@@ -92,13 +92,13 @@ void PaObject::move(uint32_t dest)
 }
 
 
-void PaObject::set_active_attribute(const char *attribute)
+void PaObject::set_active_attribute(const char *name)
 {
     if (pa_set_active_attribute != nullptr) {
         pa_operation *o = pa_set_active_attribute(
                               pa.pa_ctx,
                               index,
-                              attribute,
+                              name,
                               NULL,
                               NULL
                           );
@@ -107,12 +107,12 @@ void PaObject::set_active_attribute(const char *attribute)
 }
 
 
-void PaObject::set_default(const char *nname)
+void PaObject::set_default(const char *name)
 {
     if (pa_set_default != nullptr) {
         pa_operation *o = pa_set_default(
                               pa.pa_ctx,
-                              nname,
+                              name,
                               NULL,
                               NULL
                           );
