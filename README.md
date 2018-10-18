@@ -80,6 +80,7 @@ https://github.com/fulhax/fulhax-overlay/tree/master/media-sound/ncpamixer
 * Gentoo kernel 4.12.10, PulseAudio 11.0 and ncurses 6.0-r1
 * Gentoo kernel 4.6.2, PulseAudio 9.0 and ncurses 6.0-r1
 * Arch Linux 4.6.4-1 PulseAudio 9.0 and ncurses 6.0-4
+* Fedora kernel 4.18.10-200, PulseAudio 12.2 and ncurses 6.1-5
 
 ### License
 
