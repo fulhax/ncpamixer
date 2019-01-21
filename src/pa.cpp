@@ -295,13 +295,13 @@ void Pa::update_source_output(const pa_source_output_info *info)
     p->volume = (const pa_volume_t) pa_cvolume_avg(&info->volume);
     p->mute = info->mute;
 
-    strncpy(p->name, info->name, sizeof(p->name));
+    strncpy(p->name, info->name, sizeof(p->name) - 1);
 
     const char *app_name;
     app_name = pa_proplist_gets(info->proplist, PA_PROP_APPLICATION_NAME);
 
     if (app_name != nullptr) {
-        strncpy(p->app_name, app_name, sizeof(p->app_name));
+        strncpy(p->app_name, app_name, sizeof(p->app_name) - 1);
     }
 
     notify_update();
@@ -330,8 +330,8 @@ void Pa::update_source(const pa_source_info *info)
     p->volume = (const pa_volume_t) pa_cvolume_avg(&info->volume);
     p->mute = info->mute;
 
-    strncpy(p->name, info->description, sizeof(p->name));
-    strncpy(p->pa_name, info->name, sizeof(p->pa_name));
+    strncpy(p->name, info->description, sizeof(p->name) - 1);
+    strncpy(p->pa_name, info->name, sizeof(p->pa_name) - 1);
 
     if (newObj) {
         create_monitor_stream_for_paobject(p);
@@ -413,8 +413,8 @@ void Pa::update_sink(const pa_sink_info *info)
     p->volume = (const pa_volume_t) pa_cvolume_avg(&info->volume);
     p->mute = info->mute;
 
-    strncpy(p->name, info->description, sizeof(p->name));
-    strncpy(p->pa_name, info->name, sizeof(p->pa_name));
+    strncpy(p->name, info->description, sizeof(p->name) - 1);
+    strncpy(p->pa_name, info->name, sizeof(p->pa_name) - 1);
 
     p->updatePorts(info->ports, info->n_ports);
 
