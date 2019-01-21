@@ -33,6 +33,7 @@ Ui::Ui()
     hide_indicator = false;
     hide_top = false;
     hide_bottom = false;
+    static_bar = false;
 }
 
 Ui::~Ui()
@@ -151,6 +152,8 @@ int Ui::init()
     } else {
         hide_bottom = true;
     }
+
+    static_bar = config.getBool((theme + ".static_bar").c_str(), false);
 
     indicator.assign(
         config.getString((theme + ".default_indicator").c_str(), u8"♦ ")

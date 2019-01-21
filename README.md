@@ -58,13 +58,14 @@ You find them in ncpamixer.conf
 | set_volume_80 | 8 | Set volume to 80% |
 | set_volume_90 | 9 | Set volume to 90% |
 | set_volume_100 | Unbound | Set volume to 100% |
+| toggle_static | Unbound | Toggle barmode static/none static |
 
 ### Dependencies
 * PulseAudio :alien:
 * ncurses
 
 ### Build dependencies
-* CMake 
+* CMake
 * C++14 compatible compiler
 
 ### Install

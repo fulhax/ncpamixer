@@ -57,14 +57,11 @@ void Tab::draw()
                      (PA_VOLUME_NORM * 1.5f);
 
         if (has_volume) {
-            volumeBar(
-                ui.width,
-                ui.height,
-                0,
-                baseY + 3,
-                perc,
-                i.second->peak
-            );
+            if (ui.static_bar) {
+                volumeBar(ui.width, ui.height, 0, baseY + 3, perc, perc);
+            } else {
+                volumeBar(ui.width, ui.height, 0, baseY + 3, perc, i.second->peak);
+            }
         } else { // Configuration
             if (i.first == selected_index) {
                 wattron(ui.window, COLOR_PAIR(COLOR_SELECTED));
@@ -296,6 +293,8 @@ void Tab::handleEvents(const char *event)
             selected_index = i->first;
             selected_block++;
         }
+    } else if (!strcmp("toggle_static", event)) {
+        ui.static_bar = !ui.static_bar;
     } else if (!strcmp("volume_up", event)) {
         if (selected_pobj != nullptr) {
             selected_pobj->step_volume(1);
@@ -671,7 +670,7 @@ void Tab::volumeBar(int w, int h, int px, int py, float vol, float peak)
 {
     auto dw = static_cast<float>(w);
 
-    int pw = static_cast<int>(dw * peak + 0.1f);
+    int pw = static_cast<int>(dw * peak);
     int vw = static_cast<int>(dw * vol);
     int fw = w - pw;
 

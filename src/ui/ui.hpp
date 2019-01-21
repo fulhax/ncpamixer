@@ -68,6 +68,7 @@ public:
     bool hide_indicator;
     bool hide_top;
     bool hide_bottom;
+    bool static_bar;
 private:
     bool running;
     bool disconnect;
