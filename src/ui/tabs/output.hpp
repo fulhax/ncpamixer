@@ -2,13 +2,12 @@
 #define OUTPUT_HPP_
 
 #include "../tab.hpp"
-#include <inttypes.h>
 
 class Output : public Tab
 {
 public:
     Output();
-    ~Output();
+    ~Output() override = default;
 };
 
 #endif // PLAYBACK_HPP_

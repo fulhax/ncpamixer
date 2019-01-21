@@ -1,11 +1,11 @@
 #include "playback.hpp"
 
-#include <string.h>
 #include <ncurses.h>
-#include <inttypes.h>
 
-#include <vector>
 #include <algorithm>
+#include <cinttypes>
+#include <cstring>
+#include <vector>
 
 #include "pa.hpp"
 
@@ -15,9 +15,4 @@ Playback::Playback()
     toggle = &pulse.PA_SINKS;
 
     selected_index = pulse.exists(*object, -1);
-}
-
-Playback::~Playback()
-{
-
 }

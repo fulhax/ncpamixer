@@ -2,13 +2,12 @@
 #define PLAYBACK_HPP_
 
 #include "../tab.hpp"
-#include <inttypes.h>
 
 class Playback : public Tab
 {
 public:
     Playback();
-    ~Playback();
+    ~Playback() override = default;
 };
 
 #endif // PLAYBACK_HPP_

@@ -1,13 +1,16 @@
 #include "fallback.hpp"
 
 #include <ncurses.h>
-#include <string.h>
+
+#include <cstring>
 
 #include "ui/ui.hpp"
 
 void Fallback::draw()
 {
-    static const char fallback[] = {"Establishing connection to PulseAudio. Please wait..."};
+    static const char fallback[] = {
+        "Establishing connection to PulseAudio. Please wait..."
+    };
 
     wattron(ui.window, COLOR_PAIR(COLOR_DEFAULT));
     mvwaddstr(

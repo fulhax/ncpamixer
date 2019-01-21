@@ -1,16 +1,17 @@
 #ifndef PA_HPP
 #define PA_HPP
 
-#include <pulse/pulseaudio.h>
 #include <map>
 #include <mutex>
 
-#include "pa_object.hpp"
+#include <pulse/pulseaudio.h>
+
+#include "pa_card.hpp"
 #include "pa_input.hpp"
+#include "pa_object.hpp"
 #include "pa_sink.hpp"
 #include "pa_source.hpp"
 #include "pa_source_output.hpp"
-#include "pa_card.hpp"
 
 struct PA_SINK {
     uint32_t index;
@@ -29,7 +30,7 @@ struct PA_INPUT : PA_SINK {
     uint32_t sink;
 };
 
-typedef void (*notify_update_callback)();
+using notify_update_callback = void(*)();
 
 class Pa
 {
@@ -73,7 +74,7 @@ public:
     );
     static void ctx_state_cb(
         pa_context *ctx,
-        void *userdata
+        void *instance
     );
     static void ctx_success_cb(
         pa_context *ctx,

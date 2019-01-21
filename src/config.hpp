@@ -8,11 +8,11 @@ class Config
 {
 public:
     Config();
-    virtual ~Config();
+    virtual ~Config() = default;
 
-    void init(const char* conf);
+    void init(const char *conf);
 
-    std::string getString(const char *key, std::string def);
+    std::string getString(const char *key, const std::string &def);
     int getInt(const char *key, int def);
     bool getBool(const char *key, bool def);
     bool keyExists(const char *key);

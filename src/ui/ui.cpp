@@ -1,22 +1,22 @@
 #include "ui.hpp"
 
-#include <string.h>
-#include <stdio.h>
-#include <unistd.h>
 #include <sys/ioctl.h>
+#include <unistd.h>
 
+#include <cstdio>
+#include <cstring>
 #include <string>
 
 #include "config.hpp"
 
-#include "tabs/playback.hpp"
-#include "tabs/recording.hpp"
-#include "tabs/output.hpp"
-#include "tabs/input.hpp"
 #include "tabs/configuration.hpp"
 #include "tabs/fallback.hpp"
+#include "tabs/input.hpp"
+#include "tabs/output.hpp"
+#include "tabs/playback.hpp"
+#include "tabs/recording.hpp"
 
-#define KEY_ALT(x) (KEY_F(64 - 26) + (x - 'A'))
+#define KEY_ALT(x) (KEY_F(64 - 26) + ((x) - 'A'))
 
 Ui ui;
 
@@ -37,9 +37,7 @@ Ui::Ui()
 
 Ui::~Ui()
 {
-    if (current_tab != nullptr) {
-        delete current_tab;
-    }
+    delete current_tab;
 }
 
 int Ui::init()
@@ -55,9 +53,7 @@ int Ui::init()
     start_color();
     use_default_colors();
 
-    std::string theme = std::string(
-                            "theme." + config.getString("theme", "default")
-                        );
+    std::string theme = std::string("theme." + config.getString("theme", "default"));
 
     init_pair(
         COLOR_BAR_LOW,
@@ -166,7 +162,7 @@ int Ui::init()
     getmaxyx(stdscr, height, width);
 
     statusbar = newwin(1, width, height - 1, 0);
-    window = newwin(0, width, 0, 0);
+    window = newwin(height - 1, width, 0, 0);
 
     keypad(window, true);
     nodelay(window, true);
@@ -198,9 +194,7 @@ void Ui::switchTab(int index)
         return;
     }
 
-    if (current_tab != nullptr) {
-        delete current_tab;
-    }
+    delete current_tab;
 
     tab_index = index;
 
@@ -236,7 +230,7 @@ void Ui::handleInput()
     set_escdelay(0);
 
     int input = wgetch(window);
-    const char *event = 0;
+    const char *event = nullptr;
 
     if (input == ERR) {
         return;
@@ -245,7 +239,7 @@ void Ui::handleInput()
     switch (input) {
         case KEY_RESIZE:
             getmaxyx(stdscr, height, width);
-            wresize(window, 0, width);
+            wresize(window, height - 1, width);
 
             mvwin(statusbar, height - 1, 0);
             wresize(statusbar, 1, width);
@@ -264,15 +258,17 @@ void Ui::handleInput()
                         ).c_str();
 
                 break;
-            } else if (input == 79) {
+            }
+
+            if (input == 79) {
                 input = wgetch(window);
 
                 if (input != -1) {
                     std::string key = std::to_string(input);
 
                     event = config.getString(
-                                ("keycode.f." +  key).c_str(),
-                                "unbound"
+                            ("keycode.f." +  key).c_str(),
+                            "unbound"
                             ).c_str();
 
                     break;

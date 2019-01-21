@@ -1,8 +1,9 @@
 #include "recording.hpp"
 
-#include <string.h>
 #include <ncurses.h>
-#include <inttypes.h>
+
+#include <cinttypes>
+#include <cstring>
 
 #include "pa.hpp"
 
@@ -12,9 +13,4 @@ Recording::Recording()
     toggle = &pulse.PA_SOURCES;
 
     selected_index = pulse.exists(*object, -1);
-}
-
-Recording::~Recording()
-{
-
 }

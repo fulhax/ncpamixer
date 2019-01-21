@@ -11,8 +11,8 @@
 
 #define NUM_TABS 5
 
-#define COLOR_FOREGROUND -1
-#define COLOR_BACKGROUND -1
+#define COLOR_FOREGROUND (-1)
+#define COLOR_BACKGROUND (-1)
 
 enum TABS {
     TAB_PLAYBACK = 0,

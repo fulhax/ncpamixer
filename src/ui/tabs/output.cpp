@@ -1,8 +1,9 @@
 #include "output.hpp"
 
-#include <string.h>
 #include <ncurses.h>
-#include <inttypes.h>
+
+#include <cinttypes>
+#include <cstring>
 
 #include "pa.hpp"
 
@@ -12,9 +13,4 @@ Output::Output()
     toggle = nullptr;
 
     selected_index = pulse.exists(*object, -1);
-}
-
-Output::~Output()
-{
-
 }

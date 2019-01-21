@@ -1,12 +1,13 @@
 #include "config.hpp"
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <pwd.h>
-#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 #include <string>
 
@@ -16,12 +17,7 @@ Config config;
 
 Config::Config()
 {
-    memset(filename, 0, sizeof(filename));
-}
-
-Config::~Config()
-{
-
+    memset(&filename[0], 0, sizeof(filename));
 }
 
 const char *Config::getHomeDir()
@@ -32,13 +28,13 @@ const char *Config::getHomeDir()
         return homedir;
     }
 
-    passwd pwd;
+    passwd pwd = {nullptr};
     passwd *result;
     char *buf;
     size_t bufsize;
     bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
 
-    if (bufsize == (size_t)(-1)) {
+    if (bufsize == static_cast<size_t>(-1)) {
         bufsize = 16384;
     }
 
@@ -58,7 +54,7 @@ const char *Config::getHomeDir()
 
 bool Config::fileExists(const char *name)
 {
-    struct stat buffer;
+    struct stat buffer = {0};
     return (stat(name, &buffer) == 0);
 }
 
@@ -66,23 +62,23 @@ void Config::init(const char *conf)
 {
     if (strlen(conf) != 0) {
         if (fileExists(conf)) {
-            snprintf(filename, sizeof(filename), "%s", conf);
+            snprintf(&filename[0], sizeof(filename), "%s", conf);
         } else {
             fprintf(stderr, "Unable to find config file %s.\n", conf);
             exit(EXIT_FAILURE);
         }
     }
 
-    if (strlen(filename) == 0) {
+    if (strlen(&filename[0]) == 0) {
         const char *confdir = getenv("XDG_CONFIG_HOME");
         char file[255] = {"/ncpamixer.conf"};
 
         if (confdir == nullptr) {
-            snprintf(file, sizeof(file), "/.ncpamixer.conf");
+            snprintf(&file[0], sizeof(file), "/.ncpamixer.conf");
             confdir = getHomeDir();
         }
 
-        snprintf(filename, sizeof(filename), "%s%s", confdir, file);
+        snprintf(&filename[0], sizeof(filename), "%s%s", confdir, &file[0]);
     }
 
     for (;;) {
@@ -90,7 +86,7 @@ void Config::init(const char *conf)
             fprintf(
                 stderr,
                 "Unable to find config file %s, creating default config.\n",
-                filename
+                &filename[0]
             );
 
             createDefault();
@@ -102,21 +98,21 @@ void Config::init(const char *conf)
 
 int Config::readConfig()
 {
-    FILE *f = fopen(filename, "rb");
+    FILE *f = fopen(&filename[0], "rb");
 
-    if (f) {
-        while (!feof(f)) {
+    if (f != nullptr) {
+        while (feof(f) == 0) {
             char line[MAX_LINE] = {0};
             bool instring = false;
             std::string key;
             std::string val;
             std::string *current = &key;
 
-            if (fgets(line, MAX_LINE, f) == nullptr) {
+            if (fgets(&line[0], MAX_LINE, f) == nullptr) {
                 break;
             }
 
-            char *tmp = line;
+            char *tmp = &line[0];
 
             while (*tmp != '\0' && *tmp != '\n' && *tmp != '\r') {
                 if (*tmp == '=') {
@@ -145,13 +141,15 @@ int Config::readConfig()
     return 0;
 }
 
-std::string Config::getString(const char *key, std::string def)
+std::string Config::getString(const char *key, const std::string &def)
 {
     auto conf = config.find(key);
 
     if (conf == config.end()) {
         config[key] = def;
     }
+
+    fprintf(stderr, "%s == %s (%s)\n", key, config[key].c_str(), def.c_str());
 
     return config[key];
 }
@@ -165,34 +163,22 @@ int Config::getInt(const char *key, int def)
 bool Config::getBool(const char *key, bool def)
 {
     std::string ret = getString(key, (def) ? "true" : "false");
-
-    if (ret == "1" || ret == "yes" || ret == "true") {
-        return true;
-    }
-
-    return false;
+    return (ret == "1" || ret == "yes" || ret == "true");
 }
 
 bool Config::keyExists(const char *key)
 {
     auto conf = config.find(key);
-
-    if (conf == config.end()) {
-        return false;
-    }
-
-    return true;
+    return !(conf == config.end());
 }
 
 bool Config::keyEmpty(const char *key)
 {
     if (keyExists(key)) {
-        if (config[key] == "") {
-            return true;
-        }
+        return (config[key].empty());
     }
 
-    return false;
+    return true;
 }
 
 void Config::createDefault()
@@ -206,9 +192,9 @@ void Config::createDefault()
     // triangle   ▲ \u25b2
     // https://en.wikipedia.org/wiki/Block_Elements
 
-    FILE *f = fopen(filename, "w");
+    FILE *f = fopen(&filename[0], "w");
 
-    if (f) {
+    if (f != nullptr) {
         fprintf(
             f,
             "\"theme\" = \"default\"\n"

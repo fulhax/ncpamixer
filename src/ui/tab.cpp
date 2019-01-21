@@ -1,14 +1,14 @@
 #include "tab.hpp"
 
-#include <string.h>
-#include <ncurses.h>
 #include <menu.h>
+#include <ncurses.h>
 
-#include <string>
-#include <vector>
-#include <map>
-#include <utility>
 #include <algorithm>
+#include <cstring>
+#include <map>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "config.hpp"
 #include "ui.hpp"
@@ -27,6 +27,7 @@ void Tab::draw()
         if (ui.hide_top) {
             BLOCK_SIZE -= 1;
         }
+
         if (ui.hide_bottom) {
             BLOCK_SIZE -= 1;
         }
@@ -102,7 +103,7 @@ void Tab::draw()
         if (toggle != nullptr) {
             auto rel = toggle->find(i.second->getRelation());
 
-            if(rel != toggle->end()) {
+            if (rel != toggle->end()) {
                 char *name = rel->second->name;
 
                 if (name != nullptr) {
@@ -110,11 +111,11 @@ void Tab::draw()
                     unsigned int sink_pos = ui.width - 1 - len;
 
                     mvwaddstr(
-                            ui.window,
-                            baseY + 1,
-                            sink_pos,
-                            name
-                            );
+                        ui.window,
+                        baseY + 1,
+                        sink_pos,
+                        name
+                    );
 
                     toggle_len += strlen(name);
                 }
@@ -142,7 +143,7 @@ void Tab::draw()
 
         if (app_name != nullptr && strlen(i.second->getAppName()) > 0) {
             app = std::string(i.second->getAppName()) + ": " +
-                std::string(i.second->name);
+                  std::string(i.second->name);
         } else {
             app = i.second->name;
         }
@@ -238,7 +239,7 @@ void Tab::handleEvents(const char *event)
 
     selected_index = pulse.exists(*object, selected_index);
 
-    if (selected_index == (uint32_t)(-1)) {
+    if (selected_index == static_cast<uint32_t>(-1)) {
         return;
     }
 
@@ -248,6 +249,7 @@ void Tab::handleEvents(const char *event)
         if (ui.hide_top) {
             BLOCK_SIZE -= 1;
         }
+
         if (ui.hide_bottom) {
             BLOCK_SIZE -= 1;
         }
@@ -428,9 +430,14 @@ void Tab::handleEvents(const char *event)
     }
 }
 
-uint32_t Tab::dropDown(int x, int y,
-                       std::vector<PaObjectAttribute *> attributes,
-                       uint32_t current, uint32_t width, uint32_t height)
+uint32_t Tab::dropDown(
+    int x,
+    int y,
+    std::vector<PaObjectAttribute *> attributes,
+    uint32_t current,
+    uint32_t width,
+    uint32_t height
+)
 {
     if (attributes.empty()) {
         return -1;
@@ -445,8 +452,14 @@ uint32_t Tab::dropDown(int x, int y,
     return dropDown(x, y, tmp, current, width, height);
 }
 
-uint32_t Tab::dropDown(int x, int y, std::map<uint32_t, PaObject *> objects,
-                       uint32_t current, uint32_t width, uint32_t height)
+uint32_t Tab::dropDown(
+    int x,
+    int y,
+    std::map<uint32_t, PaObject *> objects,
+    uint32_t current,
+    uint32_t width,
+    uint32_t height
+)
 {
     if (objects.empty()) {
         return -1;
@@ -464,8 +477,14 @@ uint32_t Tab::dropDown(int x, int y, std::map<uint32_t, PaObject *> objects,
     return dropDown(x, y, tmp, current, width, height);
 }
 
-uint32_t Tab::dropDown(int x, int y, std::map<uint32_t, std::string> objects,
-                       uint32_t current, uint32_t width, uint32_t height)
+uint32_t Tab::dropDown(
+    int x,
+    int y,
+    std::map<uint32_t, std::string> objects,
+    uint32_t current,
+    uint32_t width,
+    uint32_t height
+)
 {
     if (objects.empty()) {
         return -1;
@@ -555,29 +574,22 @@ uint32_t Tab::dropDown(int x, int y, std::map<uint32_t, std::string> objects,
 
     while (selecting) {
         int input = wgetch(menu_win);
-        const char *event = 0;
+        const char *event = nullptr;
 
         if (input == ERR) {
             continue;
         }
 
-        switch (input) {
-            case KEY_RESIZE:
-                selecting = false;
-                continue;
+        if (input == KEY_RESIZE) {
+            selecting = false;
+            continue;
+        }
 
-            default:
-                std::string key = std::to_string(input);
-                event = config.getString(
-                            ("keycode." +  key).c_str(),
-                            "unbound"
-                        ).c_str();
+        std::string key = std::to_string(input);
+        event = config.getString(("keycode." +  key).c_str(), "unbound").c_str();
 
-                if (!strcmp("unbound", event)) {
-                    continue;
-                }
-
-                break;
+        if (!strcmp("unbound", event)) {
+            continue;
         }
 
         if (!strcmp("select", event)) {
@@ -657,10 +669,10 @@ void Tab::selectBox(int w, int px, int py, bool selected)
 
 void Tab::volumeBar(int w, int h, int px, int py, float vol, float peak)
 {
-    float dw = static_cast<float>(w);
+    auto dw = static_cast<float>(w);
 
-    int pw = dw * peak + 0.1f;
-    int vw = dw * vol;
+    int pw = static_cast<int>(dw * peak + 0.1f);
+    int vw = static_cast<int>(dw * vol);
     int fw = w - pw;
 
     unsigned int color;
@@ -675,9 +687,9 @@ void Tab::volumeBar(int w, int h, int px, int py, float vol, float peak)
         if (i >= vw) {
             color = COLOR_VOLUME_PEAK;
         } else {
-            color = getVolumeColor(
-                        (static_cast<float>(i) / w) * 100
-                    );
+            color = getVolumeColor(static_cast<int>(
+                static_cast<float>(i) / w * 100.0f
+            ));
         }
 
         wattron(ui.window, COLOR_PAIR(color));
@@ -686,9 +698,9 @@ void Tab::volumeBar(int w, int h, int px, int py, float vol, float peak)
     }
 
     for (int i = 0; i < fw; i++) {
-        color = getBarColor(
-                    (static_cast<float>(pw + i) / w) * 100
-                );
+        color = getBarColor(static_cast<int>(
+            static_cast<float>(pw + i) / w * 100.0f
+        ));
 
         wattron(ui.window, COLOR_PAIR(color));
         mvwaddstr(ui.window, py, pw + i, ui.bar[BAR_BG].c_str());
@@ -703,11 +715,11 @@ void Tab::volumeBar(int w, int h, int px, int py, float vol, float peak)
         wattron(ui.window, COLOR_PAIR(COLOR_VOLUME_INDICATOR));
 
         mvwaddstr(
-                ui.window,
-                py,
-                vw - 1,
-                ui.bar[BAR_INDICATOR].c_str()
-                ); // Mark volume
+            ui.window,
+            py,
+            vw - 1,
+            ui.bar[BAR_INDICATOR].c_str()
+        ); // Mark volume
 
         wattroff(ui.window, COLOR_PAIR(COLOR_VOLUME_INDICATOR));
     }

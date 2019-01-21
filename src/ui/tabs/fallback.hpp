@@ -6,8 +6,8 @@
 class Fallback : public Tab
 {
 public:
-    Fallback() {}
-    virtual ~Fallback() {}
+    Fallback() = default;
+    virtual ~Fallback() = default;
 
     void draw();
     static void handleEvents(const char *event)

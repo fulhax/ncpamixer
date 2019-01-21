@@ -2,13 +2,12 @@
 #define CONFIGURATION_HPP_
 
 #include "../tab.hpp"
-#include <inttypes.h>
 
 class Configuration : public Tab
 {
 public:
     Configuration();
-    ~Configuration();
+    ~Configuration() override = default;
 
     // void draw();
 };

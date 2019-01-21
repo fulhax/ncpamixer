@@ -2,8 +2,8 @@
 #define TAB_HPP_
 
 #include <map>
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "pa.hpp"
 
@@ -25,7 +25,7 @@ public:
         total_blocks = 0;
         has_volume = true;
     }
-    virtual ~Tab() {}
+    virtual ~Tab() = default;
 
     virtual void draw();
     void handleEvents(const char *event);
