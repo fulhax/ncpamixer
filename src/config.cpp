@@ -149,8 +149,6 @@ std::string Config::getString(const char *key, const std::string &def)
         config[key] = def;
     }
 
-    fprintf(stderr, "%s == %s (%s)\n", key, config[key].c_str(), def.c_str());
-
     return config[key];
 }
 
