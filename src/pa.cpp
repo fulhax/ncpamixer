@@ -199,7 +199,7 @@ void Pa::deletePaobjects(std::map<uint32_t, PaObject *> *objects)
 {
     std::lock_guard<std::mutex> lk(inputMtx);
 
-    for (auto i = objects->begin(); i != objects->end(); i++) {
+    for (auto i = objects->begin(); i != objects->end(); ) {
         delete i->second;
         i = objects->erase(i);
     }
@@ -214,6 +214,7 @@ void Pa::remove_paobject(std::map<uint32_t, PaObject *> *objects,
         if (i->first == index) {
             delete i->second;
             i = objects->erase(i);
+            return;
         }
     }
 }
