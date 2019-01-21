@@ -9,10 +9,10 @@
 
 Configuration::Configuration()
 {
-    object = &pa.PA_CARDS;
+    object = &pulse.PA_CARDS;
     toggle = nullptr;
 
-    selected_index = pa.exists(*object, -1);
+    selected_index = pulse.exists(*object, -1);
 
     has_volume = false;
 }

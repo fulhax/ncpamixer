@@ -32,7 +32,7 @@ void PaObject::set_volume(float perc)
 {
 
     if (pa_set_volume != nullptr) {
-        pa_threaded_mainloop_lock(pa.pa_ml);
+        pa_threaded_mainloop_lock(pulse.pa_ml);
 
         int vol = (PA_VOLUME_NORM * perc);
         pa_cvolume cvol;
@@ -42,14 +42,14 @@ void PaObject::set_volume(float perc)
 
 
         pa_operation *o = pa_set_volume(
-                              pa.pa_ctx,
+                              pulse.pa_ctx,
                               index,
                               &cvol,
                               NULL,
                               NULL
                           );
         pa_operation_unref(o);
-        pa_threaded_mainloop_unlock(pa.pa_ml);
+        pa_threaded_mainloop_unlock(pulse.pa_ml);
     }
 }
 
@@ -67,7 +67,7 @@ void PaObject::toggle_mute()
 {
     if (pa_set_mute != nullptr) {
         pa_operation *o = pa_set_mute(
-                              pa.pa_ctx,
+                              pulse.pa_ctx,
                               index,
                               !mute,
                               NULL,
@@ -82,7 +82,7 @@ void PaObject::move(uint32_t dest)
 {
     if (pa_move != nullptr) {
         pa_operation *o = pa_move(
-                              pa.pa_ctx,
+                              pulse.pa_ctx,
                               index,
                               dest,
                               NULL,
@@ -97,7 +97,7 @@ void PaObject::set_active_attribute(const char *name)
 {
     if (pa_set_active_attribute != nullptr) {
         pa_operation *o = pa_set_active_attribute(
-                              pa.pa_ctx,
+                              pulse.pa_ctx,
                               index,
                               name,
                               NULL,
@@ -112,7 +112,7 @@ void PaObject::set_default(const char *name)
 {
     if (pa_set_default != nullptr) {
         pa_operation *o = pa_set_default(
-                              pa.pa_ctx,
+                              pulse.pa_ctx,
                               name,
                               NULL,
                               NULL

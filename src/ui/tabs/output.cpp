@@ -8,10 +8,10 @@
 
 Output::Output()
 {
-    object = &pa.PA_SINKS;
+    object = &pulse.PA_SINKS;
     toggle = nullptr;
 
-    selected_index = pa.exists(*object, -1);
+    selected_index = pulse.exists(*object, -1);
 }
 
 Output::~Output()

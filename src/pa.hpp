@@ -149,6 +149,6 @@ private:
     std::mutex sinkMtx;
 };
 
-extern Pa pa;
+extern Pa pulse;
 
 #endif

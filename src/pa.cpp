@@ -10,7 +10,7 @@
 
 // https://freedesktop.org/software/pulseaudio/doxygen/introspect_8h.html
 
-Pa pa;
+Pa pulse;
 
 Pa::Pa()
 {
@@ -201,7 +201,7 @@ void Pa::deletePaobjects(std::map<uint32_t, PaObject *> *objects)
 
     for (auto i = objects->begin(); i != objects->end(); i++) {
         delete i->second;
-        objects->erase(i);
+        i = objects->erase(i);
     }
 }
 
@@ -213,7 +213,7 @@ void Pa::remove_paobject(std::map<uint32_t, PaObject *> *objects,
     for (auto i = objects->begin(); i != objects->end(); i++) {
         if (i->first == index) {
             delete i->second;
-            objects->erase(i);
+            i = objects->erase(i);
         }
     }
 }

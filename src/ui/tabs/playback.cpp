@@ -11,10 +11,10 @@
 
 Playback::Playback()
 {
-    object = &pa.PA_INPUTS;
-    toggle = &pa.PA_SINKS;
+    object = &pulse.PA_INPUTS;
+    toggle = &pulse.PA_SINKS;
 
-    selected_index = pa.exists(*object, -1);
+    selected_index = pulse.exists(*object, -1);
 }
 
 Playback::~Playback()

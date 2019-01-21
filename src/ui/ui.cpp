@@ -183,10 +183,10 @@ int Ui::init()
 
 void Ui::checkPulseAudio()
 {
-    if (!pa.connected && !disconnect) {
+    if (!pulse.connected && !disconnect) {
         disconnect = true;
         current_tab = new Fallback();
-    } else if (pa.connected && disconnect) {
+    } else if (pulse.connected && disconnect) {
         disconnect = false;
         switchTab(tab_index);
     }

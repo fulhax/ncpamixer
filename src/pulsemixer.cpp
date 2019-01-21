@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
 
     config.init(conf);
 
-    pa.init();
+    pulse.init();
 
     if (ui.init() > 0) {
         ui.run();

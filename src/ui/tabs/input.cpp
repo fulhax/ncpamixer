@@ -8,10 +8,10 @@
 
 Input::Input()
 {
-    object = &pa.PA_SOURCES;
+    object = &pulse.PA_SOURCES;
     toggle = nullptr;
 
-    selected_index = pa.exists(*object, -1);
+    selected_index = pulse.exists(*object, -1);
 }
 
 Input::~Input()

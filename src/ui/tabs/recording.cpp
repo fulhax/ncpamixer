@@ -8,10 +8,10 @@
 
 Recording::Recording()
 {
-    object = &pa.PA_SOURCE_OUTPUTS;
-    toggle = &pa.PA_SOURCES;
+    object = &pulse.PA_SOURCE_OUTPUTS;
+    toggle = &pulse.PA_SOURCES;
 
-    selected_index = pa.exists(*object, -1);
+    selected_index = pulse.exists(*object, -1);
 }
 
 Recording::~Recording()

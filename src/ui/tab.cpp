@@ -141,7 +141,7 @@ void Tab::draw()
         const char *app_name = i.second->getAppName();
 
         if (app_name != nullptr && strlen(i.second->getAppName()) > 0) {
-            app = std::string(i.second->getAppName()) + ": " + 
+            app = std::string(i.second->getAppName()) + ": " +
                 std::string(i.second->name);
         } else {
             app = i.second->name;
@@ -236,7 +236,7 @@ void Tab::handleEvents(const char *event)
         return;
     }
 
-    selected_index = pa.exists(*object, selected_index);
+    selected_index = pulse.exists(*object, selected_index);
 
     if (selected_index == (uint32_t)(-1)) {
         return;
@@ -717,7 +717,7 @@ unsigned int Tab::getVolumeColor(int p)
 {
     if (p < 33) {
         return COLOR_VOLUME_LOW;
-    } else if (p >= 33 && p < 66) {
+    } else if (p < 66) {
         return COLOR_VOLUME_MID;
     } else {
         return COLOR_VOLUME_HIGH;
@@ -728,7 +728,7 @@ unsigned int Tab::getBarColor(int p)
 {
     if (p < 33) {
         return COLOR_BAR_LOW;
-    } else if (p >= 33 && p < 66) {
+    } else if (p < 66) {
         return COLOR_BAR_MID;
     } else {
         return COLOR_BAR_HIGH;
