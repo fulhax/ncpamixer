@@ -605,7 +605,7 @@ void Pa::create_monitor_stream_for_paobject(PaObject *po)
     }
 }
 
-void Pa::set_notify_update_cb(notify_update_callback cb)
+void Pa::set_notify_update_cb(const notify_update_callback &cb)
 {
     notify_update_cb = cb;
 }

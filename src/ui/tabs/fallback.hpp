@@ -9,7 +9,7 @@ public:
     Fallback() = default;
     virtual ~Fallback() = default;
 
-    void draw();
+    void draw() override;
     static void handleEvents(const char *event)
     {
         // Do nothing

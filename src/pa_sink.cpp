@@ -20,7 +20,8 @@ void PaSink::updatePorts(pa_sink_port_info **info, uint32_t n_ports)
     clearAttributes();
 
     for (uint32_t i = 0; i < n_ports; i++) {
-        PaPort *p = new PaPort;
+        auto *p = new PaPort;
+
         snprintf(p->name, sizeof(p->name), "%s", info[i]->name);
         snprintf(
             p->description,

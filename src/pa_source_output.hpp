@@ -8,7 +8,7 @@ public:
     PaSourceOutput();
     uint32_t source;
 
-    virtual uint32_t getRelation() {
+    uint32_t getRelation() override {
         return source;
     };
 };

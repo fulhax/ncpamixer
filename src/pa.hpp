@@ -127,7 +127,7 @@ public:
         uint32_t stream_index
     );
 
-    void set_notify_update_cb(notify_update_callback cb);
+    void set_notify_update_cb(const notify_update_callback &cb);
     void notify_update();
 
     std::map<uint32_t, PaObject *> PA_INPUTS;

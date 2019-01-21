@@ -9,12 +9,12 @@ public:
     uint32_t sink;
     char app_name[255];
 
-    virtual uint32_t getRelation() {
+    uint32_t getRelation() override {
         return sink;
     };
 
-    virtual char* getAppName() {
-        return app_name;
+    char* getAppName() override {
+        return &app_name[0];
     };
 };
 
