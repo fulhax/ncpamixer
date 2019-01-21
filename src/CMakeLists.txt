@@ -1,7 +1,9 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.1)
 
 project(ncpamixer)
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
@@ -66,7 +68,6 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
     ${CMAKE_THREAD_LIBS_INIT}
     )
 
-target_compile_options(${CMAKE_PROJECT_NAME} PUBLIC "-std=c++14")
 target_compile_options(${CMAKE_PROJECT_NAME} PUBLIC "-Werror")
 target_compile_options(${CMAKE_PROJECT_NAME} PUBLIC "-Wall")
 target_compile_options(${CMAKE_PROJECT_NAME} PUBLIC "-Wpedantic")
