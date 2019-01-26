@@ -2,6 +2,7 @@ BASE_DIR=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
 BUILD_TYPE=debug
 BUILD_INFO=Debug
+
 ifdef RELEASE_DBG_INFO
 	BUILD_TYPE=release_dbg_info
 	BUILD_INFO=RelWithDebInfo
@@ -15,6 +16,10 @@ endif
 
 ifdef PREFIX
 	CMAKE_PREFIX="-DCMAKE_INSTALL_PREFIX=$(shell readlink -f $(PREFIX))"
+endif
+
+ifdef USE_WIDE
+	CMAKE_USE_WIDE="-DUSE_WIDE=TRUE"
 endif
 
 .PHONY: all build distclean clean release release_dbg_info debug install verifybuildtype
@@ -32,6 +37,7 @@ build/Makefile: src/CMakeLists.txt
 		-DCMAKE_BUILD_TYPE=$(BUILD_INFO) \
 		-DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
 		"$(BASE_DIR)/src" \
+		 $(CMAKE_USE_WIDE) \
 		 $(CMAKE_PREFIX)
 
 verifybuildtype: build/Makefile
