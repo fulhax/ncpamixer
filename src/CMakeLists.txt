@@ -8,10 +8,16 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
+if(NOT USE_WIDE)
+    set(USE_WIDE TRUE)
+endif()
+
+set(CURSES_NEED_WIDE USE_WIDE)
 set(CURSES_NEED_NCURSES TRUE)
 find_package(Curses REQUIRED)
 # See https://gitlab.kitware.com/cmake/cmake/issues/18517
 find_library(MENU_LIBRARY menu)
+
 find_package(PulseAudio REQUIRED)
 find_package(Threads REQUIRED)
 
