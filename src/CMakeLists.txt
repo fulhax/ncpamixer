@@ -7,16 +7,18 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
+
 set(CURSES_NEED_NCURSES TRUE)
-set(CURSES_NEED_WIDE TRUE)
-
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-
-find_package(CursesW REQUIRED)
+find_package(Curses REQUIRED)
+# See https://gitlab.kitware.com/cmake/cmake/issues/18517
+find_library(MENU_LIBRARY menu)
 find_package(PulseAudio REQUIRED)
 find_package(Threads REQUIRED)
 
 string(TIMESTAMP BUILD_DATE "%Y-%m-%d %H:%M")
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "empty")
+endif()
 string(TOLOWER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
 
 execute_process(COMMAND
@@ -64,6 +66,7 @@ add_executable(${CMAKE_PROJECT_NAME} ${COMMON_SRC} ${UI_RESOURCES})
 
 target_link_libraries(${CMAKE_PROJECT_NAME}
     ${CURSES_LIBRARIES}
+    ${MENU_LIBRARY}
     ${PULSEAUDIO_LIBRARY}
     ${CMAKE_THREAD_LIBS_INIT}
     )
@@ -75,10 +78,12 @@ target_compile_options(${CMAKE_PROJECT_NAME} PUBLIC "-Wpedantic")
 install(TARGETS ${CMAKE_PROJECT_NAME} RUNTIME DESTINATION bin)
 
 # uninstall target
-configure_file(
-    "${CMAKE_MODULE_PATH}/cmake_uninstall.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
-    IMMEDIATE @ONLY)
+if(NOT TARGET uninstall)
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+        IMMEDIATE @ONLY)
 
-add_custom_target(uninstall
-    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+    add_custom_target(uninstall
+        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+endif()
