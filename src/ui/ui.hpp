@@ -6,7 +6,7 @@
 #include <condition_variable>
 #include <vector>
 
-#include "pa.hpp"
+#include "audio.hpp"
 #include "tab.hpp"
 
 #define NUM_TABS 5

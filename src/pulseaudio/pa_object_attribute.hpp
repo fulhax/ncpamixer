@@ -1,9 +1,8 @@
 #ifndef PA_OBJECT_ATTRIBUTE_
 #define PA_OBJECT_ATTRIBUTE_
 
-class PaObjectAttribute
+struct PaObjectAttribute
 {
-public:
     char name[255];
     char description[255];
 };

@@ -7,12 +7,12 @@
 #include <cstring>
 #include <vector>
 
-#include "pa.hpp"
+#include <audio.hpp>
 
 Playback::Playback()
 {
     object = &pulse.PA_INPUTS;
     toggle = &pulse.PA_SINKS;
 
-    selected_index = pulse.exists(*object, -1);
+    selected_index = audio->exists(*object, -1);
 }

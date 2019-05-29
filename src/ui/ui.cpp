@@ -43,7 +43,10 @@ Ui::~Ui()
 
 int Ui::init()
 {
-    setlocale(LC_ALL, "");
+    #ifdef __linux__
+        setlocale(LC_ALL, "");
+    #endif
+
     initscr();
     curs_set(0);
 
@@ -182,10 +185,10 @@ int Ui::init()
 
 void Ui::checkPulseAudio()
 {
-    if (!pulse.connected && !disconnect) {
+    if (!audio->connected && !disconnect) {
         disconnect = true;
         current_tab = new Fallback();
-    } else if (pulse.connected && disconnect) {
+    } else if (audio->connected && disconnect) {
         disconnect = false;
         switchTab(tab_index);
     }

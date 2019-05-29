@@ -4,7 +4,7 @@
 #include <map>
 #include <mutex>
 
-#include <pulse/pulseaudio.h>
+#include <audio.hpp>
 
 #include "pa_card.hpp"
 #include "pa_input.hpp"
@@ -32,7 +32,7 @@ struct PA_INPUT : PA_SINK {
 
 using notify_update_callback = void(*)();
 
-class Pa
+class Pa : public Audio
 {
 public:
     Pa();

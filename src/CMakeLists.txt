@@ -17,7 +17,10 @@ find_package(Curses REQUIRED)
 # See https://gitlab.kitware.com/cmake/cmake/issues/18517
 find_library(MENU_LIBRARY menu)
 
-find_package(PulseAudio REQUIRED)
+if(PULSEAUDIO)
+    find_package(PulseAudio REQUIRED)
+endif()
+
 find_package(Threads REQUIRED)
 
 string(TIMESTAMP BUILD_DATE "%Y-%m-%d %H:%M")
@@ -31,24 +34,27 @@ execute_process(COMMAND
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
     OUTPUT_VARIABLE GIT_VERSION
     ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
+)
 
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/version.cpp.in"
     "${CMAKE_CURRENT_BINARY_DIR}/version.cpp"
-    )
+)
 
 message("-- Got version ${GIT_VERSION}")
 
+set(PULSEAUDIO_SRC
+    "pulseaudio/pa_object.cpp"
+    "pulseaudio/pa_card.cpp"
+    "pulseaudio/pa_sink.cpp"
+    "pulseaudio/pa_input.cpp"
+    "pulseaudio/pa_source.cpp"
+    "pulseaudio/pa_source_output.cpp"
+    "pulseaudio/pa.cpp"
+)
+
 set(COMMON_SRC
     "pulsemixer.cpp"
-    "pa_object.cpp"
-    "pa_card.cpp"
-    "pa_sink.cpp"
-    "pa_input.cpp"
-    "pa_source.cpp"
-    "pa_source_output.cpp"
-    "pa.cpp"
     "config.cpp"
     "ui/ui.cpp"
     "ui/tab.cpp"
@@ -59,13 +65,13 @@ set(COMMON_SRC
     "ui/tabs/configuration.cpp"
     "ui/tabs/fallback.cpp"
     "${CMAKE_CURRENT_BINARY_DIR}/version.cpp"
-    )
+)
 
 include_directories(
     "src/"
     ${CURSES_INCLUDE_DIR}
     ${PULSEAUDIO_INCLUDE_DIR}
-    )
+)
 
 add_executable(${CMAKE_PROJECT_NAME} ${COMMON_SRC} ${UI_RESOURCES})
 
@@ -74,7 +80,7 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
     ${MENU_LIBRARY}
     ${PULSEAUDIO_LIBRARY}
     ${CMAKE_THREAD_LIBS_INIT}
-    )
+)
 
 target_compile_options(${CMAKE_PROJECT_NAME} PUBLIC "-Werror")
 target_compile_options(${CMAKE_PROJECT_NAME} PUBLIC "-Wall")
@@ -87,8 +93,10 @@ if(NOT TARGET uninstall)
     configure_file(
         "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
         "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
-        IMMEDIATE @ONLY)
+        IMMEDIATE @ONLY
+    )
 
     add_custom_target(uninstall
-        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake
+    )
 endif()

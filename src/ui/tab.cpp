@@ -53,14 +53,27 @@ void Tab::draw()
 
         blocks_drawn++;
 
-        float perc = static_cast<float>(i.second->volume) /
-                     (PA_VOLUME_NORM * 1.5f);
+        float perc = static_cast<float>(i.second->getVolume()) / (VOLUME_NORM * 1.5f);
 
         if (has_volume) {
             if (ui.static_bar) {
-                volumeBar(ui.width, ui.height, 0, baseY + 3, perc, perc);
+                volumeBar(
+                    ui.width,
+                    ui.height,
+                    0,
+                    baseY + 3,
+                    perc,
+                    perc
+                );
             } else {
-                volumeBar(ui.width, ui.height, 0, baseY + 3, perc, i.second->peak);
+                volumeBar(
+                    ui.width,
+                    ui.height,
+                    0,
+                    baseY + 3,
+                    perc,
+                    i.second->getPeak()
+                );
             }
         } else { // Configuration
             if (i.first == selected_index) {
@@ -69,12 +82,13 @@ void Tab::draw()
                 wattron(ui.window, COLOR_PAIR(COLOR_DEFAULT));
             }
 
-            if (i.second->active_attribute != nullptr) {
+            auto attr = i.second->getActiveAttribute();
+            if (attr != nullptr) {
                 mvwaddstr(
                     ui.window,
                     baseY + 3,
                     3,
-                    i.second->active_attribute->description
+                    &attr->description[0]
                 );
                 borderBox(ui.width - 2, 2, 1, baseY + 2);
             }
@@ -92,36 +106,34 @@ void Tab::draw()
             wattron(ui.window, COLOR_PAIR(COLOR_DEFAULT));
         }
 
-        char label[255] = {0};
+        char label[PATH_MAX] = {0};
         std::string app = {0};
 
-        int toggle_len = 0;
+        uint16_t toggle_len = 0;
 
         if (toggle != nullptr) {
             auto rel = toggle->find(i.second->getRelation());
 
             if (rel != toggle->end()) {
-                char *name = rel->second->name;
+                uint16_t len = rel->second->getName().length();
 
-                if (name != nullptr) {
-                    unsigned int len = strlen(name);
-                    unsigned int sink_pos = ui.width - 1 - len;
+                if (len > 0) {
+                    uint16_t sink_pos = ui.width - 1 - len;
 
                     mvwaddstr(
                         ui.window,
                         baseY + 1,
                         sink_pos,
-                        name
+                        rel->second->getName().c_str()
                     );
 
-                    toggle_len += strlen(name);
+                    toggle_len += len;
                 }
             }
         } else {
-            if (i.second->active_attribute != nullptr && has_volume) {
-                unsigned int len = strlen(
-                                       i.second->active_attribute->description
-                                   );
+            auto attr = i.second->getActiveAttribute();
+            if (attr != nullptr && has_volume) {
+                unsigned int len = strlen(&attr->description[0]);
 
                 unsigned int sink_pos = ui.width - 1 - len;
 
@@ -129,33 +141,30 @@ void Tab::draw()
                     ui.window,
                     baseY + 1,
                     sink_pos,
-                    i.second->active_attribute->description
+                    &attr->description[0]
                 );
 
-                toggle_len += strlen(i.second->active_attribute->description);
+                toggle_len += strlen(&attr->description[0]);
             }
         }
 
-        const char *app_name = i.second->getAppName();
-
-        if (app_name != nullptr && strlen(i.second->getAppName()) > 0) {
-            app = std::string(i.second->getAppName()) + ": " +
-                  std::string(i.second->name);
+        if (i.second->getAppName().length() > 0) {
+            app = i.second->getAppName() + ": " + i.second->getName();
         } else {
-            app = i.second->name;
+            app = i.second->getName();
         }
 
-        if (i.second->is_default) {
+        if (i.second->isDefault()) {
             app = ui.indicator + app;
         }
 
         bool dots = false;
 
-        while (1) {
+        while (true) {
             if (has_volume) {
-                if (i.second->mute) {
+                if (i.second->getMuted()) {
                     snprintf(
-                        label,
+                        &label[0],
                         sizeof(label),
                         "%s%s (muted)",
                         app.c_str(),
@@ -163,17 +172,17 @@ void Tab::draw()
                     );
                 } else {
                     snprintf(
-                        label,
+                        &label[0],
                         sizeof(label),
                         "%s%s (%d%%)",
                         app.c_str(),
                         (dots) ? "..." : "",
-                        static_cast<int>(perc * (1.5f * 100.f) + 0.1f)
+                        static_cast<int>(perc * (1.5F * 100.F) + 0.1F)
                     );
                 }
             } else {
                 snprintf(
-                    label,
+                    &label[0],
                     sizeof(label),
                     "%s%s",
                     app.c_str(),
@@ -181,7 +190,7 @@ void Tab::draw()
                 );
             }
 
-            int output_len = strlen(label);
+            int output_len = strlen(&label[0]);
             int volume_len = (has_volume) ? 4 : 1;
 
             if ((output_len + toggle_len + volume_len) > ui.width) {
@@ -197,7 +206,7 @@ void Tab::draw()
             }
         }
 
-        mvwaddstr(ui.window, baseY + 1, 1, label);
+        mvwaddstr(ui.window, baseY + 1, 1, &label[0]);
 
         if (current_block == selected_block) {
             wattroff(ui.window, COLOR_PAIR(COLOR_SELECTED));
@@ -234,7 +243,7 @@ void Tab::handleEvents(const char *event)
         return;
     }
 
-    selected_index = pulse.exists(*object, selected_index);
+    selected_index = audio->exists(*object, selected_index);
 
     if (selected_index == static_cast<uint32_t>(-1)) {
         return;
@@ -254,17 +263,17 @@ void Tab::handleEvents(const char *event)
 
     auto pai = object->find(selected_index);
 
-    PaObject *selected_pobj = nullptr;
+    AudioObject *selected_pobj = nullptr;
 
     if (pai != object->end()) {
         selected_pobj = pai->second;
     }
 
-    if (!strcmp("mute", event)) {
+    if (strcmp("mute", event) == 0) {
         if (selected_pobj != nullptr) {
-            selected_pobj->toggle_mute();
+            selected_pobj->toggleMute();
         }
-    } else if (!strcmp("move_first", event)) {
+    } else if (strcmp("move_first", event) == 0) {
         auto i = object->begin();
 
         if (i != object->end()) {
@@ -272,86 +281,86 @@ void Tab::handleEvents(const char *event)
             selected_block = 0;
         }
 
-    } else if (!strcmp("move_last", event)) {
+    } else if (strcmp("move_last", event) == 0) {
         auto i = object->rbegin();
 
         if (i != object->rend()) {
             selected_index = i->first;
             selected_block = object->size() - 1;
         }
-    } else if (!strcmp("move_up", event)) {
+    } else if (strcmp("move_up", event) == 0) {
         auto i = std::prev(object->find(selected_index), 1);
 
         if (i != object->end()) {
             selected_index = i->first;
             selected_block = (selected_block > 0) ? selected_block - 1 : 0;
         }
-    } else if (!strcmp("move_down", event)) {
+    } else if (strcmp("move_down", event) == 0) {
         auto i = std::next(object->find(selected_index), 1);
 
         if (i != object->end()) {
             selected_index = i->first;
             selected_block++;
         }
-    } else if (!strcmp("toggle_static", event)) {
+    } else if (strcmp("toggle_static", event) == 0) {
         ui.static_bar = !ui.static_bar;
-    } else if (!strcmp("volume_up", event)) {
+    } else if (strcmp("volume_up", event) == 0) {
         if (selected_pobj != nullptr) {
-            selected_pobj->step_volume(1);
+            selected_pobj->stepVolume(1);
         }
-    } else if (!strcmp("volume_down", event)) {
+    } else if (strcmp("volume_down", event) == 0) {
         if (selected_pobj != nullptr) {
-            selected_pobj->step_volume(-1);
+            selected_pobj->stepVolume(-1);
         }
-    } else if (!strcmp("set_volume_0", event)) {
+    } else if (strcmp("set_volume_0", event) == 0) {
         if (selected_pobj != nullptr) {
-            selected_pobj->set_volume(0);
+            selected_pobj->setVolume(0);
         }
-    } else if (!strcmp("set_volume_10", event)) {
+    } else if (strcmp("set_volume_10", event) == 0) {
         if (selected_pobj != nullptr) {
-            selected_pobj->set_volume(.1f);
+            selected_pobj->setVolume(.1F);
         }
-    } else if (!strcmp("set_volume_20", event)) {
+    } else if (strcmp("set_volume_20", event) == 0) {
         if (selected_pobj != nullptr) {
-            selected_pobj->set_volume(.2f);
+            selected_pobj->setVolume(.2F);
         }
-    } else if (!strcmp("set_volume_30", event)) {
+    } else if (strcmp("set_volume_30", event) == 0) {
         if (selected_pobj != nullptr) {
-            selected_pobj->set_volume(.3f);
+            selected_pobj->setVolume(.3F);
         }
-    } else if (!strcmp("set_volume_40", event)) {
+    } else if (strcmp("set_volume_40", event) == 0) {
         if (selected_pobj != nullptr) {
-            selected_pobj->set_volume(.4f);
+            selected_pobj->setVolume(.4F);
         }
-    } else if (!strcmp("set_volume_50", event)) {
+    } else if (strcmp("set_volume_50", event) == 0) {
         if (selected_pobj != nullptr) {
-            selected_pobj->set_volume(.5f);
+            selected_pobj->setVolume(.5F);
         }
-    } else if (!strcmp("set_volume_60", event)) {
+    } else if (strcmp("set_volume_60", event) == 0) {
         if (selected_pobj != nullptr) {
-            selected_pobj->set_volume(.6f);
+            selected_pobj->setVolume(.6F);
         }
-    } else if (!strcmp("set_volume_70", event)) {
+    } else if (strcmp("set_volume_70", event) == 0) {
         if (selected_pobj != nullptr) {
-            selected_pobj->set_volume(.7f);
+            selected_pobj->setVolume(.7F);
         }
-    } else if (!strcmp("set_volume_80", event)) {
+    } else if (strcmp("set_volume_80", event) == 0) {
         if (selected_pobj != nullptr) {
-            selected_pobj->set_volume(.8f);
+            selected_pobj->setVolume(.8F);
         }
-    } else if (!strcmp("set_volume_90", event)) {
+    } else if (strcmp("set_volume_90", event) == 0) {
         if (selected_pobj != nullptr) {
-            selected_pobj->set_volume(.9f);
+            selected_pobj->setVolume(.9F);
         }
-    } else if (!strcmp("set_volume_100", event)) {
+    } else if (strcmp("set_volume_100", event) == 0) {
         if (selected_pobj != nullptr) {
-            selected_pobj->set_volume(1.0f);
+            selected_pobj->setVolume(1.0f);
         }
-    } else if (!strcmp("set_default", event)) {
+    } else if (strcmp("set_default", event) == 0) {
         if (selected_pobj != nullptr) {
-            selected_pobj->set_default(selected_pobj->pa_name);
+            selected_pobj->setDefault();
         }
-    } else if (!strcmp("switch", event)) {
+    } else if (strcmp("switch", event) == 0) {
         if (selected_pobj != nullptr && toggle != nullptr) {
             auto current_toggle = toggle->find(selected_pobj->getRelation());
             current_toggle = std::next(current_toggle, 1);
@@ -362,21 +371,9 @@ void Tab::handleEvents(const char *event)
 
             selected_pobj->move(current_toggle->first);
         } else if (selected_pobj != nullptr) {
-            uint32_t current_attribute = selected_pobj->getRelation();
-
-            if (current_attribute + 1 < selected_pobj->attributes.size()) {
-                current_attribute++;
-            } else {
-                current_attribute = 0;
-            }
-
-            if (selected_pobj->attributes.size() > 0) {
-                selected_pobj->set_active_attribute(
-                    selected_pobj->attributes[current_attribute]->name
-                );
-            }
+            selected_pobj->switchNextAttribute();
         }
-    } else if (!strcmp("dropdown", event)) {
+    } else if (strcmp("dropdown", event) == 0) {
         uint32_t selected = 0;
 
 
@@ -415,14 +412,14 @@ void Tab::handleEvents(const char *event)
             selected = dropDown(
                            x,
                            y,
-                           selected_pobj->attributes,
+                           selected_pobj->getAttributes(),
                            selected_pobj->getRelation(),
                            w
                        );
 
             if (selected != static_cast<uint32_t>(-1)) {
-                selected_pobj->set_active_attribute(
-                    selected_pobj->attributes[selected]->name
+                selected_pobj->setActiveAttribute(
+                    selected_pobj->getAttribute(selected)->name
                 );
             }
         }
@@ -432,7 +429,7 @@ void Tab::handleEvents(const char *event)
 uint32_t Tab::dropDown(
     int x,
     int y,
-    std::vector<PaObjectAttribute *> attributes,
+    AudioObjectAttributes attributes,
     uint32_t current,
     uint32_t width,
     uint32_t height
@@ -454,7 +451,7 @@ uint32_t Tab::dropDown(
 uint32_t Tab::dropDown(
     int x,
     int y,
-    std::map<uint32_t, PaObject *> objects,
+    AudioObjects objects,
     uint32_t current,
     uint32_t width,
     uint32_t height
@@ -468,9 +465,9 @@ uint32_t Tab::dropDown(
     std::for_each(
         objects.begin(),
         objects.end(),
-    [&tmp](std::pair<const uint32_t, PaObject *> const & obj) {
-        tmp[obj.first] = obj.second->name;
-    }
+        [&tmp](auto const & obj) {
+            tmp[obj.first] = obj.second->getName();
+        }
     );
 
     return dropDown(x, y, tmp, current, width, height);
@@ -503,8 +500,8 @@ uint32_t Tab::dropDown(
     uint32_t selected = 0;
 
     std::vector<ITEM *> items;
-    MENU *menu = 0;
-    WINDOW *menu_win = 0;
+    MENU *menu = nullptr;
+    WINDOW *menu_win = nullptr;
 
     for (auto &i : objects) {
         ITEM *item = new ITEM;
@@ -587,11 +584,11 @@ uint32_t Tab::dropDown(
         std::string key = std::to_string(input);
         event = config.getString(("keycode." +  key).c_str(), "unbound").c_str();
 
-        if (!strcmp("unbound", event)) {
+        if (strcmp("unbound", event) == 0) {
             continue;
         }
 
-        if (!strcmp("select", event)) {
+        if (strcmp("select", event) == 0) {
             clrtoeol();
 
             ITEM *item = current_item(menu);
@@ -600,15 +597,15 @@ uint32_t Tab::dropDown(
                        )->first;
 
             selecting = false;
-        } else if (!strcmp("move_down", event)) {
+        } else if (strcmp("move_down", event) == 0) {
             menu_driver(menu, REQ_DOWN_ITEM);
-        } else if (!strcmp("move_up", event)) {
+        } else if (strcmp("move_up", event) == 0) {
             menu_driver(menu, REQ_UP_ITEM);
-        } else if (!strcmp("page_up", event)) {
+        } else if (strcmp("page_up", event) == 0) {
             menu_driver(menu, REQ_SCR_UPAGE);
-        } else if (!strcmp("page_down", event)) {
+        } else if (strcmp("page_down", event) == 0) {
             menu_driver(menu, REQ_SCR_DPAGE);
-        } else if (!strcmp("quit", event)) {
+        } else if (strcmp("quit", event) == 0) {
             selecting = false;
         }
 

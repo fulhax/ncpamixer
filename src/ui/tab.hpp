@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "pa.hpp"
+#include "audio.hpp"
 
 class Tab
 {
@@ -13,8 +13,8 @@ public:
     bool has_volume;
     uint32_t selected_index;
 
-    std::map<uint32_t, PaObject *> *object;
-    std::map<uint32_t, PaObject *> *toggle;
+    std::map<uint32_t, AudioObject*> *object;
+    std::map<uint32_t, AudioObject*> *toggle;
 
     Tab()
     {
@@ -44,7 +44,7 @@ public:
         int x,
         int y,
         std::map<uint32_t,
-        PaObject *> objects,
+        AudioObject*> objects,
         uint32_t current = 0,
         uint32_t width = 0,
         uint32_t height = 0
@@ -61,7 +61,7 @@ public:
     static uint32_t dropDown(
         int x,
         int y,
-        std::vector<PaObjectAttribute *> attributes,
+        std::vector<AudioObjectAttribute*> attributes,
         uint32_t current = 0,
         uint32_t width = 0,
         uint32_t height = 0

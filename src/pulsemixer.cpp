@@ -1,16 +1,16 @@
-#include <stdio.h>
 #include <getopt.h>
-#include <string.h>
-#include <pulse/pulseaudio.h>
 #include <wordexp.h>
-#include <errno.h>
 
+#include <cerrno>
+#include <cstdio>
+#include <cstring>
 #include <vector>
 
-#include "ui/ui.hpp"
-#include "pa.hpp"
+#include "audio.hpp"
 #include "config.hpp"
 #include "version.hpp"
+
+#include "ui/ui.hpp"
 
 void version()
 {
@@ -80,8 +80,7 @@ int main(int argc, char *argv[])
     }
 
     config.init(conf);
-
-    pulse.init();
+    audio->init();
 
     if (ui.init() > 0) {
         ui.run();

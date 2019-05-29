@@ -4,30 +4,16 @@
 #include <pulse/pulseaudio.h>
 #include <vector>
 
-#include "pa_object_attribute.hpp"
+#include <audio.hpp>
 #include "pa_port.hpp"
 
 enum pa_object_t {SINK, INPUT, SOURCE, SOURCE_OUTPUT, CARD};
 
-class PaObject
+class PaObject : public AudioObject
 {
-public:
-    PaObject();
-    virtual ~PaObject();
     pa_object_t type;
-
-    uint32_t index;
-    char name[255];
-    char pa_name[255];
-    bool is_default;
-
-    unsigned int channels;
     pa_volume_t volume;
-    bool mute;
-
-    uint32_t monitor_index;
     pa_stream *monitor_stream;
-    float peak;
 
     PaObjectAttribute *active_attribute;
     std::vector<PaObjectAttribute *> attributes;
@@ -66,13 +52,16 @@ public:
         pa_context_success_cb_t,
         void *
     );
+public:
+    PaObject();
+    virtual ~PaObject();
 
-    void set_volume(float perc);
-    void step_volume(int dir);
+    void setVolume(float perc);
+    void stepVolume(int dir);
     void move(uint32_t dest);
-    void toggle_mute();
-    void set_active_attribute(const char* name);
-    void set_default(const char* name);
+    void toggleMute();
+    void setActiveAttribute(const char* name);
+    void setDefault(const char* name);
     void clearAttributes();
 
     virtual char *getAppName()
