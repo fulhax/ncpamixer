@@ -615,25 +615,6 @@ void Tab::borderBox(int w, int h, int px, int py)
     wattroff(ui.window, COLOR_PAIR(COLOR_BORDER));
 }
 
-void Tab::selectBox(int w, int px, int py, bool selected)
-{
-    if (selected) {
-        wattron(ui.window, COLOR_PAIR(COLOR_SELECTED));
-    } else {
-        wattron(ui.window, COLOR_PAIR(COLOR_DEFAULT));
-    }
-
-    mvwaddstr(ui.window, py + 1, px + 2, "Digital Stereo (HDMI) Output");
-
-    if (selected) {
-        wattroff(ui.window, COLOR_PAIR(COLOR_SELECTED));
-    } else {
-        wattroff(ui.window, COLOR_PAIR(COLOR_DEFAULT));
-    }
-
-    borderBox(w, 2, px, py);
-}
-
 void Tab::volumeBar(int w, int h, int px, int py, float vol, float peak)
 {
     auto dw = static_cast<float>(w);

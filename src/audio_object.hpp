@@ -7,26 +7,25 @@
 
 class Audio;
 
-struct AudioObjectAttribute
-{
+struct AudioObjectAttribute {
     std::string name;
     std::string description;
 };
 
-using AudioObjectAttributes = std::vector<AudioObjectAttribute*>;
+using AudioObjectAttributes = std::vector<AudioObjectAttribute *>;
 
 class AudioObject
 {
-    Audio* parent;
+    Audio *parent;
 
     std::string name;
 protected:
-    AudioObjectAttribute* active_attribute;
+    AudioObjectAttribute *active_attribute;
     AudioObjectAttributes attributes;
 
 public:
-    void setParent(Audio* parent);
-    Audio* getParent();
+    void setParent(Audio *parent);
+    Audio *getParent();
 
     AudioObject();
     virtual ~AudioObject() = default;
@@ -39,15 +38,10 @@ public:
     virtual void setVolume(float perc) = 0;
     virtual void setMuted(bool mute) = 0;
 
-    /* virtual setAppName() { return ; }; */
-    virtual void setName(std::string name);
-
     virtual void stepVolume(int dir) = 0;
     virtual void toggleMute() = 0;
 
     virtual float getVolume() = 0;
-    virtual std::string getAppName() { return ""; };
-    virtual std::string getName() { return name; };
     virtual uint32_t getRelation() = 0;
     virtual void setRelation(uint32_t relation) = 0;
 
@@ -56,39 +50,25 @@ public:
     virtual void setPeak(float peak) = 0;
     virtual bool getMuted() = 0;
 
-    virtual AudioObjectAttribute* getActiveAttribute() {
-        return active_attribute;
-    }
-    virtual AudioObjectAttributes getAttributes() {
-        return attributes;
-    }
-    virtual AudioObjectAttribute* getAttribute(uint32_t idx) {
-        return attributes[idx];
-    }
-    void setActiveAttribute(const std::string &name) {
-        for (auto attr : attributes) {
-            if (attr->name == name) {
-                active_attribute = attr;
-                return;
-            }
-        }
-    }
-    void switchNextAttribute() {
-        if (!attributes.empty()) {
-            uint32_t current_attribute = getRelation() + 1;
+    virtual void setName(std::string name);
 
-            if (current_attribute >= attributes.size()) {
-                current_attribute = 0;
-            }
+    virtual AudioObjectAttribute *getActiveAttribute();
+    virtual AudioObjectAttributes getAttributes();
+    virtual AudioObjectAttribute *getAttribute(uint32_t idx);
+    void setActiveAttribute(const std::string &name);
+    void switchNextAttribute();
+    void addAttribute(AudioObjectAttribute *attr);
 
-            switchActiveAttribute(getAttribute(current_attribute)->name);
-        }
-    }
-    void addAttribute(AudioObjectAttribute* attr) {
-        attributes.push_back(attr);
-    }
+    virtual std::string getAppName()
+    {
+        return "";
+    };
+    virtual std::string getName()
+    {
+        return name;
+    };
 };
 
-using AudioObjects = std::map<uint32_t, AudioObject*>;
+using AudioObjects = std::map<uint32_t, AudioObject *>;
 
 #endif // AUDIO_OBJECT_HPP_

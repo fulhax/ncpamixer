@@ -41,7 +41,6 @@ public:
 
     void setRelation(uint32_t relation) override {}
 
-    std::string getPaName();
     void setPaName(std::string pa_name) {
         this->pa_name = std::move(pa_name);
     }
@@ -78,7 +77,7 @@ public:
         this->index = index;
     }
 
-    uint32_t getIndex() {
+    uint32_t getIndex() const {
         return index;
     }
 
@@ -90,7 +89,7 @@ public:
         return monitor_stream;
     }
 
-    uint32_t getMonitorIndex() {
+    uint32_t getMonitorIndex() const {
         return monitor_index;
     }
 
@@ -98,7 +97,7 @@ public:
         monitor_stream = stream;
     }
 
-    bool checkMonitorIndex(uint32_t index) {
+    bool checkMonitorIndex(uint32_t index) const {
         return monitor_index == index;
     }
 

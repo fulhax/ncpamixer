@@ -614,11 +614,6 @@ void Pa::createMonitorStreamForPaObject(PaObject *po)
     }
 }
 
-void Pa::setNotifyUpdateCB(const notify_update_callback &cb)
-{
-    notifyUpdateCB = cb;
-}
-
 void Pa::notifyUpdate()
 {
     if (notifyUpdateCB != nullptr) {

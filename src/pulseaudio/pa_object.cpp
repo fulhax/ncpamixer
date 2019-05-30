@@ -4,12 +4,10 @@
 
 #include <pulseaudio/pa.hpp>
 
-PaObject::PaObject()
+PaObject::PaObject():pa_name(""),volume(0)
 {
     index = 0;
-    pa_name = "";
     channels = 0;
-    volume = 0;
     mute = false;
     monitor_index = 0;
     monitor_stream = nullptr;
@@ -167,8 +165,4 @@ uint32_t PaObject::getRelation()
     }
 
     return UINT32_MAX;
-}
-
-std::string PaObject::getPaName() {
-    return pa_name;
 }

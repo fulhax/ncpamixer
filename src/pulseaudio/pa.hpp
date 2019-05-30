@@ -148,7 +148,6 @@ public:
     float getVolumeNorm() override {
         return PA_VOLUME_NORM;
     }
-    void setNotifyUpdateCB(const notify_update_callback &cb);
     void notifyUpdate();
 
     pa_context *pa_ctx;

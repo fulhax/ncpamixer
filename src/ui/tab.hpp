@@ -31,7 +31,6 @@ public:
     void handleEvents(const char *event);
 
     static void borderBox(int w, int h, int px, int py);
-    static void selectBox(int w, int px, int py, bool selected);
     static void volumeBar(
         int w,
         int h,

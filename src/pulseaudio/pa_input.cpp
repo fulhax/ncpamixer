@@ -2,7 +2,7 @@
 
 #include <cstring>
 
-PaInput::PaInput()
+PaInput::PaInput():app_name("")
 {
     pa_set_volume = &pa_context_set_sink_input_volume;
     pa_set_mute = &pa_context_set_sink_input_mute;
@@ -11,7 +11,6 @@ PaInput::PaInput()
     pa_set_default = nullptr;
 
     sink = 0;
-    app_name = "";
 }
 
 pa_object_t PaInput::getType()

@@ -13,7 +13,7 @@ public:
     pa_object_t getType() override;
 
     uint32_t getRelation() override;
-    void setRelation(uint32_t source) override;
+    void setRelation(uint32_t relation) override;
 };
 
 #endif // PA_SOURCE_
