@@ -34,7 +34,8 @@ public:
     virtual void move(uint32_t dest) = 0;
 
     virtual void switchActiveAttribute(std::string name) = 0;
-    virtual void setDefault() = 0;
+    virtual void switchDefault() = 0;
+
     virtual void setVolume(float perc) = 0;
     virtual void setMuted(bool mute) = 0;
 

@@ -241,21 +241,15 @@ void Pa::setDefaults(const pa_server_info *info)
 {
     std::lock_guard<std::mutex> lk(input_mtx);
 
-/*     for (auto &s : PA_SINKS) { */
-/*         if (!strcmp(s.second->pa_name, info->default_sink_name)) { */
-/*             s.second->is_default = true; */
-/*         } else { */
-/*             s.second->is_default = false; */
-/*         } */
-/*     } */
+    for (auto &s : PA_SINKS) {
+        auto sink = dynamic_cast<PaSink*>(s.second);
+        sink->setDefault(sink->getPaName() == info->default_sink_name);
+    }
 
-/*     for (auto &s : PA_SOURCES) { */
-/*         if (!strcmp(s.second->pa_name, info->default_source_name)) { */
-/*             s.second->is_default = true; */
-/*         } else { */
-/*             s.second->is_default = false; */
-/*         } */
-/*     } */
+    for (auto &s : PA_SOURCES) {
+        auto source = dynamic_cast<PaSource*>(s.second);
+        source->setDefault(source->getPaName() == info->default_source_name);
+    }
 }
 
 void Pa::updateSourceOutput(const pa_source_output_info *info)

@@ -125,7 +125,7 @@ void PaObject::switchActiveAttribute(std::string name)
 }
 
 
-void PaObject::setDefault()
+void PaObject::switchDefault()
 {
     auto pulse = reinterpret_cast<Pa*>(getParent());
     if (pulse == nullptr) {
@@ -135,7 +135,7 @@ void PaObject::setDefault()
     if (pa_set_default != nullptr) {
         pa_operation *o = pa_set_default(
                               pulse->pa_ctx,
-                              getName().c_str(),
+                              getPaName().c_str(),
                               nullptr,
                               nullptr
                           );

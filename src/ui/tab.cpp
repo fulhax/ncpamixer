@@ -294,7 +294,7 @@ void Tab::handleEvents(const char *event)
         } else if (strcmp("set_volume_100", event) == 0) {
             selected_pobj->setVolume(1.0f);
         } else if (strcmp("set_default", event) == 0) {
-            selected_pobj->setDefault();
+            selected_pobj->switchDefault();
         } else if (strcmp("switch", event) == 0) {
             if (toggle != nullptr) {
                 auto current_toggle = toggle->find(selected_pobj->getRelation());

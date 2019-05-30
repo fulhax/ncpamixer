@@ -35,11 +35,15 @@ public:
     void move(uint32_t dest) override;
     void toggleMute() override;
     void switchActiveAttribute(std::string name) override;
-    void setDefault() override;
+    void switchDefault() override;
     void clearAttributes() override;
     uint32_t getRelation() override;
 
     void setRelation(uint32_t relation) override {}
+
+    std::string getPaName() const {
+        return pa_name;
+    }
 
     void setPaName(std::string pa_name) {
         this->pa_name = std::move(pa_name);
@@ -48,15 +52,23 @@ public:
     bool isDefault() override {
         return is_default;
     }
+
+    void setDefault(bool is_default) {
+        this->is_default = is_default;
+    }
+
     float getPeak() override {
         return peak;
     }
+
     void setPeak(float peak) override {
         this->peak = peak;
     }
+
     void setChannels(int channels) {
         this->channels = channels;
     }
+
     bool getMuted() override {
         return mute;
     }
