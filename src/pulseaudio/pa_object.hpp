@@ -34,7 +34,7 @@ public:
     void stepVolume(int dir) override;
     void move(uint32_t dest) override;
     void toggleMute() override;
-    void setActiveAttribute(std::string name) override;
+    void switchActiveAttribute(std::string name) override;
     void setDefault() override;
     void clearAttributes() override;
     uint32_t getRelation() override;

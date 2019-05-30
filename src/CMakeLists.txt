@@ -42,7 +42,7 @@ message("-- Got version ${GIT_VERSION}")
 set(COMMON_SRC
     "audio.cpp"
     "audio_object.cpp"
-    "pulsemixer.cpp"
+    "main.cpp"
     "config.cpp"
     "ui/ui.cpp"
     "ui/tab.cpp"
@@ -56,7 +56,7 @@ set(COMMON_SRC
 )
 
 
-if(USE_PULSEAUDIO)
+if(AUDIOENGINE STREQUAL "pulse")
     find_package(PulseAudio REQUIRED)
     set(COMMON_SRC
         "${COMMON_SRC}"

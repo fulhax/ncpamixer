@@ -13,8 +13,8 @@ public:
     bool has_volume;
     uint32_t selected_index;
 
-    std::map<uint32_t, AudioObject*> *object;
-    std::map<uint32_t, AudioObject*> *toggle;
+    AudioObjects *object;
+    AudioObjects *toggle;
 
     Tab()
     {
@@ -46,8 +46,8 @@ public:
         std::map<uint32_t,
         AudioObject*> objects,
         uint32_t current = 0,
-        uint32_t width = 0,
-        uint32_t height = 0
+        int width = 0,
+        int height = 0
     );
     static uint32_t dropDown(
         int x,
@@ -55,16 +55,16 @@ public:
         std::map<uint32_t,
         std::string> objects,
         uint32_t current = 0,
-        uint32_t width = 0,
-        uint32_t height = 0
+        int width = 0,
+        int height = 0
     );
     static uint32_t dropDown(
         int x,
         int y,
         std::vector<AudioObjectAttribute*> attributes,
         uint32_t current = 0,
-        uint32_t width = 0,
-        uint32_t height = 0
+        int width = 0,
+        int height = 0
     );
 private:
     static void fillW(

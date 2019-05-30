@@ -107,7 +107,7 @@ void PaObject::move(uint32_t dest)
 }
 
 
-void PaObject::setActiveAttribute(std::string name)
+void PaObject::switchActiveAttribute(std::string name)
 {
     auto pulse = reinterpret_cast<Pa*>(getParent());
     if (pulse == nullptr) {
@@ -166,7 +166,7 @@ uint32_t PaObject::getRelation()
         }
     }
 
-    return -1;
+    return UINT32_MAX;
 }
 
 std::string PaObject::getPaName() {

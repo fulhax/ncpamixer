@@ -19,9 +19,9 @@ void PaCard::updateProfiles(pa_card_profile_info *pa_profiles, uint32_t n_profil
     clearAttributes();
 
     for (uint32_t i = 0; i < n_profile; i++) {
-        auto p = new AudioObjectAttribute;
-        p->name = &pa_profiles[i].name[0];
-        p->description = &pa_profiles[i].description[0];
+        auto *p = new AudioObjectAttribute();
+        p->name = std::string(&pa_profiles[i].name[0]);
+        p->description = std::string(&pa_profiles[i].description[0]);
 
         addAttribute(p);
     }

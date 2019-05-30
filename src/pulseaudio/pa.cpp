@@ -14,7 +14,7 @@
 
 Pa::Pa()
 {
-    notify_update_cb = nullptr;
+    notifyUpdateCB = nullptr;
     pa_ml = nullptr;
     pa_api  = nullptr;
     pa_init = false;
@@ -42,7 +42,7 @@ void Pa::clearAllPaObjects()
 }
 
 
-void Pa::do_reconnect(Pa *pa)
+void Pa::doReconnect(Pa *pa)
 {
     if (pa->reconnect_running || pa->isConnected()) {
         return;
@@ -52,7 +52,7 @@ void Pa::do_reconnect(Pa *pa)
     pa->clearAllPaObjects();
 
     while (!pa->isConnected()) {
-        pa->pa_connect();
+        pa->paConnect();
         usleep(500000);
     }
 
@@ -63,13 +63,13 @@ void Pa::reconnect()
 {
 
     if (!reconnect_running && !isConnected()) {
-        std::thread rThread(do_reconnect, this);
+        std::thread rThread(doReconnect, this);
         rThread.detach();
     }
 }
 
 
-bool Pa::pa_connect()
+bool Pa::paConnect()
 {
     if (pa_ctx != nullptr) {
         return false;
@@ -92,8 +92,8 @@ bool Pa::pa_connect()
         return false;
     }
 
-    pa_context_set_state_callback(pa_ctx, &Pa::ctx_state_cb, this);
-    pa_context_set_subscribe_callback(pa_ctx, &Pa::subscribe_cb, this);
+    pa_context_set_state_callback(pa_ctx, &Pa::ctxStateCB, this);
+    pa_context_set_subscribe_callback(pa_ctx, &Pa::subscribeCB, this);
 
     if (pa_context_connect(pa_ctx, nullptr, PA_CONTEXT_NOFAIL, nullptr) < 0) {
         pa_context_disconnect(pa_ctx);
@@ -101,14 +101,14 @@ bool Pa::pa_connect()
         pa_threaded_mainloop_unlock(pa_ml);
         pa_ctx = nullptr;
 
-        connectionMtx.unlock();
+        connection_mtx.unlock();
         reconnect();
         return false;
     }
 
     pa_threaded_mainloop_unlock(pa_ml);
 
-    connectionMtx.unlock();
+    connection_mtx.unlock();
     return true;
 
 }
@@ -137,10 +137,10 @@ bool Pa::init()
         return false;
     }
 
-    return pa_connect();
+    return paConnect();
 }
 
-void Pa::ctx_success_cb(pa_context *ctx, int success, void *instance)
+void Pa::ctxSuccessCB(pa_context *ctx, int success, void *instance)
 {
     auto p = reinterpret_cast<Pa *>(instance);
     if (p == nullptr) {
@@ -150,42 +150,42 @@ void Pa::ctx_success_cb(pa_context *ctx, int success, void *instance)
     pa_threaded_mainloop_signal(p->pa_ml, 0);
 }
 
-void Pa::fetchPaobjects()
+void Pa::fetchPaObjects()
 {
     //pa_threaded_mainloop_lock(pa_ml);
     pa_operation *o;
 
     // get cards
-    o = pa_context_get_card_info_list(pa_ctx, &Pa::ctx_cardlist_cb, this);
+    o = pa_context_get_card_info_list(pa_ctx, &Pa::ctxCardlistCB, this);
     waitOnPaOperation(o);
     pa_operation_unref(o);
 
     // source list cb
-    o = pa_context_get_source_info_list(pa_ctx, &Pa::ctx_sourcelist_cb, this);
+    o = pa_context_get_source_info_list(pa_ctx, &Pa::ctxSourcelistCB, this);
     waitOnPaOperation(o);
     pa_operation_unref(o);
 
     // Sink devices list cb
-    o = pa_context_get_sink_info_list(pa_ctx, &Pa::ctx_sinklist_cb, this);
+    o = pa_context_get_sink_info_list(pa_ctx, &Pa::ctxSinklistCB, this);
     waitOnPaOperation(o);
     pa_operation_unref(o);
 
     // Sink input list (application) cb
-    o = pa_context_get_sink_input_info_list(pa_ctx, &Pa::ctx_inputlist_cb, this);
+    o = pa_context_get_sink_input_info_list(pa_ctx, &Pa::ctxInputlistCB, this);
     waitOnPaOperation(o);
     pa_operation_unref(o);
 
     // source outputs list cb
     o = pa_context_get_source_output_info_list(
             pa_ctx,
-            &Pa::ctx_sourceoutputlist_cb,
+            &Pa::ctxSourceoutputlistCB,
             this
         );
     waitOnPaOperation(o);
     pa_operation_unref(o);
 
     // Get server info
-    o = pa_context_get_server_info(pa_ctx, &Pa::ctx_serverinfo_cb, this);
+    o = pa_context_get_server_info(pa_ctx, &Pa::ctxServerinfoCB, this);
     waitOnPaOperation(o);
     pa_operation_unref(o);
 
@@ -194,7 +194,7 @@ void Pa::fetchPaobjects()
 
 void Pa::deletePaObjects(AudioObjects *objects)
 {
-    std::lock_guard<std::mutex> lk(inputMtx);
+    std::lock_guard<std::mutex> lk(input_mtx);
 
     for (auto i = objects->begin(); i != objects->end();) {
         delete i->second;
@@ -204,7 +204,7 @@ void Pa::deletePaObjects(AudioObjects *objects)
 
 void Pa::removePaObject(AudioObjects *objects, uint32_t index)
 {
-    std::lock_guard<std::mutex> lk(inputMtx);
+    std::lock_guard<std::mutex> lk(input_mtx);
 
     for (auto i = objects->begin(); i != objects->end(); i++) {
         if (i->first == index) {
@@ -227,7 +227,7 @@ void Pa::exitPa()
 uint32_t Pa::exists(AudioObjects objects, uint32_t index)
 {
     if (objects.empty()) {
-        return -1;
+        return UINT32_MAX;
     }
 
     if ((objects.find(index) == objects.end())) {
@@ -239,7 +239,7 @@ uint32_t Pa::exists(AudioObjects objects, uint32_t index)
 
 void Pa::setDefaults(const pa_server_info *info)
 {
-    std::lock_guard<std::mutex> lk(inputMtx);
+    std::lock_guard<std::mutex> lk(input_mtx);
 
 /*     for (auto &s : PA_SINKS) { */
 /*         if (!strcmp(s.second->pa_name, info->default_sink_name)) { */
@@ -258,9 +258,9 @@ void Pa::setDefaults(const pa_server_info *info)
 /*     } */
 }
 
-void Pa::update_source_output(const pa_source_output_info *info)
+void Pa::updateSourceOutput(const pa_source_output_info *info)
 {
-    std::lock_guard<std::mutex> lk(inputMtx);
+    std::lock_guard<std::mutex> lk(input_mtx);
 
     // https://github.com/pulseaudio/pavucontrol/blob/master/src/mainwindow.cc#L802
     const char *app = pa_proplist_gets(info->proplist, PA_PROP_APPLICATION_ID);
@@ -301,12 +301,12 @@ void Pa::update_source_output(const pa_source_output_info *info)
         p->setAppName(app_name);
     }
 
-    notify_update();
+    notifyUpdate();
 }
 
-void Pa::update_source(const pa_source_info *info)
+void Pa::updateSource(const pa_source_info *info)
 {
-    std::lock_guard<std::mutex> lk(inputMtx);
+    std::lock_guard<std::mutex> lk(input_mtx);
 
     PaSource *p = nullptr;
 
@@ -332,7 +332,7 @@ void Pa::update_source(const pa_source_info *info)
     p->initVolume(pa_cvolume_avg(&info->volume));
 
     if (newObj) {
-        create_monitor_stream_for_paobject(p);
+        createMonitorStreamForPaObject(p);
     }
 
     p->updatePorts(info->ports, info->n_ports);
@@ -341,12 +341,12 @@ void Pa::update_source(const pa_source_info *info)
         p->setActiveAttribute(info->active_port->name);
     }
 
-    notify_update();
+    notifyUpdate();
 }
 
-void Pa::update_card(const pa_card_info *info)
+void Pa::updateCard(const pa_card_info *info)
 {
-    std::lock_guard<std::mutex> lk(inputMtx);
+    std::lock_guard<std::mutex> lk(input_mtx);
 
     PaCard *p = nullptr;
 
@@ -382,17 +382,17 @@ void Pa::update_card(const pa_card_info *info)
         p->setName(info->name);
     }
 
-    notify_update();
+    notifyUpdate();
 }
 
-void Pa::update_sink(const pa_sink_info *info)
+void Pa::updateSink(const pa_sink_info *info)
 {
-    std::lock_guard<std::mutex> lk(inputMtx);
+    std::lock_guard<std::mutex> lk(input_mtx);
 
     PaSink *p = nullptr;
 
     if (PA_SINKS.count(info->index) == 0) {
-        p = new PaSink;
+        p = new PaSink();
         PA_SINKS[info->index] = p;
         p->setMonitorStream(nullptr);
     } else {
@@ -416,13 +416,13 @@ void Pa::update_sink(const pa_sink_info *info)
         p->setActiveAttribute(info->active_port->name);
     }
 
-    notify_update();
+    notifyUpdate();
 }
 
-void Pa::update_input(const pa_sink_input_info *info)
+void Pa::updateInput(const pa_sink_input_info *info)
 {
 
-    std::lock_guard<std::mutex> lk(inputMtx);
+    std::lock_guard<std::mutex> lk(input_mtx);
 
     PaInput *p = nullptr;
 
@@ -459,18 +459,18 @@ void Pa::update_input(const pa_sink_input_info *info)
     }
 
     if (sink_changed) {
-        create_monitor_stream_for_paobject(p);
+        createMonitorStreamForPaObject(p);
     }
 
-    notify_update();
+    notifyUpdate();
 }
 
 // https://github.com/pulseaudio/pavucontrol/blob/master/src/mainwindow.cc#L541
-void Pa::read_callback(pa_stream *s, size_t length, void *instance)
+void Pa::readCallback(pa_stream *s, size_t length, void *instance)
 {
     auto pa = reinterpret_cast<Pa *>(instance);
 
-    std::lock_guard<std::mutex> lk(pa->inputMtx);
+    std::lock_guard<std::mutex> lk(pa->input_mtx);
     const void *data;
     float v;
 
@@ -505,35 +505,35 @@ void Pa::read_callback(pa_stream *s, size_t length, void *instance)
         pa->updatePeakByDeviceId(pa_stream_get_device_index(s), v);
     }
 
-    pa->notify_update();
+    pa->notifyUpdate();
 }
 
 void Pa::updatePeakByDeviceId(uint32_t index, float peak)
 {
     for (auto &s : PA_SINKS) {
         auto sink = dynamic_cast<PaSink*>(s.second);
-        if (sink->checkMonitorIndex(index)) {
+        if (sink != nullptr && sink->checkMonitorIndex(index)) {
             sink->setPeak(peak);
         }
     }
 
     for (auto &s : PA_SOURCES) {
         auto source = dynamic_cast<PaSource*>(s.second);
-        if (source->checkMonitorIndex(index)) {
+        if (source != nullptr && source->checkMonitorIndex(index)) {
             source->setPeak(peak);
         }
     }
 
     for (auto &s : PA_SOURCE_OUTPUTS) {
         auto output = dynamic_cast<PaSourceOutput*>(s.second);
-        if (output->checkMonitorIndex(index)) {
+        if (output != nullptr && output->checkMonitorIndex(index)) {
             output->setPeak(peak);
         }
     }
 }
 
 // https://github.com/pulseaudio/pavucontrol/blob/master/src/mainwindow.cc#L574
-pa_stream *Pa::create_monitor_stream_for_source(
+pa_stream *Pa::createMonitorStreamForSource(
     uint32_t source_index,
     uint32_t stream_index = -1
 )
@@ -562,7 +562,7 @@ pa_stream *Pa::create_monitor_stream_for_source(
         pa_stream_set_monitor_stream(s, stream_index);
     }
 
-    pa_stream_set_read_callback(s, &Pa::read_callback, this);
+    pa_stream_set_read_callback(s, &Pa::readCallback, this);
 
     flags = static_cast<pa_stream_flags_t>(
                 PA_STREAM_DONT_MOVE
@@ -578,7 +578,7 @@ pa_stream *Pa::create_monitor_stream_for_source(
     return s;
 }
 
-void Pa::create_monitor_stream_for_paobject(PaObject *po)
+void Pa::createMonitorStreamForPaObject(PaObject *po)
 {
     pa_stream *monitor = po->getMonitorStream();
 
@@ -589,32 +589,44 @@ void Pa::create_monitor_stream_for_paobject(PaObject *po)
 
     if (po->getType() == pa_object_t::INPUT) {
         auto input = dynamic_cast<PaInput *>(po);
+
+        if (input == nullptr) {
+            return;
+        }
+
         auto sink = dynamic_cast<PaSink *>(PA_SINKS[input->getRelation()]);
 
+        if (sink == nullptr) {
+            return;
+        }
+
         input->setMonitorStream(
-            create_monitor_stream_for_source(sink->getMonitorIndex(), input->getIndex())
+            createMonitorStreamForSource(
+                sink->getMonitorIndex(),
+                input->getIndex()
+            )
         );
     } else {
         po->setMonitorStream(
-            create_monitor_stream_for_source(po->getMonitorIndex(), -1)
+            createMonitorStreamForSource(po->getMonitorIndex(), -1)
         );
 
     }
 }
 
-void Pa::set_notify_update_cb(const notify_update_callback &cb)
+void Pa::setNotifyUpdateCB(const notify_update_callback &cb)
 {
-    notify_update_cb = cb;
+    notifyUpdateCB = cb;
 }
 
-void Pa::notify_update()
+void Pa::notifyUpdate()
 {
-    if (notify_update_cb != nullptr) {
-        notify_update_cb();
+    if (notifyUpdateCB != nullptr) {
+        notifyUpdateCB();
     }
 }
 
-void Pa::ctx_cardlist_cb(
+void Pa::ctxCardlistCB(
     pa_context *ctx,
     const pa_card_info *info,
     int eol,
@@ -622,16 +634,19 @@ void Pa::ctx_cardlist_cb(
 )
 {
     auto pa = reinterpret_cast<Pa *>(instance);
+    if (pa == nullptr) {
+        return;
+    }
 
     if (eol == 0) {
-        pa->update_card(info);
+        pa->updateCard(info);
     }
 }
 
 
 
 
-void Pa::ctx_sourcelist_cb(
+void Pa::ctxSourcelistCB(
     pa_context *ctx,
     const pa_source_info *info,
     int eol,
@@ -639,13 +654,16 @@ void Pa::ctx_sourcelist_cb(
 )
 {
     auto pa = reinterpret_cast<Pa *>(instance);
+    if (pa == nullptr) {
+        return;
+    }
 
     if (eol == 0) {
-        pa->update_source(info);
+        pa->updateSource(info);
     }
 }
 
-void Pa::ctx_sourceoutputlist_cb(
+void Pa::ctxSourceoutputlistCB(
     pa_context *ctx,
     const pa_source_output_info *info,
     int eol,
@@ -653,13 +671,16 @@ void Pa::ctx_sourceoutputlist_cb(
 )
 {
     auto pa = reinterpret_cast<Pa *>(instance);
+    if (pa == nullptr) {
+        return;
+    }
 
     if (eol == 0) {
-        pa->update_source_output(info);
+        pa->updateSourceOutput(info);
     }
 }
 
-void Pa::ctx_inputlist_cb(
+void Pa::ctxInputlistCB(
     pa_context *ctx,
     const pa_sink_input_info *info,
     int eol,
@@ -667,13 +688,16 @@ void Pa::ctx_inputlist_cb(
 )
 {
     auto pa = reinterpret_cast<Pa *>(instance);
+    if (pa == nullptr) {
+        return;
+    }
 
     if (eol == 0) {
-        pa->update_input(info);
+        pa->updateInput(info);
     }
 }
 
-void Pa::ctx_sinklist_cb(
+void Pa::ctxSinklistCB(
     pa_context *ctx,
     const pa_sink_info *info,
     int eol,
@@ -681,33 +705,41 @@ void Pa::ctx_sinklist_cb(
 )
 {
     auto pa = reinterpret_cast<Pa *>(instance);
+    if (pa == nullptr) {
+        return;
+    }
 
     if (eol == 0) {
-        pa->update_sink(info);
+        pa->updateSink(info);
     }
 }
 
-void Pa::ctx_serverinfo_cb(
+void Pa::ctxServerinfoCB(
     pa_context *ctx,
     const pa_server_info *info,
     void *instance
 )
 {
     auto pa = reinterpret_cast<Pa *>(instance);
+    if (pa == nullptr) {
+        return;
+    }
 
     pa->setDefaults(info);
 }
 
-void Pa::subscribe_cb(
+void Pa::subscribeCB(
     pa_context *ctx,
     pa_subscription_event_type_t t,
     uint32_t index,
     void *instance
 )
 {
-
     int type = (t & PA_SUBSCRIPTION_EVENT_TYPE_MASK);
-    Pa *pa = reinterpret_cast<Pa *>(instance);
+    auto pa = reinterpret_cast<Pa *>(instance);
+    if (pa == nullptr) {
+        return;
+    }
     // https://freedesktop.org/software/pulseaudio/doxygen/def_8h.html#a6bedfa147a9565383f1f44642cfef6a3
 
     switch (t & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) {
@@ -720,7 +752,7 @@ void Pa::subscribe_cb(
                 pa_operation *o = pa_context_get_sink_info_by_index(
                                       ctx,
                                       index,
-                                      &Pa::ctx_sinklist_cb,
+                                      &Pa::ctxSinklistCB,
                                       instance
                                   );
                 pa->waitOnPaOperation(o);
@@ -740,7 +772,7 @@ void Pa::subscribe_cb(
                 pa_operation *o = pa_context_get_sink_input_info(
                                       ctx,
                                       index,
-                                      &Pa::ctx_inputlist_cb,
+                                      &Pa::ctxInputlistCB,
                                       instance
                                   );
                 pa->waitOnPaOperation(o);
@@ -760,7 +792,7 @@ void Pa::subscribe_cb(
                 pa_operation *o = pa_context_get_source_info_by_index(
                                       ctx,
                                       index,
-                                      &Pa::ctx_sourcelist_cb,
+                                      &Pa::ctxSourcelistCB,
                                       instance
                                   );
 
@@ -785,7 +817,7 @@ void Pa::subscribe_cb(
                 pa_operation *o = pa_context_get_source_output_info(
                                       ctx,
                                       index,
-                                      &Pa::ctx_sourceoutputlist_cb,
+                                      &Pa::ctxSourceoutputlistCB,
                                       instance
                                   );
 
@@ -805,7 +837,7 @@ void Pa::subscribe_cb(
                 pa_operation *o = pa_context_get_card_info_by_index(
                                       ctx,
                                       index,
-                                      &Pa::ctx_cardlist_cb,
+                                      &Pa::ctxCardlistCB,
                                       instance
                                   );
 
@@ -818,7 +850,7 @@ void Pa::subscribe_cb(
         case PA_SUBSCRIPTION_EVENT_SERVER: {
             pa_operation *o = pa_context_get_server_info(
                                   ctx,
-                                  &Pa::ctx_serverinfo_cb,
+                                  &Pa::ctxServerinfoCB,
                                   instance
                               );
 
@@ -845,10 +877,13 @@ void Pa::waitOnPaOperation(pa_operation *o)
     }
 }
 
-void Pa::ctx_state_cb(pa_context *ctx, void *instance)
+void Pa::ctxStateCB(pa_context *ctx, void *instance)
 {
     int state = pa_context_get_state(ctx);
     auto pa = reinterpret_cast<Pa *>(instance);
+    if (pa == nullptr) {
+        return;
+    }
 
     switch (state) {
         case PA_CONTEXT_READY: {
@@ -863,24 +898,24 @@ void Pa::ctx_state_cb(pa_context *ctx, void *instance)
                                       PA_SUBSCRIPTION_MASK_CARD |
                                       PA_SUBSCRIPTION_MASK_SERVER
                                   ),
-                                  &Pa::ctx_success_cb, instance);
+                                  &Pa::ctxSuccessCB, instance);
 
             pa->waitOnPaOperation(o);
             pa_operation_unref(o);
-            pa->fetchPaobjects();
+            pa->fetchPaObjects();
 
-            pa->connectionMtx.lock();
+            pa->connection_mtx.lock();
             pa->setConnected(true);
-            pa->connectionMtx.unlock();
+            pa->connection_mtx.unlock();
             break;
         }
 
         case PA_CONTEXT_FAILED:
-            pa->connectionMtx.lock();
+            pa->connection_mtx.lock();
             pa->setConnected(false);
             pa_context_unref(pa->pa_ctx);
             pa->pa_ctx = nullptr;
-            pa->connectionMtx.unlock();
+            pa->connection_mtx.unlock();
             pa->reconnect();
             break;
 

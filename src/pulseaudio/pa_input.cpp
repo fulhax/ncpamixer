@@ -24,6 +24,11 @@ uint32_t PaInput::getRelation()
     return sink;
 }
 
+void PaInput::setRelation(uint32_t relation)
+{
+    this->sink = relation;
+}
+
 std::string PaInput::getAppName()
 {
     return app_name;

@@ -14,6 +14,7 @@ public:
     pa_object_t getType() override;
 
     uint32_t getRelation() override;
+    void setRelation(uint32_t relation) override;
 
     std::string getAppName() override;
     virtual void setAppName(std::string app_name);

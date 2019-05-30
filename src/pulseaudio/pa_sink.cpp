@@ -19,9 +19,9 @@ void PaSink::updatePorts(pa_sink_port_info **info, uint32_t n_ports)
     clearAttributes();
 
     for (uint32_t i = 0; i < n_ports; i++) {
-        auto p = new AudioObjectAttribute;
-        p->name = &info[i]->name[0];
-        p->description = &info[i]->description[0];
+        auto *p = new AudioObjectAttribute();
+        p->name = std::string(&info[i]->name[0]);
+        p->description = std::string(&info[i]->description[0]);
 
         addAttribute(p);
     }

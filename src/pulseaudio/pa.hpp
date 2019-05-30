@@ -35,69 +35,75 @@ using notify_update_callback = void(*)();
 class Pa : public Audio
 {
     bool pa_init;
-    void waitOnPaOperation(pa_operation *o);
-    void deletePaObjects(AudioObjects *objects);
-
-    std::mutex sinkMtx;
-
     bool reconnect_running;
-
-    static void subscribe_cb(
-        pa_context *ctx,
-        pa_subscription_event_type_t t,
-        uint32_t index,
-        void *instance
-    );
-    static void ctx_state_cb(
-        pa_context *ctx,
-        void *instance
-    );
-    static void ctx_success_cb(
-        pa_context *ctx,
-        int success,
-        void *instance
-    );
-    static void ctx_sinklist_cb(
-        pa_context *ctx,
-        const pa_sink_info *info,
-        int eol,
-        void  *instance
-    );
-    static void ctx_inputlist_cb(
-        pa_context *ctx,
-        const pa_sink_input_info *info,
-        int eol,
-        void  *instance
-    );
-    static void ctx_sourcelist_cb(
-        pa_context *ctx,
-        const pa_source_info *info,
-        int eol,
-        void  *instance
-    );
-    static void ctx_sourceoutputlist_cb(
-        pa_context *ctx,
-        const pa_source_output_info *info,
-        int eol,
-        void *instance
-    );
-    static void ctx_cardlist_cb(
-        pa_context *ctx,
-        const pa_card_info *info,
-        int eol,
-        void *instance
-    );
-    static void ctx_serverinfo_cb(
-        pa_context *ctx,
-        const pa_server_info *info,
-        void *instance
-    );
 
     AudioObjects PA_INPUTS;
     AudioObjects PA_SINKS;
     AudioObjects PA_SOURCES;
     AudioObjects PA_SOURCE_OUTPUTS;
     AudioObjects PA_CARDS;
+
+    std::mutex connection_mtx;
+    std::mutex input_mtx;
+    std::mutex sink_mtx;
+
+    pa_mainloop_api *pa_api;
+
+    void waitOnPaOperation(pa_operation *o);
+    void deletePaObjects(AudioObjects *objects);
+
+    void (*notifyUpdateCB)();
+
+    static void subscribeCB(
+        pa_context *ctx,
+        pa_subscription_event_type_t t,
+        uint32_t index,
+        void *instance
+    );
+    static void ctxStateCB(
+        pa_context *ctx,
+        void *instance
+    );
+    static void ctxSuccessCB(
+        pa_context *ctx,
+        int success,
+        void *instance
+    );
+    static void ctxSinklistCB(
+        pa_context *ctx,
+        const pa_sink_info *info,
+        int eol,
+        void  *instance
+    );
+    static void ctxInputlistCB(
+        pa_context *ctx,
+        const pa_sink_input_info *info,
+        int eol,
+        void  *instance
+    );
+    static void ctxSourcelistCB(
+        pa_context *ctx,
+        const pa_source_info *info,
+        int eol,
+        void  *instance
+    );
+    static void ctxSourceoutputlistCB(
+        pa_context *ctx,
+        const pa_source_output_info *info,
+        int eol,
+        void *instance
+    );
+    static void ctxCardlistCB(
+        pa_context *ctx,
+        const pa_card_info *info,
+        int eol,
+        void *instance
+    );
+    static void ctxServerinfoCB(
+        pa_context *ctx,
+        const pa_server_info *info,
+        void *instance
+    );
 public:
     Pa();
     ~Pa() final;
@@ -111,30 +117,30 @@ public:
     bool init() override;
     void exitPa();
     void updatePeakByDeviceId(uint32_t index, float peak);
-    void update_input(const pa_sink_input_info *info);
-    void update_sink(const pa_sink_info *info);
-    void update_source(const pa_source_info *info);
-    void update_card(const pa_card_info *info);
-    void update_source_output(const pa_source_output_info *info);
+    void updateInput(const pa_sink_input_info *info);
+    void updateSink(const pa_sink_info *info);
+    void updateSource(const pa_source_info *info);
+    void updateCard(const pa_card_info *info);
+    void updateSourceOutput(const pa_source_output_info *info);
     void removePaObject(AudioObjects *objects, uint32_t index);
-    void toggle_input_mute(uint32_t index);
-    void toggle_sink_mute(uint32_t index);
-    void move_input_sink(uint32_t input_index, uint32_t sink_index);
+    void toggleInputMute(uint32_t index);
+    void toggleSinkMute(uint32_t index);
+    void moveInputSink(uint32_t input_index, uint32_t sink_index);
     void setDefaults(const pa_server_info *info);
-    void fetchPaobjects();
+    void fetchPaObjects();
     void reconnect();
-    void static do_reconnect(Pa *pa);
-    bool pa_connect();
+    void static doReconnect(Pa *pa);
+    bool paConnect();
     void clearAllPaObjects();
 
     uint32_t exists(AudioObjects objects, uint32_t index) override;
 
-    static void read_callback(pa_stream *s, size_t length, void *instance);
-    static void stream_suspended_cb(pa_stream *stream, void *instance);
-    static void stream_state_cb(pa_stream *stream, void *info);
+    static void readCallback(pa_stream *s, size_t length, void *instance);
+    static void streamSuspendedCB(pa_stream *stream, void *instance);
+    static void streamStateCB(pa_stream *stream, void *info);
 
-    void create_monitor_stream_for_paobject(PaObject *po);
-    pa_stream *create_monitor_stream_for_source(
+    void createMonitorStreamForPaObject(PaObject *po);
+    pa_stream *createMonitorStreamForSource(
         uint32_t source_index,
         uint32_t stream_index
     );
@@ -142,16 +148,11 @@ public:
     float getVolumeNorm() override {
         return PA_VOLUME_NORM;
     }
-    void set_notify_update_cb(const notify_update_callback &cb);
-    void notify_update();
-
-    void (*notify_update_cb)();
-    std::mutex inputMtx;
-    std::mutex connectionMtx;
+    void setNotifyUpdateCB(const notify_update_callback &cb);
+    void notifyUpdate();
 
     pa_context *pa_ctx;
     pa_threaded_mainloop *pa_ml;
-    pa_mainloop_api *pa_api;
 };
 
 #endif

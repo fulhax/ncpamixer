@@ -14,5 +14,5 @@ Playback::Playback()
     object = audio->getInputs();
     toggle = audio->getSinks();
 
-    selected_index = audio->exists(*object, -1);
+    selected_index = audio->exists(*object, UINT32_MAX);
 }

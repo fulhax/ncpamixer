@@ -18,4 +18,4 @@ Audio* AudioObject::getParent() {
 
 void AudioObject::setName(std::string name) {
     this->name = std::move(name);
-};
+}

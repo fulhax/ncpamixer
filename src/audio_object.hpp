@@ -34,7 +34,7 @@ public:
     virtual void clearAttributes() = 0;
     virtual void move(uint32_t dest) = 0;
 
-    virtual void setActiveAttribute(std::string name) = 0;
+    virtual void switchActiveAttribute(std::string name) = 0;
     virtual void setDefault() = 0;
     virtual void setVolume(float perc) = 0;
     virtual void setMuted(bool mute) = 0;
@@ -60,22 +60,28 @@ public:
         return active_attribute;
     }
     virtual AudioObjectAttributes getAttributes() {
-        return attributes ;
+        return attributes;
     }
     virtual AudioObjectAttribute* getAttribute(uint32_t idx) {
         return attributes[idx];
     }
+    void setActiveAttribute(const std::string &name) {
+        for (auto attr : attributes) {
+            if (attr->name == name) {
+                active_attribute = attr;
+                return;
+            }
+        }
+    }
     void switchNextAttribute() {
         if (!attributes.empty()) {
-            uint32_t current_attribute = getRelation();
+            uint32_t current_attribute = getRelation() + 1;
 
-            if (current_attribute + 1 < attributes.size()) {
-                current_attribute++;
-            } else {
+            if (current_attribute >= attributes.size()) {
                 current_attribute = 0;
             }
 
-            setActiveAttribute(getAttribute(current_attribute)->name);
+            switchActiveAttribute(getAttribute(current_attribute)->name);
         }
     }
     void addAttribute(AudioObjectAttribute* attr) {
