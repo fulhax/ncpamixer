@@ -17,10 +17,6 @@ find_package(Curses REQUIRED)
 # See https://gitlab.kitware.com/cmake/cmake/issues/18517
 find_library(MENU_LIBRARY menu)
 
-if(PULSEAUDIO)
-    find_package(PulseAudio REQUIRED)
-endif()
-
 find_package(Threads REQUIRED)
 
 string(TIMESTAMP BUILD_DATE "%Y-%m-%d %H:%M")
@@ -43,17 +39,9 @@ configure_file(
 
 message("-- Got version ${GIT_VERSION}")
 
-set(PULSEAUDIO_SRC
-    "pulseaudio/pa_object.cpp"
-    "pulseaudio/pa_card.cpp"
-    "pulseaudio/pa_sink.cpp"
-    "pulseaudio/pa_input.cpp"
-    "pulseaudio/pa_source.cpp"
-    "pulseaudio/pa_source_output.cpp"
-    "pulseaudio/pa.cpp"
-)
-
 set(COMMON_SRC
+    "audio.cpp"
+    "audio_object.cpp"
     "pulsemixer.cpp"
     "config.cpp"
     "ui/ui.cpp"
@@ -66,6 +54,23 @@ set(COMMON_SRC
     "ui/tabs/fallback.cpp"
     "${CMAKE_CURRENT_BINARY_DIR}/version.cpp"
 )
+
+
+if(USE_PULSEAUDIO)
+    find_package(PulseAudio REQUIRED)
+    set(COMMON_SRC
+        "${COMMON_SRC}"
+        "pulseaudio/pa_object.cpp"
+        "pulseaudio/pa_card.cpp"
+        "pulseaudio/pa_sink.cpp"
+        "pulseaudio/pa_input.cpp"
+        "pulseaudio/pa_source.cpp"
+        "pulseaudio/pa_source_output.cpp"
+        "pulseaudio/pa.cpp"
+    )
+
+    add_compile_definitions(USE_PULSEAUDIO)
+endif()
 
 include_directories(
     "src/"

@@ -11,8 +11,8 @@
 
 Playback::Playback()
 {
-    object = &pulse.PA_INPUTS;
-    toggle = &pulse.PA_SINKS;
+    object = audio->getInputs();
+    toggle = audio->getSinks();
 
     selected_index = audio->exists(*object, -1);
 }

@@ -1,11 +1,7 @@
 #include "pa_sink.hpp"
-#include <stdio.h>
 
 PaSink::PaSink()
 {
-    type = pa_object_t::SINK;
-    monitor_stream = nullptr;
-
     pa_set_volume = &pa_context_set_sink_volume_by_index;
     pa_set_mute = &pa_context_set_sink_mute_by_index;
     pa_move = nullptr;
@@ -13,22 +9,20 @@ PaSink::PaSink()
     pa_set_default = &pa_context_set_default_sink;
 }
 
-
+pa_object_t PaSink::getType()
+{
+    return pa_object_t::CARD;
+}
 
 void PaSink::updatePorts(pa_sink_port_info **info, uint32_t n_ports)
 {
     clearAttributes();
 
     for (uint32_t i = 0; i < n_ports; i++) {
-        auto *p = new PaPort;
+        auto p = new AudioObjectAttribute;
+        p->name = &info[i]->name[0];
+        p->description = &info[i]->description[0];
 
-        snprintf(p->name, sizeof(p->name), "%s", info[i]->name);
-        snprintf(
-            p->description,
-            sizeof(p->description),
-            "%s",
-            info[i]->description
-        );
-        attributes.push_back(p);
+        addAttribute(p);
     }
 }

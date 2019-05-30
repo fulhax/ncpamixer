@@ -1,21 +1,22 @@
 #ifndef PA_INPUT_
 #define PA_INPUT_
-#include "pa_object.hpp"
+
+#include <pulseaudio/pa_object.hpp>
 
 class PaInput : public PaObject
 {
+    uint32_t sink;
+    std::string app_name;
 public:
     PaInput();
-    uint32_t sink;
-    char app_name[255];
+    virtual ~PaInput() override = default;
 
-    uint32_t getRelation() override {
-        return sink;
-    };
+    pa_object_t getType() override;
 
-    char* getAppName() override {
-        return &app_name[0];
-    };
+    uint32_t getRelation() override;
+
+    std::string getAppName() override;
+    virtual void setAppName(std::string app_name);
 };
 
 #endif // PA_INPUT_

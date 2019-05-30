@@ -5,12 +5,12 @@
 #include <cstring>
 #include <cinttypes>
 
-#include "pa.hpp"
+#include <audio.hpp>
 
 Input::Input()
 {
-    object = &pulse.PA_SOURCES;
+    object = audio->getSources();
     toggle = nullptr;
 
-    selected_index = pulse.exists(*object, -1);
+    selected_index = audio->exists(*object, -1);
 }

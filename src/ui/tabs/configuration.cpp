@@ -5,15 +5,16 @@
 #include <cinttypes>
 #include <cstring>
 
-#include "pa.hpp"
+#include <audio.hpp>
+
 #include "ui/ui.hpp"
 
 Configuration::Configuration()
 {
-    object = &pulse.PA_CARDS;
+    object = audio->getCards();
     toggle = nullptr;
 
-    selected_index = pulse.exists(*object, -1);
+    selected_index = audio->exists(*object, -1);
 
     has_volume = false;
 }

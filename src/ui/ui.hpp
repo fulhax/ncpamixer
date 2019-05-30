@@ -1,13 +1,17 @@
 #ifndef UI_HPP_
 #define UI_HPP_
 
+#ifdef __linux__
+    #include <linux/limits.h>
+#endif
+
 #include <ncurses.h>
 
 #include <condition_variable>
 #include <vector>
 
-#include "audio.hpp"
-#include "tab.hpp"
+#include <audio.hpp>
+#include <ui/tab.hpp>
 
 #define NUM_TABS 5
 

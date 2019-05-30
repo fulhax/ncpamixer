@@ -1,15 +1,15 @@
 #include "pa_object.hpp"
 
-#include <string.h>
+#include <cstring>
 
-#include "pa.hpp"
+#include <pulseaudio/pa.hpp>
 
-PaObject::PaObject() : type(pa_object_t::SINK)
+PaObject::PaObject()
 {
     index = 0;
-    memset(name, 0, sizeof(name));
-    memset(pa_name, 0, sizeof(pa_name));
+    pa_name = "";
     channels = 0;
+    volume = 0;
     mute = false;
     monitor_index = 0;
     monitor_stream = nullptr;
@@ -28,13 +28,17 @@ PaObject::~PaObject()
     clearAttributes();
 }
 
-void PaObject::set_volume(float perc)
+void PaObject::setVolume(float perc)
 {
+    auto pulse = reinterpret_cast<Pa*>(getParent());
+    if (pulse == nullptr) {
+        return;
+    }
 
     if (pa_set_volume != nullptr) {
-        pa_threaded_mainloop_lock(pulse.pa_ml);
+        pa_threaded_mainloop_lock(pulse->pa_ml);
 
-        int vol = (PA_VOLUME_NORM * perc);
+        int vol = static_cast<int>(PA_VOLUME_NORM * perc);
         pa_cvolume cvol;
 
         pa_cvolume_init(&cvol);
@@ -42,36 +46,41 @@ void PaObject::set_volume(float perc)
 
 
         pa_operation *o = pa_set_volume(
-                              pulse.pa_ctx,
+                              pulse->pa_ctx,
                               index,
                               &cvol,
-                              NULL,
-                              NULL
+                              nullptr,
+                              nullptr
                           );
         pa_operation_unref(o);
-        pa_threaded_mainloop_unlock(pulse.pa_ml);
+        pa_threaded_mainloop_unlock(pulse->pa_ml);
     }
 }
 
-void PaObject::step_volume(int dir)
+void PaObject::stepVolume(int dir)
 {
     if (volume <= 1000 && dir == -1) {
         return;
     }
 
-    set_volume(static_cast<float>(volume + (1000 * dir)) / PA_VOLUME_NORM);
+    setVolume(static_cast<float>(volume + (1000 * dir)) / PA_VOLUME_NORM);
 }
 
 
-void PaObject::toggle_mute()
+void PaObject::toggleMute()
 {
+    auto pulse = reinterpret_cast<Pa*>(getParent());
+    if (pulse == nullptr) {
+        return;
+    }
+
     if (pa_set_mute != nullptr) {
         pa_operation *o = pa_set_mute(
-                              pulse.pa_ctx,
+                              pulse->pa_ctx,
                               index,
-                              !mute,
-                              NULL,
-                              NULL
+                              !mute ? 1 : 0,
+                              nullptr,
+                              nullptr
                           );
         pa_operation_unref(o);
     }
@@ -80,42 +89,57 @@ void PaObject::toggle_mute()
 
 void PaObject::move(uint32_t dest)
 {
+    auto pulse = reinterpret_cast<Pa*>(getParent());
+    if (pulse == nullptr) {
+        return;
+    }
+
     if (pa_move != nullptr) {
         pa_operation *o = pa_move(
-                              pulse.pa_ctx,
+                              pulse->pa_ctx,
                               index,
                               dest,
-                              NULL,
-                              NULL
+                              nullptr,
+                              nullptr
                           );
         pa_operation_unref(o);
     }
 }
 
 
-void PaObject::set_active_attribute(const char *name)
+void PaObject::setActiveAttribute(std::string name)
 {
+    auto pulse = reinterpret_cast<Pa*>(getParent());
+    if (pulse == nullptr) {
+        return;
+    }
+
     if (pa_set_active_attribute != nullptr) {
         pa_operation *o = pa_set_active_attribute(
-                              pulse.pa_ctx,
+                              pulse->pa_ctx,
                               index,
-                              name,
-                              NULL,
-                              NULL
+                              name.c_str(),
+                              nullptr,
+                              nullptr
                           );
         pa_operation_unref(o);
     }
 }
 
 
-void PaObject::set_default(const char *name)
+void PaObject::setDefault()
 {
+    auto pulse = reinterpret_cast<Pa*>(getParent());
+    if (pulse == nullptr) {
+        return;
+    }
+
     if (pa_set_default != nullptr) {
         pa_operation *o = pa_set_default(
-                              pulse.pa_ctx,
-                              name,
-                              NULL,
-                              NULL
+                              pulse->pa_ctx,
+                              getName().c_str(),
+                              nullptr,
+                              nullptr
                           );
         pa_operation_unref(o);
     }
@@ -123,7 +147,7 @@ void PaObject::set_default(const char *name)
 
 void PaObject::clearAttributes()
 {
-    for (uint32_t i = 0; i < attributes.size(); i++) {
+    for (size_t i = 0; i < attributes.size(); i++) {
         delete attributes[i];
     }
 
@@ -133,8 +157,8 @@ void PaObject::clearAttributes()
 uint32_t PaObject::getRelation()
 {
     if (active_attribute != nullptr) {
-        for (uint32_t j = 0; j < attributes.size(); j++) {
-            int current = strcmp(attributes[j]->name, active_attribute->name);
+        for (size_t j = 0; j < attributes.size(); j++) {
+            int current = attributes[j]->name.compare(active_attribute->name);
 
             if (current == 0) {
                 return j;
@@ -143,4 +167,8 @@ uint32_t PaObject::getRelation()
     }
 
     return -1;
+}
+
+std::string PaObject::getPaName() {
+    return pa_name;
 }

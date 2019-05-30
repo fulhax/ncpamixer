@@ -3,6 +3,10 @@
 #include <menu.h>
 #include <ncurses.h>
 
+#ifdef __linux__
+    #include <linux/limits.h>
+#endif
+
 #include <algorithm>
 #include <cstring>
 #include <map>
@@ -53,7 +57,9 @@ void Tab::draw()
 
         blocks_drawn++;
 
-        float perc = static_cast<float>(i.second->getVolume()) / (VOLUME_NORM * 1.5f);
+        float perc = static_cast<float>(
+            i.second->getVolume()
+        ) / (audio->getVolumeNorm() * 1.5f);
 
         if (has_volume) {
             if (ui.static_bar) {

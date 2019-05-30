@@ -1,10 +1,7 @@
 #include "pa_card.hpp"
-#include <stdio.h>
 
 PaCard::PaCard()
 {
-    type = pa_object_t::CARD;
-    monitor_stream = nullptr;
     pa_set_active_attribute = pa_context_set_card_profile_by_index;
     pa_set_volume = nullptr;
     pa_set_mute = nullptr;
@@ -13,19 +10,19 @@ PaCard::PaCard()
     pa_set_default = nullptr;
 }
 
+pa_object_t PaCard::getType() {
+    return pa_object_t::CARD;
+}
+
 void PaCard::updateProfiles(pa_card_profile_info *pa_profiles, uint32_t n_profile)
 {
     clearAttributes();
 
     for (uint32_t i = 0; i < n_profile; i++) {
-        PaObjectAttribute *p = new PaObjectAttribute;
-        snprintf(p->name, sizeof(p->name), "%s", pa_profiles[i].name);
-        snprintf(
-            p->description,
-            sizeof(p->description),
-            "%s",
-            pa_profiles[i].description
-        );
-        attributes.push_back(p);
+        auto p = new AudioObjectAttribute;
+        p->name = &pa_profiles[i].name[0];
+        p->description = &pa_profiles[i].description[0];
+
+        addAttribute(p);
     }
 }

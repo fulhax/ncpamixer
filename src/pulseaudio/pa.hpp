@@ -34,37 +34,13 @@ using notify_update_callback = void(*)();
 
 class Pa : public Audio
 {
-public:
-    Pa();
-    ~Pa();
+    bool pa_init;
+    void waitOnPaOperation(pa_operation *o);
+    void deletePaObjects(AudioObjects *objects);
 
-    bool init();
-    void exitPa();
-    void updatePeakByDeviceId(uint32_t index, float peak);
-    void update_input(const pa_sink_input_info *info);
-    void update_sink(const pa_sink_info *info);
-    void update_source(const pa_source_info *info);
-    void update_card(const pa_card_info *info);
-    void update_source_output(const pa_source_output_info *info);
-    void remove_paobject(std::map<uint32_t, PaObject *> *objects, uint32_t index);
-    void toggle_input_mute(uint32_t index);
-    void toggle_sink_mute(uint32_t index);
-    void move_input_sink(uint32_t input_index, uint32_t sink_index);
-    void set_defaults(const pa_server_info *info);
-    void fetchPaobjects();
-    void reconnect();
-    void static do_reconnect(Pa *pa);
-    bool pa_connect();
-    void clearAllPaObjects();
+    std::mutex sinkMtx;
 
     bool reconnect_running;
-    bool connected;
-
-    static uint32_t exists(
-        std::map<uint32_t,
-        PaObject *> objects,
-        uint32_t index
-    );
 
     static void subscribe_cb(
         pa_context *ctx,
@@ -117,6 +93,42 @@ public:
         void *instance
     );
 
+    AudioObjects PA_INPUTS;
+    AudioObjects PA_SINKS;
+    AudioObjects PA_SOURCES;
+    AudioObjects PA_SOURCE_OUTPUTS;
+    AudioObjects PA_CARDS;
+public:
+    Pa();
+    ~Pa() final;
+
+    AudioObjects* getInputs() override { return &PA_INPUTS; };
+    AudioObjects* getSinks() override { return &PA_SINKS; };
+    AudioObjects* getSources() override { return &PA_SOURCES; };
+    AudioObjects* getSourceOutputs() override { return &PA_SOURCE_OUTPUTS; };
+    AudioObjects* getCards() override { return &PA_CARDS; };
+
+    bool init() override;
+    void exitPa();
+    void updatePeakByDeviceId(uint32_t index, float peak);
+    void update_input(const pa_sink_input_info *info);
+    void update_sink(const pa_sink_info *info);
+    void update_source(const pa_source_info *info);
+    void update_card(const pa_card_info *info);
+    void update_source_output(const pa_source_output_info *info);
+    void removePaObject(AudioObjects *objects, uint32_t index);
+    void toggle_input_mute(uint32_t index);
+    void toggle_sink_mute(uint32_t index);
+    void move_input_sink(uint32_t input_index, uint32_t sink_index);
+    void setDefaults(const pa_server_info *info);
+    void fetchPaobjects();
+    void reconnect();
+    void static do_reconnect(Pa *pa);
+    bool pa_connect();
+    void clearAllPaObjects();
+
+    uint32_t exists(AudioObjects objects, uint32_t index) override;
+
     static void read_callback(pa_stream *s, size_t length, void *instance);
     static void stream_suspended_cb(pa_stream *stream, void *instance);
     static void stream_state_cb(pa_stream *stream, void *info);
@@ -127,14 +139,11 @@ public:
         uint32_t stream_index
     );
 
+    float getVolumeNorm() override {
+        return PA_VOLUME_NORM;
+    }
     void set_notify_update_cb(const notify_update_callback &cb);
     void notify_update();
-
-    std::map<uint32_t, PaObject *> PA_INPUTS;
-    std::map<uint32_t, PaObject *> PA_SINKS;
-    std::map<uint32_t, PaObject *> PA_SOURCES;
-    std::map<uint32_t, PaObject *> PA_SOURCE_OUTPUTS;
-    std::map<uint32_t, PaObject *> PA_CARDS;
 
     void (*notify_update_cb)();
     std::mutex inputMtx;
@@ -143,13 +152,6 @@ public:
     pa_context *pa_ctx;
     pa_threaded_mainloop *pa_ml;
     pa_mainloop_api *pa_api;
-private:
-    bool pa_init;
-    void wait_on_pa_operation(pa_operation *o);
-    void deletePaobjects(std::map<uint32_t, PaObject *> *objects);
-    std::mutex sinkMtx;
 };
-
-extern Pa pulse;
 
 #endif

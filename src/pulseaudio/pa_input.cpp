@@ -1,11 +1,9 @@
 #include "pa_input.hpp"
 
-#include <string.h>
+#include <cstring>
 
 PaInput::PaInput()
 {
-    type = pa_object_t::INPUT;
-    monitor_stream = nullptr;
     pa_set_volume = &pa_context_set_sink_input_volume;
     pa_set_mute = &pa_context_set_sink_input_mute;
     pa_move = &pa_context_move_sink_input_by_index;
@@ -13,5 +11,25 @@ PaInput::PaInput()
     pa_set_default = nullptr;
 
     sink = 0;
-    memset(app_name, 0, sizeof(app_name));
+    app_name = "";
+}
+
+pa_object_t PaInput::getType()
+{
+    return pa_object_t::INPUT;
+}
+
+uint32_t PaInput::getRelation()
+{
+    return sink;
+}
+
+std::string PaInput::getAppName()
+{
+    return app_name;
+}
+
+void PaInput::setAppName(std::string app_name)
+{
+    this->app_name = std::move(app_name);
 }

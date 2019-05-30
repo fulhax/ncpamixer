@@ -1,16 +1,19 @@
 #ifndef PA_SOURCE_OUTPUT_
 #define PA_SOURCE_OUTPUT_
-#include "pa_input.hpp"
+
+#include <pulseaudio/pa_input.hpp>
 
 class PaSourceOutput : public PaInput
 {
+    uint32_t source;
 public:
     PaSourceOutput();
-    uint32_t source;
+    ~PaSourceOutput() override = default;
 
-    uint32_t getRelation() override {
-        return source;
-    };
+    pa_object_t getType() override;
+
+    uint32_t getRelation() override;
+    void setRelation(uint32_t source) override;
 };
 
 #endif // PA_SOURCE_

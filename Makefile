@@ -34,6 +34,7 @@ build/Makefile: src/CMakeLists.txt
 	@mkdir -p "build"
 	@cd "build" && \
 		cmake \
+		-DUSE_PULSEAUDIO=1 \
 		-DCMAKE_BUILD_TYPE=$(BUILD_INFO) \
 		-DCMAKE_EXPORT_COMPILE_COMMANDS=1 \
 		"$(BASE_DIR)/src" \
