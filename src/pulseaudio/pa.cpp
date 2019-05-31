@@ -278,10 +278,17 @@ void Pa::updateSourceOutput(const pa_source_output_info *info)
         p = dynamic_cast<PaSourceOutput *>(PA_SOURCE_OUTPUTS[info->index]);
     }
 
+    AudioObjectChannels channels;
+
+    for(uint8_t i = 0; i < info->channel_map.channels; ++i) {
+        channels[i].name = pa_channel_position_to_pretty_string(info->channel_map.map[i]);
+        channels[i].volume = info->volume.values[i];
+    }
+
     p->setParent(this);
     p->setIndex(info->index);
     p->setRelation(info->source);
-    p->setChannels(info->channel_map.channels);
+    p->setChannels(channels);
     p->setMonitorIndex(info->source);
     p->setMuted(info->mute == 1);
     p->setName(info->name);
@@ -316,9 +323,16 @@ void Pa::updateSource(const pa_source_info *info)
         p = dynamic_cast<PaSource *>(PA_SOURCES[info->index]);
     }
 
+    AudioObjectChannels channels;
+
+    for(uint8_t i = 0; i < info->channel_map.channels; ++i) {
+        channels[i].name = pa_channel_position_to_pretty_string(info->channel_map.map[i]);
+        channels[i].volume = info->volume.values[i];
+    }
+
     p->setParent(this);
     p->setIndex(info->index);
-    p->setChannels(info->channel_map.channels);
+    p->setChannels(channels);
     p->setMuted(info->mute == 1);
     p->setName(info->description);
     p->setPaName(info->name);
@@ -355,7 +369,6 @@ void Pa::updateCard(const pa_card_info *info)
 
     p->setParent(this);
     p->setIndex(info->index);
-    p->setChannels(0);
     p->setMuted(false);
     p->updateProfiles(info->profiles, info->n_profiles);
 
@@ -393,9 +406,16 @@ void Pa::updateSink(const pa_sink_info *info)
         p = dynamic_cast<PaSink *>(PA_SINKS[info->index]);
     }
 
+    AudioObjectChannels channels;
+
+    for(uint8_t i = 0; i < info->channel_map.channels; ++i) {
+        channels[i].name = pa_channel_position_to_pretty_string(info->channel_map.map[i]);
+        channels[i].volume = info->volume.values[i];
+    }
+
     p->setParent(this);
     p->setIndex(info->index);
-    p->setChannels(info->channel_map.channels);
+    p->setChannels(channels);
     p->setMonitorIndex(info->monitor_source);
     p->setMuted(info->mute == 1);
 
@@ -434,9 +454,16 @@ void Pa::updateInput(const pa_sink_input_info *info)
         }
     }
 
+    AudioObjectChannels channels;
+
+    for(uint8_t i = 0; i < info->channel_map.channels; ++i) {
+        channels[i].name = pa_channel_position_to_pretty_string(info->channel_map.map[i]);
+        channels[i].volume = info->volume.values[i];
+    }
+
     p->setParent(this);
     p->setIndex(info->index);
-    p->setChannels(info->channel_map.channels);
+    p->setChannels(channels);
     p->setMuted(info->mute == 1);
     p->setRelation(info->sink);
     p->setName(info->name);

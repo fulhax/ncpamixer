@@ -20,7 +20,6 @@ class PaObject : public AudioObject
 
     std::string pa_name;
 
-    unsigned int channels;
     uint32_t monitor_index;
 
     pa_volume_t volume;
@@ -30,7 +29,7 @@ public:
     ~PaObject() override;
     virtual pa_object_t getType() = 0;
 
-    void setVolume(float perc) override;
+    void setVolume(float perc, uint8_t channel) override;
     void stepVolume(int dir) override;
     void move(uint32_t dest) override;
     void toggleMute() override;
@@ -63,10 +62,6 @@ public:
 
     void setPeak(float peak) override {
         this->peak = peak;
-    }
-
-    void setChannels(int channels) {
-        this->channels = channels;
     }
 
     bool getMuted() override {

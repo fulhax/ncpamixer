@@ -56,28 +56,39 @@ void Tab::draw()
         }
 
         blocks_drawn++;
+        auto current = i.second;
 
-        float perc = static_cast<float>(i.second->getVolume()) / (audio->getVolumeNorm() * 1.5f);
+        float vol = static_cast<float>(current->getVolume());
+        float perc = vol / (audio->getVolumeNorm() * 1.5F);
 
         if (has_volume) {
-            if (ui.static_bar) {
-                volumeBar(
-                    ui.width,
-                    ui.height,
-                    0,
-                    baseY + 3,
-                    perc,
-                    perc
-                );
+            if (false) {
+                float peak = perc;
+                if (!ui.static_bar) {
+                    peak = current->getPeak();
+                }
+
+                volumeBar(ui.width, ui.height, 0, baseY + 3, perc, peak);
             } else {
-                volumeBar(
-                    ui.width,
-                    ui.height,
-                    0,
-                    baseY + 3,
-                    perc,
-                    i.second->getPeak()
-                );
+                for(size_t j = 0; j < current->getChannelCount(); j++) {
+                    auto c = current->getChannel(j);
+                    float cperc = c->volume / (audio->getVolumeNorm() * 1.5F);
+
+                    float peak = cperc;
+                    if (!ui.static_bar) {
+                        peak = current->getPeak();
+                    }
+
+                    volumeBar(
+                        ui.width,
+                        ui.height,
+                        0,
+                        baseY + 3 + j,
+                        perc,
+                        peak,
+                        c->name
+                    );
+                }
             }
         } else { // Configuration
             if (i.first == selected_index) {
@@ -86,14 +97,10 @@ void Tab::draw()
                 wattron(ui.window, COLOR_PAIR(COLOR_DEFAULT));
             }
 
-            auto attr = i.second->getActiveAttribute();
+            auto attr = current->getActiveAttribute();
+
             if (attr != nullptr) {
-                mvwaddstr(
-                    ui.window,
-                    baseY + 3,
-                    3,
-                    &attr->description[0]
-                );
+                mvwaddstr(ui.window, baseY + 3, 3, &attr->description[0]);
                 borderBox(ui.width - 2, 2, 1, baseY + 2);
             }
 
@@ -110,7 +117,7 @@ void Tab::draw()
             wattron(ui.window, COLOR_PAIR(COLOR_DEFAULT));
         }
 
-        auto rel = i.second->getRelation();
+        auto rel = current->getRelation();
         uint16_t toggle_len = 0;
 
         if (toggle != nullptr && rel != UINT32_MAX) {
@@ -133,7 +140,7 @@ void Tab::draw()
                 }
             }
         } else {
-            auto attr = i.second->getActiveAttribute();
+            auto attr = current->getActiveAttribute();
 
             if (attr != nullptr && has_volume) {
                 unsigned int len = attr->description.length();
@@ -152,13 +159,13 @@ void Tab::draw()
 
         std::string app;
 
-        if (i.second->getAppName().length() > 0) {
-            app = i.second->getAppName() + ": " + i.second->getName();
+        if (current->getAppName().length() > 0) {
+            app = current->getAppName() + ": " + current->getName();
         } else {
-            app = i.second->getName();
+            app = current->getName();
         }
 
-        if (i.second->isDefault()) {
+        if (current->isDefault()) {
             app.insert(0, ui.indicator);
         }
 
@@ -167,9 +174,9 @@ void Tab::draw()
 
         std::string output_volume;
 
-        if (has_volume && i.second->getMuted()) {
+        if (has_volume && current->getMuted()) {
             output_volume = " (muted)";
-        } else if(has_volume) {
+        } else if (has_volume) {
             char vol[32] = {0};
             snprintf(
                 &vol[0],
@@ -271,28 +278,9 @@ void Tab::handleEvents(const char *event)
             selected_pobj->stepVolume(1);
         } else if (strcmp("volume_down", event) == 0) {
             selected_pobj->stepVolume(-1);
-        } else if (strcmp("set_volume_0", event) == 0) {
-            selected_pobj->setVolume(0);
-        } else if (strcmp("set_volume_10", event) == 0) {
-            selected_pobj->setVolume(.1F);
-        } else if (strcmp("set_volume_20", event) == 0) {
-            selected_pobj->setVolume(.2F);
-        } else if (strcmp("set_volume_30", event) == 0) {
-            selected_pobj->setVolume(.3F);
-        } else if (strcmp("set_volume_40", event) == 0) {
-            selected_pobj->setVolume(.4F);
-        } else if (strcmp("set_volume_50", event) == 0) {
-            selected_pobj->setVolume(.5F);
-        } else if (strcmp("set_volume_60", event) == 0) {
-            selected_pobj->setVolume(.6F);
-        } else if (strcmp("set_volume_70", event) == 0) {
-            selected_pobj->setVolume(.7F);
-        } else if (strcmp("set_volume_80", event) == 0) {
-            selected_pobj->setVolume(.8F);
-        } else if (strcmp("set_volume_90", event) == 0) {
-            selected_pobj->setVolume(.9F);
-        } else if (strcmp("set_volume_100", event) == 0) {
-            selected_pobj->setVolume(1.0f);
+        } else if (strncmp("set_volume_", event, 11) == 0) {
+            float vol = atof(&event[11]) * 0.01F;
+            selected_pobj->setVolume(vol, UINT8_MAX);
         } else if (strcmp("set_default", event) == 0) {
             selected_pobj->switchDefault();
         } else if (strcmp("switch", event) == 0) {
@@ -310,17 +298,13 @@ void Tab::handleEvents(const char *event)
             }
         } else if (strcmp("dropdown", event) == 0) {
             uint32_t selected = 0;
+            int y = std::min(
+                        selected_block * (BLOCK_SIZE),
+                        (total_blocks - 1) * BLOCK_SIZE
+                    );
 
             if (toggle != nullptr) {
-                selected = dropDown(
-                               -1,
-                               std::min(
-                                   selected_block * (BLOCK_SIZE),
-                                   (total_blocks - 1) * BLOCK_SIZE
-                               ),
-                               *toggle,
-                               selected_pobj->getRelation()
-                           );
+                selected = dropDown(-1, y, *toggle, selected_pobj->getRelation());
 
                 if (selected != UINT32_MAX) {
                     selected_pobj->move(selected);
@@ -328,11 +312,6 @@ void Tab::handleEvents(const char *event)
             } else {
                 uint32_t w = 0;
                 int x = 0;
-
-                int y = std::min(
-                            selected_block * (BLOCK_SIZE),
-                            (total_blocks - 1) * BLOCK_SIZE
-                        );
 
 
                 if (has_volume) {
@@ -432,9 +411,9 @@ uint32_t Tab::dropDown(
     std::for_each(
         objects.begin(),
         objects.end(),
-        [&tmp](auto const & obj) {
-            tmp[obj.first] = obj.second->getName();
-        }
+    [&tmp](auto const & obj) {
+        tmp[obj.first] = obj.second->getName();
+    }
     );
 
     return dropDown(x, y, tmp, current, width, height);
@@ -477,6 +456,7 @@ uint32_t Tab::dropDown(
         item->opt = O_SELECTABLE;
 
         int len = i.second.length();
+
         if (len > ui.width - 4) {
             len = ui.width - 4;
         }
@@ -615,29 +595,41 @@ void Tab::borderBox(int w, int h, int px, int py)
     wattroff(ui.window, COLOR_PAIR(COLOR_BORDER));
 }
 
-void Tab::volumeBar(int w, int h, int px, int py, float vol, float peak)
+void Tab::volumeBar(
+    int w,
+    int h,
+    int px,
+    int py,
+    float vol,
+    float peak,
+    const std::string &info
+)
 {
+    int start = static_cast<int>(info.length() + 3);
+    /* w -= start; */
+
     auto dw = static_cast<float>(w);
 
     int pw = static_cast<int>(dw * peak);
-    int vw = static_cast<int>(dw * vol);
-    int fw = w - pw;
+    int vw = static_cast<int>(dw * vol) + start;
+    int fw = (w - pw);
 
     unsigned int color;
 
     if (!ui.hide_top) {
-        fillW(w, h, 0, py - 1, ui.bar[BAR_TOP].c_str());
+        fillW(w, h, start, py - 1, ui.bar[BAR_TOP].c_str());
     } else {
         py -= 1;
     }
 
-    for (int i = 0; i < pw; i++) {
+    mvwaddstr(ui.window, py, px + 2, info.c_str());
+
+    for (int i = start; i < (pw + start); i++) {
         if (i >= vw) {
             color = COLOR_VOLUME_PEAK;
         } else {
-            color = getVolumeColor(static_cast<int>(
-                static_cast<float>(i) / w * 100.0f
-            ));
+            float fi = static_cast<float>(i);
+            color = getVolumeColor(static_cast<int>(fi / w * 100.0F));
         }
 
         wattron(ui.window, COLOR_PAIR(color));
@@ -645,10 +637,9 @@ void Tab::volumeBar(int w, int h, int px, int py, float vol, float peak)
         wattroff(ui.window, COLOR_PAIR(color));
     }
 
-    for (int i = 0; i < fw; i++) {
-        color = getBarColor(static_cast<int>(
-            static_cast<float>(pw + i) / w * 100.0f
-        ));
+    for (int i = start; i < fw; i++) {
+        float fpwi = static_cast<float>(pw + i);
+        color = getBarColor(static_cast<int>(fpwi / w * 100.0F));
 
         wattron(ui.window, COLOR_PAIR(color));
         mvwaddstr(ui.window, py, pw + i, ui.bar[BAR_BG].c_str());
@@ -656,7 +647,7 @@ void Tab::volumeBar(int w, int h, int px, int py, float vol, float peak)
     }
 
     if (!ui.hide_bottom) {
-        fillW(w, h, 0, py + 1, ui.bar[BAR_BOTTOM].c_str());
+        fillW(w, h, start, py + 1, ui.bar[BAR_BOTTOM].c_str());
     }
 
     if (!ui.hide_indicator) {

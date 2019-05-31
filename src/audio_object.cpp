@@ -4,7 +4,7 @@
 
 #include <algorithm>
 
-AudioObject::AudioObject():name("")
+AudioObject::AudioObject(): name("")
 {
     active_attribute = nullptr;
     parent = nullptr;
@@ -45,12 +45,12 @@ void AudioObject::setActiveAttribute(const std::string &name)
     AudioObjectAttribute tmp;
 
     auto attr = std::find_if(
-            attributes.begin(),
-            attributes.end(),
-            [&name](auto const & attr) {
-                return attr->name == name;
-            }
-    );
+                    attributes.begin(),
+                    attributes.end(),
+                    [&name](auto const & attr) {
+                        return attr->name == name;
+                    }
+                );
 
     if (attr != attributes.end()) {
         active_attribute = *attr;
@@ -73,4 +73,19 @@ void AudioObject::switchNextAttribute()
 void AudioObject::addAttribute(AudioObjectAttribute *attr)
 {
     attributes.push_back(attr);
+}
+
+void AudioObject::setChannels(const AudioObjectChannels &channels)
+{
+    this->channels = channels;
+}
+
+AudioObjectChannel* AudioObject::getChannel(uint8_t channel) 
+{
+    return &channels[channel];
+}
+
+size_t AudioObject::getChannelCount()
+{
+    return channels.size();
 }

@@ -37,7 +37,8 @@ public:
         int px,
         int py,
         float vol,
-        float peak
+        float peak,
+        const std::string &info = ""
     );
     static uint32_t dropDown(
         int x,

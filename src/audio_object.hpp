@@ -12,11 +12,18 @@ struct AudioObjectAttribute {
     std::string description;
 };
 
+struct AudioObjectChannel {
+    std::string name;
+    uint32_t volume;
+};
+
+using AudioObjectChannels = std::map<uint8_t, AudioObjectChannel>;
 using AudioObjectAttributes = std::vector<AudioObjectAttribute *>;
 
 class AudioObject
 {
     Audio *parent;
+    AudioObjectChannels channels;
 
     std::string name;
 protected:
@@ -36,7 +43,7 @@ public:
     virtual void switchActiveAttribute(std::string name) = 0;
     virtual void switchDefault() = 0;
 
-    virtual void setVolume(float perc) = 0;
+    virtual void setVolume(float perc, uint8_t channel) = 0;
     virtual void setMuted(bool mute) = 0;
 
     virtual void stepVolume(int dir) = 0;
@@ -56,6 +63,11 @@ public:
     virtual AudioObjectAttribute *getActiveAttribute();
     virtual AudioObjectAttributes getAttributes();
     virtual AudioObjectAttribute *getAttribute(uint32_t idx);
+
+    void setChannels(const AudioObjectChannels &channels);
+    AudioObjectChannel* getChannel(uint8_t channel);
+    size_t getChannelCount();
+
     void setActiveAttribute(const std::string &name);
     void switchNextAttribute();
     void addAttribute(AudioObjectAttribute *attr);

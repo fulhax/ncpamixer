@@ -4,10 +4,9 @@
 
 #include <pulseaudio/pa.hpp>
 
-PaObject::PaObject():pa_name(""),volume(0)
+PaObject::PaObject(): pa_name(""), volume(0)
 {
     index = 0;
-    channels = 0;
     mute = false;
     monitor_index = 0;
     monitor_stream = nullptr;
@@ -26,9 +25,10 @@ PaObject::~PaObject()
     clearAttributes();
 }
 
-void PaObject::setVolume(float perc)
+void PaObject::setVolume(float perc, uint8_t channel)
 {
-    auto pulse = reinterpret_cast<Pa*>(getParent());
+    auto pulse = reinterpret_cast<Pa *>(getParent());
+
     if (pulse == nullptr) {
         return;
     }
@@ -39,8 +39,12 @@ void PaObject::setVolume(float perc)
         int vol = static_cast<int>(PA_VOLUME_NORM * perc);
         pa_cvolume cvol;
 
+        if (channel == UINT8_MAX) {
+            channel = getChannelCount();
+        }
+
         pa_cvolume_init(&cvol);
-        pa_cvolume_set(&cvol, channels, vol);
+        pa_cvolume_set(&cvol, channel, vol);
 
 
         pa_operation *o = pa_set_volume(
@@ -61,13 +65,17 @@ void PaObject::stepVolume(int dir)
         return;
     }
 
-    setVolume(static_cast<float>(volume + (1000 * dir)) / PA_VOLUME_NORM);
+    setVolume(
+        static_cast<float>(volume + (1000 * dir)) / PA_VOLUME_NORM,
+        UINT8_MAX
+    );
 }
 
 
 void PaObject::toggleMute()
 {
-    auto pulse = reinterpret_cast<Pa*>(getParent());
+    auto pulse = reinterpret_cast<Pa *>(getParent());
+
     if (pulse == nullptr) {
         return;
     }
@@ -87,7 +95,8 @@ void PaObject::toggleMute()
 
 void PaObject::move(uint32_t dest)
 {
-    auto pulse = reinterpret_cast<Pa*>(getParent());
+    auto pulse = reinterpret_cast<Pa *>(getParent());
+
     if (pulse == nullptr) {
         return;
     }
@@ -107,7 +116,8 @@ void PaObject::move(uint32_t dest)
 
 void PaObject::switchActiveAttribute(std::string name)
 {
-    auto pulse = reinterpret_cast<Pa*>(getParent());
+    auto pulse = reinterpret_cast<Pa *>(getParent());
+
     if (pulse == nullptr) {
         return;
     }
@@ -127,7 +137,8 @@ void PaObject::switchActiveAttribute(std::string name)
 
 void PaObject::switchDefault()
 {
-    auto pulse = reinterpret_cast<Pa*>(getParent());
+    auto pulse = reinterpret_cast<Pa *>(getParent());
+
     if (pulse == nullptr) {
         return;
     }
