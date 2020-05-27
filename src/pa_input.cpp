@@ -13,5 +13,22 @@ PaInput::PaInput()
     pa_set_default = nullptr;
 
     sink = 0;
-    memset(app_name, 0, sizeof(app_name));
+    app_name = nullptr;
+}
+
+PaInput::~PaInput()
+{
+    if(app_name)
+        free(app_name);
+}
+
+void PaInput::setAppName(const char *name)
+{
+    if(app_name) {
+        free(app_name);
+        app_name = nullptr;
+    }
+
+    if(name)
+        app_name = strdup(name);
 }

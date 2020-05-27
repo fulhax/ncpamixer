@@ -297,12 +297,7 @@ void Pa::update_source_output(const pa_source_output_info *info)
 
     strncpy(p->name, info->name, sizeof(p->name) - 1);
 
-    const char *app_name;
-    app_name = pa_proplist_gets(info->proplist, PA_PROP_APPLICATION_NAME);
-
-    if (app_name != nullptr) {
-        strncpy(p->app_name, app_name, sizeof(p->app_name) - 1);
-    }
+    p->setAppName(pa_proplist_gets(info->proplist, PA_PROP_APPLICATION_NAME));
 
     notify_update();
 }
@@ -459,12 +454,7 @@ void Pa::update_input(const pa_sink_input_info *info)
     p->sink = info->sink;
     snprintf(p->name, sizeof(p->name), "%s", info->name);
 
-    const char *app_name;
-    app_name = pa_proplist_gets(info->proplist, PA_PROP_APPLICATION_NAME);
-
-    if (app_name != nullptr) {
-        strncpy(p->app_name, app_name, sizeof(p->app_name));
-    }
+    p->setAppName(pa_proplist_gets(info->proplist, PA_PROP_APPLICATION_NAME));
 
     if (sink_changed) {
         create_monitor_stream_for_paobject(p);

@@ -6,15 +6,17 @@ class PaInput : public PaObject
 {
 public:
     PaInput();
+    ~PaInput();
     uint32_t sink;
-    char app_name[255];
+    char *app_name;
 
     uint32_t getRelation() override {
         return sink;
     };
 
+    void setAppName(const char *name);
     char* getAppName() override {
-        return &app_name[0];
+        return app_name;
     };
 };
 
