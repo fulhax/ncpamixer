@@ -1,7 +1,7 @@
 #include "tab.hpp"
 
-#include <menu.h>
 #include <ncurses.h>
+#include <menu.h>
 
 #include <algorithm>
 #include <cstring>
@@ -13,14 +13,8 @@
 #include "config.hpp"
 #include "ui.hpp"
 
-void Tab::draw()
+int Tab::getBlockSize()
 {
-    if (object == nullptr) {
-        return;
-    }
-
-    int baseY = 0;
-    int current_block = 0;
     int BLOCK_SIZE = 5;
 
     if (has_volume) {
@@ -32,6 +26,19 @@ void Tab::draw()
             BLOCK_SIZE -= 1;
         }
     }
+
+    return BLOCK_SIZE;
+}
+
+void Tab::draw()
+{
+    if (object == nullptr) {
+        return;
+    }
+
+    int baseY = 0;
+    int current_block = 0;
+    int BLOCK_SIZE = getBlockSize();
 
     total_blocks = (ui.height - 2) / BLOCK_SIZE;
     int blocks_drawn = 0;
@@ -240,18 +247,6 @@ void Tab::handleEvents(const char *event)
         return;
     }
 
-    int BLOCK_SIZE = 5;
-
-    if (has_volume) {
-        if (ui.hide_top) {
-            BLOCK_SIZE -= 1;
-        }
-
-        if (ui.hide_bottom) {
-            BLOCK_SIZE -= 1;
-        }
-    }
-
     auto pai = object->find(selected_index);
 
     PaObject *selected_pobj = nullptr;
@@ -377,56 +372,243 @@ void Tab::handleEvents(const char *event)
             }
         }
     } else if (!strcmp("dropdown", event)) {
-        uint32_t selected = 0;
+        handleDropDown(selected_pobj);
+    }
+}
 
+void Tab::handleMouse(int x, int y, int button)
+{
+    if (object == nullptr) {
+        return;
+    }
 
-        if (selected_pobj != nullptr && toggle != nullptr) {
-            selected = dropDown(
-                           -1,
-                           std::min(
-                               selected_block * (BLOCK_SIZE),
-                               (total_blocks - 1) * BLOCK_SIZE
-                           ),
-                           *toggle,
-                           selected_pobj->getRelation()
-                       );
+    int baseY = 0;
+    int current_block = 0;
+    int BLOCK_SIZE = getBlockSize();
 
-            if (selected != static_cast<uint32_t>(-1)) {
-                selected_pobj->move(selected);
+    total_blocks = (ui.height - 2) / BLOCK_SIZE;
+    int blocks_drawn = 0;
+
+    bool more_up = false;
+    bool more_down = false;
+
+    for (auto &i : *object) {
+        auto item = i.second;
+        if (current_block <= selected_block - total_blocks) {
+            current_block++;
+            more_up = true;
+            continue;
+        }
+
+        if (blocks_drawn >= total_blocks) {
+            more_down = true;
+            break;
+        }
+
+        blocks_drawn++;
+
+        if (has_volume) {
+            if (handleMouseVolumeBar(item, x, y, ui.width, ui.height, 0, baseY + 3)) {
+                return;
             }
-        } else if (selected_pobj != nullptr) {
-            uint32_t w = 0;
-            int x = 0;
-
-            int y = std::min(
-                        selected_block * (BLOCK_SIZE),
-                        (total_blocks - 1) * BLOCK_SIZE
-                    );
-
-
-            if (has_volume) {
-                x = -1;
-            } else {
-                x = 1;
-                w = ui.width - 3;
-                y += 2;
-            }
-
-            selected = dropDown(
-                           x,
-                           y,
-                           selected_pobj->attributes,
-                           selected_pobj->getRelation(),
-                           w
-                       );
-
-            if (selected != static_cast<uint32_t>(-1)) {
-                selected_pobj->set_active_attribute(
-                    selected_pobj->attributes[selected]->name
-                );
+        } else { // Configuration
+            if (item->active_attribute != nullptr) {
+                if (handleMouseDropDown(item, x, y, ui.width - 2, 2, 1, baseY + 2)) {
+                    return;
+                }
             }
         }
+
+        int toggle_len = 0;
+        int item_len = 0;
+        unsigned int len = 0;
+        unsigned int sink_pos = 0;
+        PaObject* toggle_item = nullptr;
+
+        if (toggle != nullptr) {
+            auto rel = toggle->find(i.second->getRelation());
+
+            if (rel != toggle->end()) {
+                char *name = rel->second->name;
+
+                if (name != nullptr) {
+                    len = strlen(name);
+                    sink_pos = ui.width - 1 - len;
+                    item_len = strlen(name);
+                    toggle_item = rel->second;
+                }
+            }
+        } else {
+            if (i.second->active_attribute != nullptr && has_volume) {
+                len = strlen(i.second->active_attribute->description);
+                sink_pos = ui.width - 1 - len;
+                item_len = strlen(i.second->active_attribute->description);
+                toggle_item = i.second;
+            }
+        }
+
+        if (toggle_item != nullptr) {
+            auto save_selected_index = selected_index;
+            auto save_selected_block = selected_block;
+
+            selected_index = i.first;
+            selected_block = current_block;
+
+            bool done = handleMouseDropDown(toggle_item, x, y, len, 1, sink_pos, baseY + 1);
+
+            selected_index = save_selected_index;
+            selected_block = save_selected_block;
+
+            if (done) {
+                return;
+            }
+
+            toggle_len += item_len;
+        }
+
+        baseY += BLOCK_SIZE;
+        current_block++;
     }
+
+    if (more_up) {
+        if (handleMouseMoreUp(x, y, 4, 1, (ui.width / 2) - 4, 0)) {
+            return;
+        }
+    }
+
+    if (more_down) {
+        if (handleMouseMoreDown(x, y, 4, 1, (ui.width / 2) - 4, ui.height - 2)) {
+            return;
+        }
+    }
+}
+
+void Tab::handleDropDown(PaObject* selected_pobj)
+{
+    uint32_t selected = 0;
+
+    int BLOCK_SIZE = getBlockSize();
+
+    if (selected_pobj != nullptr && toggle != nullptr) {
+        selected = dropDown(
+                       -1,
+                       std::min(
+                           selected_block * (BLOCK_SIZE),
+                           (total_blocks - 1) * BLOCK_SIZE
+                       ),
+                       *toggle,
+                       selected_pobj->getRelation()
+                   );
+
+        if (selected != static_cast<uint32_t>(-1)) {
+            selected_pobj->move(selected);
+        }
+    } else if (selected_pobj != nullptr) {
+        uint32_t w = 0;
+        int x = 0;
+
+        int y = std::min(
+                    selected_block * (BLOCK_SIZE),
+                    (total_blocks - 1) * BLOCK_SIZE
+                );
+
+
+        if (has_volume) {
+            x = -1;
+        } else {
+            x = 1;
+            w = ui.width - 3;
+            y += 2;
+        }
+
+        selected = dropDown(
+                       x,
+                       y,
+                       selected_pobj->attributes,
+                       selected_pobj->getRelation(),
+                       w
+                   );
+
+        if (selected != static_cast<uint32_t>(-1)) {
+            selected_pobj->set_active_attribute(
+                selected_pobj->attributes[selected]->name
+            );
+        }
+    }
+}
+
+bool Tab::handleMouseVolumeBar(
+    PaObject* item,
+    int mousex,
+    int mousey,
+    int w,
+    int h,
+    int x,
+    int y
+)
+{
+    if (mousex < x || mousex >= x + w || mousey < (y - 1) || mousey >= y + 2) {
+        return false;
+    }
+
+    item->set_volume(((mousex - x + 1) / (float)(w - x)) * 1.5f);
+
+    return true;
+}
+
+bool Tab::handleMouseDropDown(
+    PaObject* item,
+    int mousex,
+    int mousey,
+    int w,
+    int h,
+    int x,
+    int y
+)
+{
+    if (mousex < x || mousex >= x + w || mousey < y || mousey >= y + 3) {
+        return false;
+    }
+
+    handleDropDown(item);
+
+    return true;
+}
+
+bool Tab::handleMouseMoreUp(
+    int mousex,
+    int mousey,
+    int w,
+    int h,
+    int x,
+    int y
+)
+{
+    if (mousex < x || mousex >= x + w || mousey < y || mousey > y) {
+        return false;
+    }
+
+    handleEvents("move_up");
+
+    return true;
+}
+
+bool Tab::handleMouseMoreDown(
+    int mousex,
+    int mousey,
+    int w,
+    int h,
+    int x,
+    int y
+)
+{
+    if (mousex < x || mousex >= x + w || mousey < y || mousey > y) {
+        return false;
+    }
+
+    handleEvents("move_down");
+
+    return true;
 }
 
 uint32_t Tab::dropDown(
@@ -578,6 +760,59 @@ uint32_t Tab::dropDown(
         if (input == ERR) {
             continue;
         }
+
+#ifdef KEY_MOUSE
+        if (input == KEY_MOUSE) {
+            MEVENT mevent;
+            int ok;
+
+            ok = getmouse(&mevent);
+            if (ok != OK) {
+                continue;
+            }
+
+            if (mevent.bstate & BUTTON1_PRESSED) {
+                if (mevent.y < y || mevent.y > y + (int)height + 1 ||
+                    mevent.x < x || mevent.x > x + (int)width + 1) {
+                    clrtoeol();
+
+                    ITEM *item = current_item(menu);
+                    selected = static_cast<std::pair<uint32_t, std::string>*>(
+                                   item->userptr
+                               )->first;
+
+                    selecting = false;
+                    continue;
+                }
+            }
+
+            if (mevent.y == y || mevent.y == y + (int)height + 1 ||
+                mevent.x == x || mevent.x == x + (int)width + 1) {
+                continue;
+            }
+
+            if (mevent.bstate & BUTTON1_PRESSED) {
+                int top = top_row(menu);
+                int idx = mevent.y - y - 1 + top;
+                ITEM** its = menu_items(menu);
+                int itc = item_count(menu);
+                if (idx < itc) {
+                    ITEM* item = its[idx];
+                    set_current_item(menu, item);
+                    selected = static_cast<std::pair<uint32_t, std::string>*>(
+                                   item->userptr
+                               )->first;
+                }
+
+                selecting = false;
+                continue;
+            } else if (mevent.bstate & BUTTON4_PRESSED) {
+                menu_driver(menu, REQ_UP_ITEM);
+            } else if (mevent.bstate & BUTTON5_PRESSED) {
+                menu_driver(menu, REQ_DOWN_ITEM);
+            }
+        }
+#endif
 
         if (input == KEY_RESIZE) {
             selecting = false;

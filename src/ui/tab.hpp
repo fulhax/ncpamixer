@@ -29,6 +29,7 @@ public:
 
     virtual void draw();
     void handleEvents(const char *event);
+    void handleMouse(int x, int y, int button);
 
     static void borderBox(int w, int h, int px, int py);
     static void selectBox(int w, int px, int py, bool selected);
@@ -76,6 +77,43 @@ private:
     );
     static unsigned int getVolumeColor(int p);
     static unsigned int getBarColor(int p);
+
+    int getBlockSize();
+    bool handleMouseVolumeBar(
+        PaObject* item,
+        int mousex,
+        int mousey,
+        int w,
+        int h,
+        int x,
+        int y
+    );
+    bool handleMouseDropDown(
+        PaObject* item,
+        int mousex,
+        int mousey,
+        int w,
+        int h,
+        int x,
+        int y
+    );
+    bool handleMouseMoreUp(
+        int mousex,
+        int mousey,
+        int w,
+        int h,
+        int x,
+        int y
+    );
+    bool handleMouseMoreDown(
+        int mousex,
+        int mousey,
+        int w,
+        int h,
+        int x,
+        int y
+    );
+    void handleDropDown(PaObject* selected_pobj);
 
     int selected_block;
     int total_blocks;

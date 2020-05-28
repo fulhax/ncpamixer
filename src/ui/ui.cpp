@@ -232,6 +232,15 @@ void Ui::handleInput()
 {
     set_escdelay(0);
 
+#ifdef KEY_MOUSE
+    mouseinterval(0);
+#if NCURSES_MOUSE_VERSION > 1
+    mousemask(BUTTON1_PRESSED | BUTTON4_PRESSED | BUTTON5_PRESSED, NULL);
+#else
+    mousemask(BUTTON1_PRESSED, NULL);
+#endif
+#endif
+
     int input = wgetch(window);
     const char *event = nullptr;
 
@@ -240,6 +249,54 @@ void Ui::handleInput()
     }
 
     switch (input) {
+#ifdef KEY_MOUSE
+        case KEY_MOUSE: {
+            MEVENT mevent;
+            int ok;
+
+            ok = getmouse(&mevent);
+            if (ok != OK) {
+                return;
+            }
+            if (mevent.y == height - 1) {
+                if (mevent.bstate & BUTTON1_PRESSED) {
+                    int x = 0;
+                    for (int i = 0; i < NUM_TABS; i++) {
+                        int len = strlen(tabs[i]);
+                        if (mevent.x >= x && mevent.x < x + len) {
+                            switchTab(i);
+                            return;
+                        }
+                        x += len + 1;
+                    }
+//#if NCURSES_MOUSE_VERSION > 1
+                } else if (mevent.bstate & BUTTON4_PRESSED) {
+                    switchTab(++tab_index);
+                    return;
+                } else if (mevent.bstate & BUTTON5_PRESSED) {
+                    switchTab(--tab_index);
+                    return;
+//#endif
+                }
+            } else {
+                int button = 0;
+                if (mevent.bstate & BUTTON1_PRESSED) {
+                    button = 1;
+                }
+#if NCURSES_MOUSE_VERSION > 1
+                else if (mevent.bstate & BUTTON4_PRESSED) {
+                    button = 4;
+                } else if (mevent.bstate & BUTTON5_PRESSED) {
+                    button = 5;
+                }
+#endif
+
+                current_tab->handleMouse(mevent.x, mevent.y, button);
+            }
+
+            return;
+        }
+#endif
         case KEY_RESIZE:
             getmaxyx(stdscr, height, width);
             wresize(window, height - 1, width);
