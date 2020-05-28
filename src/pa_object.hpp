@@ -75,7 +75,7 @@ public:
     void set_default(const char* name);
     void clearAttributes();
 
-    virtual char *getAppName()
+    virtual const char *getAppName()
     {
         return nullptr;
     };
