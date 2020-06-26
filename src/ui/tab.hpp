@@ -28,7 +28,7 @@ public:
     virtual ~Tab() = default;
 
     virtual void draw();
-    void handleEvents(const char *event);
+    void handleEvents(const char* const &event);
     void handleMouse(int x, int y, int button);
 
     static void borderBox(int w, int h, int px, int py);
