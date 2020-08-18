@@ -235,7 +235,7 @@ void Tab::draw()
     }
 }
 
-void Tab::handleEvents(const char *event)
+void Tab::handleEvents(const char* const &event)
 {
     if (object == nullptr) {
         return;
