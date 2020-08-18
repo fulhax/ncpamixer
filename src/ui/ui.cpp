@@ -1,5 +1,6 @@
 #include "ui.hpp"
 
+#include <locale.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
 
