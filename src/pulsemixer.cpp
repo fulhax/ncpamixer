@@ -32,6 +32,8 @@ void help()
     version();
 
     printf("-c --config=CONFIG_FILE     Set custom location for config\n");
+    printf("-t --tab=TAB                Open on given tab. Choices: "
+           "(p)layback (default), (r)ecording, (o)utput, (i)nput, (c)onfiguration\n");
     printf("-h --help                   Print this help screen\n");
     printf("-v --version                Print version info\n");
 }
@@ -44,15 +46,17 @@ int main(int argc, char *argv[])
         { "version", no_argument, 0, 'v' },
         { "help", no_argument, 0, 'h' },
         { "config", required_argument, 0, 'c' },
+        { "tab", required_argument, 0, 't' },
         { 0, 0, 0, 0 }
     };
 
     int c;
     int longIndex = 0;
+    int startingTab = TAB_PLAYBACK;
 
     char conf[PATH_MAX] = {0};
 
-    while ((c = getopt_long(argc, argv, "vhc:", longOpts, &longIndex)) != -1) {
+    while ((c = getopt_long(argc, argv, "vhc:t:", longOpts, &longIndex)) != -1) {
 
         switch (c) {
             case 'v':
@@ -74,6 +78,28 @@ int main(int argc, char *argv[])
                 }
                 break;
 
+            case 't':
+                switch (optarg[0]) {
+                    case 'p':
+                        break;
+                    case 'r':
+                        startingTab = TAB_RECORDING;
+                        break;
+                    case 'o':
+                        startingTab = TAB_OUTPUT;
+                        break;
+                    case 'i':
+                        startingTab = TAB_INPUT;
+                        break;
+                    case 'c':
+                        startingTab = TAB_CONFIGURATION;
+                        break;
+                    default:
+                        fprintf(stderr, "invalid tab: %s\n", optarg);
+                        return 1;
+
+                }
+                break;
             case '?':
                 return 0;
 
@@ -86,7 +112,7 @@ int main(int argc, char *argv[])
 
     pulse.init();
 
-    if (ui.init() > 0) {
+    if (ui.init(startingTab) > 0) {
         ui.run();
     }
 

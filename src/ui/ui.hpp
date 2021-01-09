@@ -55,7 +55,7 @@ public:
     Ui();
     virtual ~Ui();
 
-    int init();
+    int init(int tab);
     void run();
 
     int width;

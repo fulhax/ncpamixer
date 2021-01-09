@@ -42,7 +42,7 @@ Ui::~Ui()
     delete current_tab;
 }
 
-int Ui::init()
+int Ui::init(int tab)
 {
     setlocale(LC_ALL, "");
     initscr();
@@ -161,7 +161,7 @@ int Ui::init()
     );
 
     running = true;
-    current_tab = new Playback();
+    switchTab(tab);
 
     getmaxyx(stdscr, height, width);
 
