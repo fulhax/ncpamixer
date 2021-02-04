@@ -806,11 +806,14 @@ uint32_t Tab::dropDown(
 
                 selecting = false;
                 continue;
-            } else if (mevent.bstate & BUTTON4_PRESSED) {
+            }
+#if NCURSES_MOUSE_VERSION > 1
+            else if (mevent.bstate & BUTTON4_PRESSED) {
                 menu_driver(menu, REQ_UP_ITEM);
             } else if (mevent.bstate & BUTTON5_PRESSED) {
                 menu_driver(menu, REQ_DOWN_ITEM);
             }
+#endif
         }
 #endif
 
