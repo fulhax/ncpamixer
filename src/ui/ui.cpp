@@ -270,14 +270,14 @@ void Ui::handleInput()
                         }
                         x += len + 1;
                     }
-//#if NCURSES_MOUSE_VERSION > 1
+#if NCURSES_MOUSE_VERSION > 1
                 } else if (mevent.bstate & BUTTON4_PRESSED) {
                     switchTab(++tab_index);
                     return;
                 } else if (mevent.bstate & BUTTON5_PRESSED) {
                     switchTab(--tab_index);
                     return;
-//#endif
+#endif
                 }
             } else {
                 int button = 0;
