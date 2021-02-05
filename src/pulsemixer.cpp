@@ -4,6 +4,7 @@
 #include <pulse/pulseaudio.h>
 #include <wordexp.h>
 #include <errno.h>
+#include <locale.h>
 
 #include <vector>
 
@@ -37,6 +38,8 @@ void help()
 
 int main(int argc, char *argv[])
 {
+    setlocale(LC_ALL, "");
+
     static const struct option longOpts[] = {
         { "version", no_argument, 0, 'v' },
         { "help", no_argument, 0, 'h' },
