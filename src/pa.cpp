@@ -582,19 +582,8 @@ void Pa::create_monitor_stream_for_paobject(PaObject *po)
         po->monitor_stream = nullptr;
     }
 
-    if (po->type == pa_object_t::INPUT) {
-        PaInput *input = reinterpret_cast<PaInput *>(po);
-        input->monitor_stream = create_monitor_stream_for_source(
-                                    PA_SINKS[input->sink]->monitor_index,
-                                    input->index
-                                );
-    } else {
-        po->monitor_stream = create_monitor_stream_for_source(
-                                 po->monitor_index,
-                                 -1
-                             );
-
-    }
+	po->monitor_stream = create_monitor_stream_for_source
+		(po->monitor_index, po->type == pa_object_t::INPUT ? po->index : -1);
 }
 
 void Pa::set_notify_update_cb(const notify_update_callback &cb)
