@@ -68,6 +68,8 @@ You find them in ncpamixer.conf
 * CMake
 * C++14 compatible compiler
 
+On Debian(-based) systems, you'd need `libncurses-dev` and `libpulse-dev`.
+
 ### Install
 
 ##### Arch Linux
