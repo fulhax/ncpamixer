@@ -70,6 +70,12 @@ You find them in ncpamixer.conf
 
 On Debian(-based) systems, you'd need `libncurses-dev` and `libpulse-dev`.
 
+### Building
+* In the main directory, run `make`
+* On some systems (tested on Debian-stable), you may need to instead run `make USE_WIDE=True`
+* The above command is needed to get UTF-8 support; it will cause CMake to look for the ncursesw library, and it'll link to it with -lncursesw
+* (This also means you might have to first `rm build/CMakeCache.txt` if you ran `make` without using the USE_WIDE setting, so it'll re-generate the Makefile)
+
 ### Install
 
 ##### Arch Linux
