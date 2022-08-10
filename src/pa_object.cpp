@@ -55,11 +55,12 @@ void PaObject::set_volume(float perc)
 
 void PaObject::step_volume(int dir)
 {
-    if (volume <= 1000 && dir == -1) {
+    if (volume < 0x400 && dir == -1) {
+        set_volume(0);
         return;
     }
 
-    set_volume(static_cast<float>(volume + (1000 * dir)) / PA_VOLUME_NORM);
+    set_volume(static_cast<float>(volume + (0x400 * dir)) / PA_VOLUME_NORM);
 }
 
 
