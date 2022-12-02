@@ -419,8 +419,6 @@ void Tab::handleMouse(int x, int y, int button)
             }
         }
 
-        int toggle_len = 0;
-        int item_len = 0;
         unsigned int len = 0;
         unsigned int sink_pos = 0;
         PaObject* toggle_item = nullptr;
@@ -434,7 +432,6 @@ void Tab::handleMouse(int x, int y, int button)
                 if (name != nullptr) {
                     len = strlen(name);
                     sink_pos = ui.width - 1 - len;
-                    item_len = strlen(name);
                     toggle_item = rel->second;
                 }
             }
@@ -442,7 +439,6 @@ void Tab::handleMouse(int x, int y, int button)
             if (i.second->active_attribute != nullptr && has_volume) {
                 len = strlen(i.second->active_attribute->description);
                 sink_pos = ui.width - 1 - len;
-                item_len = strlen(i.second->active_attribute->description);
                 toggle_item = i.second;
             }
         }
@@ -462,8 +458,6 @@ void Tab::handleMouse(int x, int y, int button)
             if (done) {
                 return;
             }
-
-            toggle_len += item_len;
         }
 
         baseY += BLOCK_SIZE;
