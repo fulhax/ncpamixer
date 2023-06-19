@@ -683,7 +683,7 @@ uint32_t Tab::dropDown(
     WINDOW *menu_win = 0;
 
     for (auto &i : objects) {
-        ITEM *item = new ITEM;
+        ITEM *item = (ITEM*) malloc(sizeof(ITEM));
         memset(item, 0, sizeof(ITEM));
 
         item->opt = O_SELECTABLE;
