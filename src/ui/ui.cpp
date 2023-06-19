@@ -243,7 +243,7 @@ void Ui::handleInput()
 #endif
 
     int input = wgetch(window);
-    const char *event = nullptr;
+    std::string event{};
 
     if (input == ERR) {
         return;
@@ -316,7 +316,7 @@ void Ui::handleInput()
                 event = config.getString(
                             ("keycode.alt." +  key).c_str(),
                             "unbound"
-                        ).c_str();
+                        );
 
                 break;
             }
@@ -330,7 +330,7 @@ void Ui::handleInput()
                     event = config.getString(
                             ("keycode.f." +  key).c_str(),
                             "unbound"
-                            ).c_str();
+                            );
 
                     break;
                 }
@@ -344,33 +344,33 @@ void Ui::handleInput()
             event = config.getString(
                         ("keycode." +  key).c_str(),
                         "unbound"
-                    ).c_str();
+                    );
 
             break;
     }
 
-    if (!strcmp("unbound", event)) {
+    if (!strcmp("unbound", event.c_str())) {
         return;
     }
 
-    if (!strcmp("quit", event)) {
+    if (!strcmp("quit", event.c_str())) {
         kill();
-    } else if (!strcmp("tab_next", event)) {
+    } else if (!strcmp("tab_next", event.c_str())) {
         switchTab(++tab_index);
-    } else if (!strcmp("tab_prev", event)) {
+    } else if (!strcmp("tab_prev", event.c_str())) {
         switchTab(--tab_index);
-    } else if (!strcmp("tab_playback", event)) {
+    } else if (!strcmp("tab_playback", event.c_str())) {
         switchTab(TAB_PLAYBACK);
-    } else if (!strcmp("tab_recording", event)) {
+    } else if (!strcmp("tab_recording", event.c_str())) {
         switchTab(TAB_RECORDING);
-    } else if (!strcmp("tab_output", event)) {
+    } else if (!strcmp("tab_output", event.c_str())) {
         switchTab(TAB_OUTPUT);
-    } else if (!strcmp("tab_input", event)) {
+    } else if (!strcmp("tab_input", event.c_str())) {
         switchTab(TAB_INPUT);
-    } else if (!strcmp("tab_config", event)) {
+    } else if (!strcmp("tab_config", event.c_str())) {
         switchTab(TAB_CONFIGURATION);
     } else {
-        current_tab->handleEvents(event);
+        current_tab->handleEvents(event.c_str());
     }
 }
 
