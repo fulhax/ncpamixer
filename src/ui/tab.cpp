@@ -851,6 +851,9 @@ uint32_t Tab::dropDown(
     free_menu(menu);
 
     for (auto i : items) {
+        if ((i != nullptr) && (i->name.str != nullptr)) {
+            delete[] i->name.str;
+        }
         free_item(i);
     }
 
