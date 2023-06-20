@@ -683,7 +683,7 @@ uint32_t Tab::dropDown(
     WINDOW *menu_win = 0;
 
     for (auto &i : objects) {
-        ITEM *item = new ITEM;
+        ITEM *item = (ITEM*) malloc(sizeof(ITEM));
         memset(item, 0, sizeof(ITEM));
 
         item->opt = O_SELECTABLE;
@@ -749,7 +749,6 @@ uint32_t Tab::dropDown(
 
     while (selecting) {
         int input = wgetch(menu_win);
-        const char *event = nullptr;
 
         if (input == ERR) {
             continue;
@@ -817,13 +816,14 @@ uint32_t Tab::dropDown(
         }
 
         std::string key = std::to_string(input);
-        event = config.getString(("keycode." +  key).c_str(), "unbound").c_str();
+        
+        std::string event = config.getString(("keycode." +  key).c_str(), "unbound");
 
-        if (!strcmp("unbound", event)) {
+        if (!strcmp("unbound", event.c_str())) {
             continue;
         }
 
-        if (!strcmp("select", event)) {
+        if (!strcmp("select", event.c_str())) {
             clrtoeol();
 
             ITEM *item = current_item(menu);
@@ -832,15 +832,15 @@ uint32_t Tab::dropDown(
                        )->first;
 
             selecting = false;
-        } else if (!strcmp("move_down", event)) {
+        } else if (!strcmp("move_down", event.c_str())) {
             menu_driver(menu, REQ_DOWN_ITEM);
-        } else if (!strcmp("move_up", event)) {
+        } else if (!strcmp("move_up", event.c_str())) {
             menu_driver(menu, REQ_UP_ITEM);
-        } else if (!strcmp("page_up", event)) {
+        } else if (!strcmp("page_up", event.c_str())) {
             menu_driver(menu, REQ_SCR_UPAGE);
-        } else if (!strcmp("page_down", event)) {
+        } else if (!strcmp("page_down", event.c_str())) {
             menu_driver(menu, REQ_SCR_DPAGE);
-        } else if (!strcmp("quit", event)) {
+        } else if (!strcmp("quit", event.c_str())) {
             selecting = false;
         }
 
@@ -851,6 +851,9 @@ uint32_t Tab::dropDown(
     free_menu(menu);
 
     for (auto i : items) {
+        if ((i != nullptr) && (i->name.str != nullptr)) {
+            delete[] i->name.str;
+        }
         free_item(i);
     }
 
