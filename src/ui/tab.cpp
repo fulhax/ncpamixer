@@ -408,7 +408,7 @@ void Tab::handleMouse(int x, int y, int button)
         blocks_drawn++;
 
         if (has_volume) {
-            if (handleMouseVolumeBar(item, x, y, ui.width, ui.height, 0, baseY + 3)) {
+            if (handleMouseVolumeBar(item, x, y, ui.width, ui.height, 0, baseY + 3, button)) {
                 return;
             }
         } else { // Configuration
@@ -538,15 +538,21 @@ bool Tab::handleMouseVolumeBar(
     int w,
     int h,
     int x,
-    int y
+    int y, 
+    int button
 )
 {
     if (mousex < x || mousex >= x + w || mousey < (y - 1) || mousey >= y + 2) {
         return false;
     }
 
-    item->set_volume(((mousex - x + 1) / (float)(w - x)) * 1.5f);
-
+    if (button == 4) {
+        item->step_volume(1);
+    } else if (button == 5) {
+        item->step_volume(-1);
+    } else {
+        item->set_volume(((mousex - x + 1) / (float)(w - x)) * 1.5f);
+    }
     return true;
 }
 
