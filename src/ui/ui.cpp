@@ -185,6 +185,7 @@ void Ui::checkPulseAudio()
 {
     if (!pulse.connected && !disconnect) {
         disconnect = true;
+        delete current_tab;
         current_tab = new Fallback();
     } else if (pulse.connected && disconnect) {
         disconnect = false;

@@ -86,7 +86,8 @@ private:
         int w,
         int h,
         int x,
-        int y
+        int y, 
+        int button
     );
     bool handleMouseDropDown(
         PaObject* item,
