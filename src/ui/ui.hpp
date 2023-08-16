@@ -7,6 +7,7 @@
 
 #include <condition_variable>
 #include <vector>
+#include <cstring>
 
 #include "pa.hpp"
 #include "tab.hpp"
@@ -85,6 +86,12 @@ private:
 
     int tab_index;
     Tab *current_tab;
+
+    static constexpr char HELP_HEADER[] = { " HELP " };
+    static constexpr auto HELP_HEADER_SIZE {sizeof (HELP_HEADER) - 1};
+    static constexpr char HELP_FOOTER[] = {" Press 'j/k' to scroll 'q' to exit "};
+    static constexpr auto HELP_FOOTER_SIZE{sizeof (HELP_FOOTER) - 1};
+
     static void resize(int signum);
 
     void statusBar();
@@ -93,6 +100,7 @@ private:
     void draw();
     void switchTab(int index);
     void checkPulseAudio();
+    void show_help();
 };
 
 extern Ui ui;

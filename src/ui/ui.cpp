@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <cstring>
 #include <string>
+#include <algorithm>
 
 #include "config.hpp"
 
@@ -20,6 +21,9 @@
 #define KEY_ALT(x) (KEY_F(64 - 26) + ((x) - 'A'))
 
 Ui ui;
+
+constexpr char Ui::HELP_HEADER[];
+constexpr char Ui::HELP_FOOTER[];
 
 Ui::Ui()
 {
@@ -370,9 +374,82 @@ void Ui::handleInput()
         switchTab(TAB_INPUT);
     } else if (!strcmp("tab_config", event.c_str())) {
         switchTab(TAB_CONFIGURATION);
+    } else if (!strcmp("help", event.c_str())) {
+        show_help();
     } else {
         current_tab->handleEvents(event.c_str());
     }
+}
+
+void Ui::show_help() {
+    if (LINES < 10) return;
+    if (COLS < 40) return;
+
+    // Create a new pad. The size of the pad is defined by HELP_LINES.
+    const auto& c { config.getKeycodeNameEvents() };
+    const auto HELP_LINES = static_cast<int>(c.size());
+    if (HELP_LINES < 1) return; // No help to show :(
+    WINDOW *pad = newpad(HELP_LINES, COLS - 10);
+
+    // Add some text to the pad
+    int line = 0;
+    //  max_length left-justifies the string and pads it with spaces to the right, ensuring 
+    //  that the equals sign always appears at the same position
+    int max_length = 0;
+    for (const auto& it : c) {
+        max_length = std::max(max_length, static_cast<int>(it.first.length()));
+    }
+
+    int start_pos = (getmaxx(pad) - (max_length + 10)) / 2; // 10 is an arbitrary number
+    if (start_pos < 0) start_pos = 0; // Ensure start_pos is not negative
+    for (const auto& it : c) {
+        mvwprintw(pad, line++, start_pos,  "%-*s = %s", max_length, it.first.c_str(), it.second.c_str());
+    }
+
+    // Calculate the size and position of the window
+    int window_height = LINES - 10;
+    int window_width = COLS - 10;
+    int window_top = (LINES - window_height) / 2;
+    int window_left = (COLS - window_width) / 2;
+
+    // Create a new window to display the pad
+    WINDOW *win = newwin(window_height, window_width, window_top, window_left);
+    box(win, 0, 0);
+
+    // Add a title and a footer to the window
+    mvwprintw(win, 0, (window_width - HELP_HEADER_SIZE) / 2, "%s", HELP_HEADER);
+    mvwprintw(win, window_height - 1, (window_width - HELP_FOOTER_SIZE) / 2, "%s", HELP_FOOTER);
+
+    wrefresh(win);
+
+    int pad_top_line = 0;
+
+    // Main loop
+    while (true) {
+        // Display the pad in the window
+        prefresh(pad, pad_top_line, 0, window_top + 1, window_left + 1, window_top + window_height - 2, window_left + window_width - 2);
+
+        // Wait for user input
+        int ch = getch();
+        if (ch == KEY_UP || ch == 'k') {
+            // Up arrow key pressed. Check if the top of the pad is reached.
+            if (pad_top_line > 0) {
+                --pad_top_line;
+            }
+        } else if (ch == KEY_DOWN || ch == 'j') {
+            // Down arrow key pressed. Check if the bottom of the pad is reached.
+            if (pad_top_line < HELP_LINES - (window_height - 2)) {
+                ++pad_top_line;
+            }
+        } else if (ch == 'q') {
+            // 'q' key pressed. Exit the loop.
+            break;
+        }
+    }
+
+    // Delete the window and the pad
+    delwin(win);
+    delwin(pad);
 }
 
 void Ui::kill()

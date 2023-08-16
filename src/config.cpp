@@ -4,6 +4,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <ncurses.h>
 
 #include <cstdio>
 #include <cstdlib>
@@ -15,9 +16,43 @@
 
 Config config;
 
+constexpr char Config::KEY[];
+
+std::string Config::getKeycodeName(const char *keycode)
+{
+    if (keycode == nullptr) return {};
+    if (keycode[0] == 0) return {};
+    if (memcmp(keycode, KEY, KEY_SIZE) != 0) return {};
+    if (strlen(keycode) < KEY_SIZE + 2) return {};
+    const auto key_val{keycode + KEY_SIZE + 1};
+    const auto is_vt100{key_val[0] == 'f' && key_val[1] == '.'};
+    int k{0};
+    try { k = std::stoi((is_vt100) ? key_val + 2 : key_val); }
+    catch (const std::exception&) { return{}; }
+    if (is_vt100) return { "VT100_F" + std::to_string(k - 79) };
+    return {keyname(k)};
+}
+
 Config::Config()
 {
     memset(&filename[0], 0, sizeof(filename));
+}
+
+const config_map Config::getConfig() const
+{
+    return config;
+}
+
+const config_map Config::getKeycodeNameEvents() const
+{
+    config_map keycodes{};
+
+    for (const auto& it : config) {
+        const auto kn{getKeycodeName(it.first.c_str())};
+        if (kn.empty()) continue;
+        keycodes[kn] = it.second;
+    }
+    return keycodes;
 }
 
 const char *Config::getHomeDir()
@@ -292,6 +327,7 @@ void Config::createDefault()
             "   \"keycode.55\"   = \"set_volume_70\"   # 7\n"
             "   \"keycode.56\"   = \"set_volume_80\"   # 8\n"
             "   \"keycode.57\"   = \"set_volume_90\"   # 9\n"
+            "   \"keycode.63\"   = \"help\"            # ?\n"
             "# }"
         );
         fclose(f);
