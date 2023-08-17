@@ -5,6 +5,8 @@
 #include <wordexp.h>
 #include <errno.h>
 #include <locale.h>
+#include <filesystem>
+#include <optional>
 
 #include <vector>
 
@@ -12,6 +14,8 @@
 #include "pa.hpp"
 #include "config.hpp"
 #include "version.hpp"
+
+namespace fs = std::filesystem;
 
 void version()
 {
@@ -54,7 +58,7 @@ int main(int argc, char *argv[])
     int longIndex = 0;
     int startingTab = TAB_PLAYBACK;
 
-    char conf[PATH_MAX] = {0};
+    std::optional<fs::path> config_path{std::nullopt};
 
     while ((c = getopt_long(argc, argv, "vhc:t:", longOpts, &longIndex)) != -1) {
 
@@ -68,14 +72,7 @@ int main(int argc, char *argv[])
                 return 0;
 
             case 'c':
-                if(realpath(optarg, conf) == NULL) {
-                    fprintf(
-                        stderr,
-                        "realpath error code: %d, %s",
-                        errno,
-                        strerror(errno)
-                    );
-                }
+                config_path = optarg;
                 break;
 
             case 't':
@@ -108,7 +105,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    config.init(conf);
+    config.init(config_path);
 
     pulse.init();
 
