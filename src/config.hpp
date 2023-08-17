@@ -3,6 +3,9 @@
 
 #include <map>
 #include <string>
+#include <optional>
+
+using config_map = std::map<std::string, std::string>;
 
 class Config
 {
@@ -17,8 +20,13 @@ public:
     bool getBool(const char *key, bool def);
     bool keyExists(const char *key);
     bool keyEmpty(const char *key);
+    const config_map getConfig() const;
+    const config_map getKeycodeNameEvents() const;
+    static std::string getKeycodeName(const char *keycode);
 private:
-    std::map<std::string, std::string> config;
+    static constexpr char KEY[] = {"keycode"};
+    static constexpr auto KEY_SIZE{sizeof (KEY) - 1};
+    config_map config;
     char filename[255];
 
     static const char *getHomeDir();
