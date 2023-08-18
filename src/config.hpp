@@ -22,7 +22,7 @@ public:
     int getInt(const char *key, int def);
     bool getBool(const char *key, bool def);
     bool keyExists(const char *key) const;
-    bool keyEmpty(const char *key) const;
+    bool keyEmpty(const char *key);
     const config_map getConfig() const;
     const config_map getKeycodeNameEvents() const;
     static std::string getKeycodeName(const char *keycode);

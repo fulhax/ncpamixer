@@ -181,7 +181,7 @@ bool Config::keyExists(const char *key) const
     return !(conf == config.end());
 }
 
-bool Config::keyEmpty(const char *key) const
+bool Config::keyEmpty(const char *key)
 {
     if (keyExists(key)) {
         return (config[key].empty());
