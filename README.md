@@ -67,6 +67,7 @@ You find them in ncpamixer.conf
 ### Build dependencies
 * CMake
 * C++14 compatible compiler
+* Pandoc for `manpages`
 
 On Debian(-based) systems, you'd need `libncurses-dev` and `libpulse-dev`.
 
