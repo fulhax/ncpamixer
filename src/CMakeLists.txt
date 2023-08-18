@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.11)
 
 project(ncpamixer)
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
@@ -6,10 +6,21 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+option(BUILD_MANPAGES "Build Man pages using pandoc" ON)
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 if(USE_WIDE)
     set(CURSES_NEED_WIDE TRUE)
+endif()
+
+include(FetchContent)
+include(GNUInstallDirs)
+
+if (BUILD_MANPAGES)
+    include("${CMAKE_CURRENT_SOURCE_DIR}/cmake.deps/FetchPandocMan.cmake")
+    include(PandocMan)
+    add_pandoc_man("${CMAKE_CURRENT_SOURCE_DIR}/man/ncpamixer.1.md")
 endif()
 
 set(CURSES_NEED_NCURSES TRUE)
