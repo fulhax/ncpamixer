@@ -19,7 +19,7 @@ ncpamixer supports 256 colors. You can change them in ncpamixer.conf
 You find them in ncpamixer.conf 
 
 #### Default bindings
-| Event | Default | |
+| Event | Default | Description |
 | --- | --- |---|
 | switch | tab | Cycle trought sinks, outputs, profile and ports |
 | select | enter | Select option in dropdowns |
@@ -57,6 +57,7 @@ You find them in ncpamixer.conf
 | set_volume_70 | 7 | Set volume to 70% |
 | set_volume_80 | 8 | Set volume to 80% |
 | set_volume_90 | 9 | Set volume to 90% |
+| help | ? | Pop up with keycode information |
 | set_volume_100 | Unbound | Set volume to 100% |
 | toggle_static | Unbound | Toggle barmode static/none static |
 
