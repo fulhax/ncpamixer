@@ -3,22 +3,25 @@
 
 #include <map>
 #include <string>
+#include <filesystem>
 #include <optional>
+
+namespace fs = std::filesystem;
 
 using config_map = std::map<std::string, std::string>;
 
 class Config
 {
 public:
-    Config();
-    virtual ~Config() = default;
+    Config() = default;
+    ~Config() = default;
 
-    void init(const char *conf);
+    void init(std::optional<fs::path>& conf);
 
     std::string getString(const char *key, const std::string &def);
     int getInt(const char *key, int def);
     bool getBool(const char *key, bool def);
-    bool keyExists(const char *key);
+    bool keyExists(const char *key) const;
     bool keyEmpty(const char *key);
     const config_map getConfig() const;
     const config_map getKeycodeNameEvents() const;
@@ -26,13 +29,17 @@ public:
 private:
     static constexpr char KEY[] = {"keycode"};
     static constexpr auto KEY_SIZE{sizeof (KEY) - 1};
+    static constexpr char XDG_CONFIG[] = {"XDG_CONFIG_HOME"};
+    static constexpr char FILENAME[] = {"ncpamixer.conf"};
+
     config_map config;
-    char filename[255];
+    fs::path full_path{};
 
     static const char *getHomeDir();
-    static bool fileExists(const char *name);
-    void createDefault();
-    int readConfig();
+    bool createDefault() const;
+    bool readConfig();
+    bool getDefaultConfigFile();
+    bool getConfigFile(std::optional<fs::path>& conf);
 };
 
 extern Config config;
