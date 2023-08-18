@@ -35,6 +35,7 @@ private:
     config_map config;
     fs::path full_path{};
 
+    static const char *getHomeDir();
     bool createDefault() const;
     bool readConfig();
     bool getDefaultConfigFile();
