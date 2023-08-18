@@ -21,8 +21,8 @@ public:
     std::string getString(const char *key, const std::string &def);
     int getInt(const char *key, int def);
     bool getBool(const char *key, bool def);
-    bool keyExists(const char *key);
-    bool keyEmpty(const char *key);
+    bool keyExists(const char *key) const;
+    bool keyEmpty(const char *key) const;
     const config_map getConfig() const;
     const config_map getKeycodeNameEvents() const;
     static std::string getKeycodeName(const char *keycode);
@@ -35,7 +35,7 @@ private:
     config_map config;
     fs::path full_path{};
 
-    bool createDefault();
+    bool createDefault() const;
     bool readConfig();
     bool getDefaultConfigFile();
     bool getConfigFile(std::optional<fs::path>& conf);

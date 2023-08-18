@@ -175,13 +175,13 @@ bool Config::getBool(const char *key, bool def)
     return (ret == "1" || ret == "yes" || ret == "true");
 }
 
-bool Config::keyExists(const char *key)
+bool Config::keyExists(const char *key) const
 {
     auto conf = config.find(key);
     return !(conf == config.end());
 }
 
-bool Config::keyEmpty(const char *key)
+bool Config::keyEmpty(const char *key) const
 {
     if (keyExists(key)) {
         return (config[key].empty());
@@ -190,7 +190,7 @@ bool Config::keyEmpty(const char *key)
     return true;
 }
 
-bool Config::createDefault()
+bool Config::createDefault() const
 {
     // light      ░ \u2593
     // medium     ▒ \u2592
