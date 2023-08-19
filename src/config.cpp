@@ -51,23 +51,10 @@ const config_map Config::getKeycodeNameEvents() const
 const char *Config::getHomeDir()
 {
     const char *homedir = getenv("HOME");
-
-    if (homedir != nullptr) {
-        return homedir;
-    }
-
-    passwd pwd = {nullptr};
-    passwd *result;
-    char *buf;
-    size_t bufsize;
-    bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
-
-    if (bufsize == static_cast<size_t>(-1)) {
-        bufsize = 16384;
-    }
-
-    buf = new char[bufsize];
-    getpwuid_r(getuid(), &pwd, buf, bufsize, &result);
+    if (homedir != nullptr) return homedir;
+    passwd pwd = {nullptr}, *result{nullptr};
+    size_t bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
+    if (bufsize == static_cast<size_t>(-1)) bufsize = 16384;
 
     std::unique_ptr<char[]> buf = std::make_unique<char[]>(bufsize);
     getpwuid_r(getuid(), &pwd, buf.get(), bufsize, &result);
