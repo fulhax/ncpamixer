@@ -71,11 +71,13 @@ bool Config::getDefaultConfigFile()
 {
     std::error_code ec{};
     std::string f{FILENAME};
-    fs::path config_dir{ getenv(XDG_CONFIG) };
+    const auto xdg{getenv(XDG_CONFIG)};
+    fs::path config_dir{xdg == nullptr ? "" : xdg};
     if (!fs::is_directory(config_dir, ec))
     {
-        config_dir = getenv("HOME");
-        f.append(".");
+        const auto home{getHomeDir()};
+        if (home) config_dir = fs::path(home);
+        f.insert(0, 1, '.');
     }
 
     if (fs::is_directory(config_dir, ec))
