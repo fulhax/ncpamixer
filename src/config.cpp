@@ -69,14 +69,14 @@ const char *Config::getHomeDir()
     buf = new char[bufsize];
     getpwuid_r(getuid(), &pwd, buf, bufsize, &result);
 
+    std::unique_ptr<char[]> buf = std::make_unique<char[]>(bufsize);
+    getpwuid_r(getuid(), &pwd, buf.get(), bufsize, &result);
     if (result == nullptr) {
         fprintf(stderr, "Unable to find home-directory\n");
         exit(EXIT_FAILURE);
     }
 
-    delete [] buf;
     homedir = result->pw_dir;
-
     return homedir;
 }
 
