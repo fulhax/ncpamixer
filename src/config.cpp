@@ -51,32 +51,19 @@ const config_map Config::getKeycodeNameEvents() const
 const char *Config::getHomeDir()
 {
     const char *homedir = getenv("HOME");
+    if (homedir != nullptr) return homedir;
+    passwd pwd = {nullptr}, *result{nullptr};
+    size_t bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
+    if (bufsize == static_cast<size_t>(-1)) bufsize = 16384;
 
-    if (homedir != nullptr) {
-        return homedir;
-    }
-
-    passwd pwd = {nullptr};
-    passwd *result;
-    char *buf;
-    size_t bufsize;
-    bufsize = sysconf(_SC_GETPW_R_SIZE_MAX);
-
-    if (bufsize == static_cast<size_t>(-1)) {
-        bufsize = 16384;
-    }
-
-    buf = new char[bufsize];
-    getpwuid_r(getuid(), &pwd, buf, bufsize, &result);
-
+    std::unique_ptr<char[]> buf = std::make_unique<char[]>(bufsize);
+    getpwuid_r(getuid(), &pwd, buf.get(), bufsize, &result);
     if (result == nullptr) {
         fprintf(stderr, "Unable to find home-directory\n");
         exit(EXIT_FAILURE);
     }
 
-    delete [] buf;
     homedir = result->pw_dir;
-
     return homedir;
 }
 
@@ -84,11 +71,13 @@ bool Config::getDefaultConfigFile()
 {
     std::error_code ec{};
     std::string f{FILENAME};
-    fs::path config_dir{ getenv(XDG_CONFIG) };
+    const auto xdg{getenv(XDG_CONFIG)};
+    fs::path config_dir{xdg == nullptr ? "" : xdg};
     if (!fs::is_directory(config_dir, ec))
     {
-        config_dir = getenv("HOME");
-        f.append(".");
+        const auto home{getHomeDir()};
+        if (home) config_dir = fs::path(home);
+        f.insert(0, 1, '.');
     }
 
     if (fs::is_directory(config_dir, ec))
