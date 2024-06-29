@@ -689,18 +689,9 @@ uint32_t Tab::dropDown(
     WINDOW *menu_win = 0;
 
     for (auto &i : objects) {
-        ITEM *item = (ITEM*) malloc(sizeof(ITEM));
-        memset(item, 0, sizeof(ITEM));
-
-        item->opt = O_SELECTABLE;
-        item->name.str = new char[i.second.length() + 1];
-        memcpy(
-            const_cast<char *>(item->name.str),
-            i.second.c_str(),
-            i.second.length()
-        );
-        item->name.length = i.second.length();
-        item->userptr = static_cast<void *>(&i);
+        ITEM *item = new_item(i.second.c_str(), nullptr);
+        set_item_opts(item, O_SELECTABLE);
+        set_item_userptr(item, static_cast<void*>(&i));
 
         items.push_back(item);
 
@@ -777,7 +768,7 @@ uint32_t Tab::dropDown(
 
                     ITEM *item = current_item(menu);
                     selected = static_cast<std::pair<uint32_t, std::string>*>(
-                                   item->userptr
+                                   item_userptr(item)
                                )->first;
 
                     selecting = false;
@@ -799,7 +790,7 @@ uint32_t Tab::dropDown(
                     ITEM* item = its[idx];
                     set_current_item(menu, item);
                     selected = static_cast<std::pair<uint32_t, std::string>*>(
-                                   item->userptr
+                                   item_userptr(item)
                                )->first;
                 }
 
@@ -834,7 +825,7 @@ uint32_t Tab::dropDown(
 
             ITEM *item = current_item(menu);
             selected = static_cast<std::pair<uint32_t, std::string>*>(
-                           item->userptr
+                            item_userptr(item)
                        )->first;
 
             selecting = false;
@@ -857,10 +848,8 @@ uint32_t Tab::dropDown(
     free_menu(menu);
 
     for (auto i : items) {
-        if ((i != nullptr) && (i->name.str != nullptr)) {
-            delete[] i->name.str;
-        }
-        free_item(i);
+        if (i != nullptr)
+            free_item(i);
     }
 
     items.clear();
