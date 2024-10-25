@@ -504,7 +504,7 @@ void Pa::read_callback(pa_stream *s, size_t length, void *instance)
 
     uint32_t input_idx = pa_stream_get_monitor_stream(s);
 
-    if (input_idx != PA_INVALID_INDEX) {
+    if (input_idx != PA_INVALID_INDEX && pa->PA_INPUTS.find(input_idx) != pa->PA_INPUTS.end()) {
         pa->PA_INPUTS[input_idx]->peak = v;
     } else {
         pa->updatePeakByDeviceId(pa_stream_get_device_index(s), v);
