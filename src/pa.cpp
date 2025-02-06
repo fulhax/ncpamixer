@@ -139,11 +139,7 @@ bool Pa::init()
         return false;
     }
 
-
-    pa_connect();
-
-
-    return true;
+    return pa_connect();
 }
 
 void Pa::ctx_success_cb(pa_context *ctx, int success, void *instance)
