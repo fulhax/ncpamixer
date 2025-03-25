@@ -1,6 +1,3 @@
-master: [![Build Status](http://fredrik.fulhax.nu:8090/job/ncpamixer/badge/icon)](http://fredrik.fulhax.nu:8090/job/ncpamixer)
-dev:    [![Build Status](http://fredrik.fulhax.nu:8090/job/ncpamixer-dev/badge/icon)](http://fredrik.fulhax.nu:8090/job/ncpamixer-dev)
-
 # ncurses PulseAudio Mixer
 
 An ncurses mixer for PulseAudio inspired by pavucontrol.
@@ -88,6 +85,7 @@ https://aur.archlinux.org/packages/ncpamixer-git/
 https://github.com/fulhax/fulhax-overlay/tree/master/media-sound/ncpamixer
 
 ### Tested on
+* Gentoo + cachyos-kernel 6.13.7, PipeWire 1.4.1 and ncurses 6.5_p20250308
 * Gentoo kernel 4.12.10, PulseAudio 11.0 and ncurses 6.0-r1
 * Gentoo kernel 4.6.2, PulseAudio 9.0 and ncurses 6.0-r1
 * Arch Linux 4.6.4-1 PulseAudio 9.0 and ncurses 6.0-4
