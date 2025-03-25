@@ -371,7 +371,7 @@ void Tab::handleEvents(const char* const &event)
                 );
             }
         }
-    } else if (!strcmp("dropdown", event)) {
+    } else if (!strcmp("dropdown", event) || !strcmp("select", event)) {
         handleDropDown(selected_pobj);
     }
 }
