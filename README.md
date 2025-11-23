@@ -69,6 +69,8 @@ You find them in ncpamixer.conf
 
 On Debian(-based) systems, you'd need `libncurses-dev` and `libpulse-dev`.
 
+On Fedora system, you'd need `ncurses-devel` and `pulseaudio-libs-devel`.
+
 ### Building
 * In the main directory, run `make`
 * On some systems (tested on Debian-stable), you may need to instead run `make USE_WIDE=True`
