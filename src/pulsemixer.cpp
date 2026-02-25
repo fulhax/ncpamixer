@@ -2,7 +2,6 @@
 #include <getopt.h>
 #include <string.h>
 #include <pulse/pulseaudio.h>
-#include <wordexp.h>
 #include <errno.h>
 #include <locale.h>
 #include <filesystem>
